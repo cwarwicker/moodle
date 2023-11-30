@@ -34,6 +34,7 @@ $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('admin');
 $PAGE->set_title($heading);
 $PAGE->set_heading($heading);
+$PAGE->requires->js_call_amd('tool_task/progress', 'init');
 
 admin_externalpage_setup('runningtasks');
 

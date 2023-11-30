@@ -15,16 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version info
+ * Webservices for tool_task.
  *
  * @package    tool_task
- * @copyright  2014 Damyon Wiese
+ * @copyright  2023 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author     Conn Warwicker <conn.warwicker@catalyst-eu.net>
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2023100901; // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2023100400; // Requires this Moodle version.
-$plugin->component = 'tool_task'; // Full name of the plugin (used for diagnostics)
+$functions = [
 
+    'tool_task_poll_progress' => [
+        'classname'   => 'tool_task\external\poll_progress',
+        'methodname'  => 'execute',
+        'description' => 'Polls for the current percentage progress of a task',
+        'type'        => 'read',
+        'ajax'        => true,
+    ],
+    
+];

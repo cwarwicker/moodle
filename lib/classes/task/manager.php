@@ -1311,8 +1311,10 @@ class manager {
                                (:now1 - ts.timestarted) as time,
                                ts.timestarted,
                                ts.hostname,
-                               ts.pid
+                               ts.pid,
+                               p.id as progress
                           FROM {task_scheduled} ts
+                     LEFT JOIN {task_progress} p ON (p.type = 'scheduled' AND p.taskid = ts.id)
                          WHERE ts.timestarted IS NOT NULL
                          UNION ALL
                         SELECT " . $DB->sql_concat("'a'", 'ta.id') . " as uniqueid,
@@ -1322,8 +1324,10 @@ class manager {
                                (:now2 - ta.timestarted) as time,
                                ta.timestarted,
                                ta.hostname,
-                               ta.pid
+                               ta.pid,
+                               p.id as progress
                           FROM {task_adhoc} ta
+                     LEFT JOIN {task_progress} p ON (p.type = 'adhoc' AND p.taskid = ta.id)
                          WHERE ta.timestarted IS NOT NULL) subquery
               ORDER BY " . $sort;
 

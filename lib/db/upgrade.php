@@ -856,5 +856,37 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2023110900.00);
     }
 
+    if ($oldversion < 2023112400.01) {
+
+        // Define table task_progress to be created.
+        $table = new xmldb_table('task_progress');
+
+        // Adding fields to table task_progress.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('type', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('taskid', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timelastpolled', XMLDB_TYPE_INTEGER, '20', null, null, null, null);
+        $table->add_field('percentcompleted', XMLDB_TYPE_INTEGER, '3', null, null, null, '0');
+        $table->add_field('maxiterations', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('currentiteration', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+
+        // Adding keys to table task_progress.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table task_progress.
+        $table->add_index('taskid_index', XMLDB_INDEX_NOTUNIQUE, ['taskid']);
+        $table->add_index('type_taskid_index', XMLDB_INDEX_UNIQUE, ['type', 'taskid']);
+
+        // Conditionally launch create table for task_progress.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2023112400.01);
+        
+    }
+
+
     return true;
 }

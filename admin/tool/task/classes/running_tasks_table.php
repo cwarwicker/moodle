@@ -49,6 +49,7 @@ class running_tasks_table extends \table_sql {
             'classname'    => get_string('classname', 'tool_task'),
             'type'         => get_string('tasktype', 'admin'),
             'time'         => get_string('taskage', 'tool_task'),
+            'progress'     => get_string('progress', 'core'),
             'timestarted'  => get_string('started', 'tool_task'),
             'hostname'     => get_string('hostname', 'tool_task'),
             'pid'          => get_string('pid', 'tool_task'),
@@ -152,5 +153,28 @@ class running_tasks_table extends \table_sql {
      */
     public function col_timestarted($row) : string {
         return userdate($row->timestarted);
+    }
+
+    /**
+     * Format the progress column.
+     * 
+     * @param \stdClass $row
+     * @return string
+     */
+    public function col_progress($row) : string {
+
+        global $DB;
+
+        // If there's no progress record, we can't do anything.
+        if (is_null($row->progress)) {
+            return '-';
+        }
+
+        // Poll the task to get its progress.
+        $classname = $row->classname;
+        $data = $classname::poll($row->progress);
+
+        return $data['display'];
+
     }
 }
