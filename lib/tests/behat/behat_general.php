@@ -2489,5 +2489,22 @@ EOF;
         } else {
             throw new \Behat\Mink\Exception\ExpectationException('Invalid state for switch: ' . $state, $this->getSession());
         }
+
+    }
+
+    /**
+     * Update a stored progress bar.
+     *
+     * @Given I set the stored progress bar :idnumber to :percent
+     * @param string $idnumber The unique idnumber of the stored progress bar.
+     * @param float $percent The value to update the progress bar to.
+     */
+    public function i_set_the_stored_progress_bar_to(string $idnumber, float $percent): void {
+        $progress = \core\stored_progress_bar::get_by_idnumber($idnumber);
+        if (!$progress) {
+            throw new invalid_parameter_exception('No progress bar with idnumber ' . $idnumber . 'found.');
+        }
+        $progress->auto_update(false);
+        $progress->update_full($percent, '');
     }
 }

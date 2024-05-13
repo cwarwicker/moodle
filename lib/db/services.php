@@ -3197,6 +3197,14 @@ $functions = array(
         'type'        => 'read',
         'ajax'        => true,
     ],
+    'core_poll_stored_progress' => [
+        'classname'   => 'core\external\poll_stored_progress',
+        'methodname'  => 'execute',
+        'description' => 'Polls for the current percentage progress of a stored progress object',
+        'type'        => 'read',
+        'ajax'        => true,
+        'readonlysession' => true,
+    ],
 );
 
 $services = array(
