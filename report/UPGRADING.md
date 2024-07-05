@@ -2,9 +2,11 @@
 
 ## 4.5dev
 
-### Removed
+### Added
 
-- The previously deprecated `report_helper::save_selected_report` method has been removed and can no longer be used
+- Report has been added to subsystem components list
 
-  For more information see [MDL-72353](https://tracker.moodle.org/browse/MDL-72353)
+  For more information see [MDL-81771](https://tracker.moodle.org/browse/MDL-81771)
+- New coursestructure output general class has been created
 
+  For more information see [MDL-81771](https://tracker.moodle.org/browse/MDL-81771)

@@ -373,7 +373,8 @@ $functions = array(
         'classpath' => 'cohort/externallib.php',
         'description' => 'Deletes all specified cohorts.',
         'type' => 'write',
-        'capabilities' => 'moodle/cohort:manage'
+        'capabilities' => 'moodle/cohort:manage',
+        'ajax' => true,
     ),
     'core_cohort_get_cohort_members' => array(
         'classname' => 'core_cohort_external',
@@ -808,7 +809,8 @@ $functions = array(
         'description' => 'Get the list of potential users to enrol',
         'ajax' => true,
         'type' => 'read',
-        'capabilities' => 'moodle/course:enrolreview'
+        'capabilities' => 'moodle/course:enrolreview',
+        'readonlysession' => true,
     ),
     'core_enrol_search_users' => [
         'classname' => 'core_enrol_external',
@@ -3194,6 +3196,14 @@ $functions = array(
         'description' => 'Send course to MoodleNet',
         'type'        => 'read',
         'ajax'        => true,
+    ],
+    'core_poll_stored_progress' => [
+        'classname'   => 'core\external\poll_stored_progress',
+        'methodname'  => 'execute',
+        'description' => 'Polls for the current percentage progress of a stored progress object',
+        'type'        => 'read',
+        'ajax'        => true,
+        'readonlysession' => true,
     ],
 );
 

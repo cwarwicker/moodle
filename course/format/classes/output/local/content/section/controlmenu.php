@@ -119,6 +119,7 @@ class controlmenu implements named_templatable, renderable {
         $menu = new action_menu();
         $menu->set_kebab_trigger(get_string('edit'));
         $menu->attributes['class'] .= ' section-actions';
+        $menu->attributes['data-sectionid'] = $this->section->id;
         foreach ($controls as $value) {
             $url = empty($value['url']) ? '' : $value['url'];
             $icon = empty($value['icon']) ? '' : $value['icon'];
@@ -166,7 +167,7 @@ class controlmenu implements named_templatable, renderable {
         $controls = [];
 
         // Only show the view link if we are not already in the section view page.
-        if ($PAGE->pagetype !== 'section-view-' . $course->format) {
+        if ($PAGE->pagetype !== 'course-view-section-' . $course->format) {
             $controls['view'] = [
                 'url'   => new moodle_url('/course/section.php', ['id' => $section->id]),
                 'icon' => 'i/viewsection',
@@ -193,19 +194,21 @@ class controlmenu implements named_templatable, renderable {
                 'attr' => ['class' => 'icon edit'],
             ];
 
-            $duplicatesectionurl = clone($baseurl);
-            $duplicatesectionurl->param('section', $section->section);
-            $duplicatesectionurl->param('duplicatesection', $section->section);
-            if (!is_null($sectionreturn)) {
-                $duplicatesectionurl->param('sr', $sectionreturn);
+            if ($section->section) {
+                $duplicatesectionurl = clone($baseurl);
+                $duplicatesectionurl->param('sectionid', $section->id);
+                $duplicatesectionurl->param('duplicatesection', 1);
+                if (!is_null($sectionreturn)) {
+                    $duplicatesectionurl->param('sr', $sectionreturn);
+                }
+                $controls['duplicate'] = [
+                    'url' => $duplicatesectionurl,
+                    'icon' => 't/copy',
+                    'name' => get_string('duplicate'),
+                    'pixattr' => ['class' => ''],
+                    'attr' => ['class' => 'icon duplicate'],
+                ];
             }
-            $controls['duplicate'] = [
-                'url' => $duplicatesectionurl,
-                'icon' => 't/copy',
-                'name' => get_string('duplicate'),
-                'pixattr' => ['class' => ''],
-                'attr' => ['class' => 'icon duplicate'],
-            ];
         }
 
         if ($section->section) {

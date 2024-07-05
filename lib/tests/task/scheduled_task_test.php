@@ -26,7 +26,7 @@ require_once(__DIR__ . '/../fixtures/task_fixtures.php');
  * @category test
  * @copyright 2013 Damyon Wiese
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @coversDefaultClass \core\task\scheduled_task
+ * @covers \core\task\scheduled_task
  */
 class scheduled_task_test extends \advanced_testcase {
 
@@ -65,8 +65,6 @@ class scheduled_task_test extends \advanced_testcase {
      * @param int[] $expected
      *
      * @dataProvider eval_cron_provider
-     *
-     * @covers ::eval_cron_field
      */
     public function test_eval_cron_field(string $field, int $min, int $max, array $expected): void {
         $testclass = new scheduled_test_task();
@@ -74,7 +72,7 @@ class scheduled_task_test extends \advanced_testcase {
         $this->assertEquals($expected, $testclass->eval_cron_field($field, $min, $max));
     }
 
-    public function test_get_next_scheduled_time() {
+    public function test_get_next_scheduled_time(): void {
         global $CFG;
         $this->resetAfterTest();
 
@@ -242,7 +240,6 @@ class scheduled_task_test extends \advanced_testcase {
      * @param string $month Month restriction list for task
      * @param string|int $expected Expected run time (strtotime format or time int)
      * @dataProvider get_next_scheduled_time_detail_provider
-     * @covers ::get_next_scheduled_time
      */
     public function test_get_next_scheduled_time_detail(string $now, string $minute, string $hour,
             string $day, string $dayofweek, string $month, string|int $expected): void {
@@ -271,8 +268,6 @@ class scheduled_task_test extends \advanced_testcase {
      *
      * We want frequent tasks to keep progressing as normal and not randomly stop for an hour, or
      * suddenly decide they need to happen in the past.
-     *
-     * @covers ::get_next_scheduled_time
      */
     public function test_get_next_scheduled_time_dst_continuity(): void {
         $this->resetAfterTest();
@@ -312,7 +307,7 @@ class scheduled_task_test extends \advanced_testcase {
         $this->assertEquals(strtotime('2023-10-29 02:00 Europe/London'), $four);
     }
 
-    public function test_timezones() {
+    public function test_timezones(): void {
         global $CFG, $USER;
 
         // The timezones used in this test are chosen because they do not use DST - that would break the test.
@@ -425,7 +420,7 @@ class scheduled_task_test extends \advanced_testcase {
     /**
      * Tests that the reset function deletes old tasks.
      */
-    public function test_reset_scheduled_tasks_for_component_delete() {
+    public function test_reset_scheduled_tasks_for_component_delete(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -463,7 +458,7 @@ class scheduled_task_test extends \advanced_testcase {
             'component' => 'moodle')));
     }
 
-    public function test_get_next_scheduled_task() {
+    public function test_get_next_scheduled_task(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -548,7 +543,7 @@ class scheduled_task_test extends \advanced_testcase {
         $this->assertNull($task);
     }
 
-    public function test_get_broken_scheduled_task() {
+    public function test_get_broken_scheduled_task(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -580,7 +575,7 @@ class scheduled_task_test extends \advanced_testcase {
      * Tests the use of 'R' syntax in time fields of tasks to get
      * tasks be configured with a non-uniform time.
      */
-    public function test_random_time_specification() {
+    public function test_random_time_specification(): void {
 
         // Testing non-deterministic things in a unit test is not really
         // wise, so we just test the values have changed within allowed bounds.
@@ -618,7 +613,7 @@ class scheduled_task_test extends \advanced_testcase {
      * Test that the file_temp_cleanup_task removes directories and
      * files as expected.
      */
-    public function test_file_temp_cleanup_task() {
+    public function test_file_temp_cleanup_task(): void {
         global $CFG;
         $backuptempdir = make_backup_temp_directory('');
 
@@ -677,7 +672,7 @@ class scheduled_task_test extends \advanced_testcase {
     /**
      * Test that the function to clear the fail delay from a task works correctly.
      */
-    public function test_clear_fail_delay() {
+    public function test_clear_fail_delay(): void {
 
         $this->resetAfterTest();
 
@@ -987,10 +982,6 @@ class scheduled_task_test extends \advanced_testcase {
 
     /**
      * Test disabling and enabling individual tasks.
-     *
-     * @covers ::disable
-     * @covers ::enable
-     * @covers ::has_default_configuration
      */
     public function test_disable_and_enable_task(): void {
         $this->resetAfterTest();
@@ -1038,9 +1029,6 @@ class scheduled_task_test extends \advanced_testcase {
 
     /**
      * Test send messages when a task reaches the max fail delay time.
-     *
-     * @covers ::scheduled_task_failed
-     * @covers ::send_failed_task_max_delay_message
      */
     public function test_message_max_fail_delay(): void {
         $this->resetAfterTest();

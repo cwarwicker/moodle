@@ -53,6 +53,7 @@ define('ASSIGN_MARKER_FILTER_NO_MARKER', -1);
  */
 define('ASSIGN_ATTEMPT_REOPEN_METHOD_NONE', 'none');
 define('ASSIGN_ATTEMPT_REOPEN_METHOD_MANUAL', 'manual');
+define('ASSIGN_ATTEMPT_REOPEN_METHOD_AUTOMATIC', 'automatic');
 define('ASSIGN_ATTEMPT_REOPEN_METHOD_UNTILPASS', 'untilpass');
 
 // Special value means allow unlimited attempts.
@@ -1187,13 +1188,13 @@ class assign {
         global $CFG, $DB;
 
         $componentstr = get_string('modulenameplural', 'assign');
-        $status = array();
+        $status = [];
 
         $fs = get_file_storage();
         if (!empty($data->reset_assign_submissions)) {
             // Delete files associated with this assignment.
             foreach ($this->submissionplugins as $plugin) {
-                $fileareas = array();
+                $fileareas = [];
                 $plugincomponent = $plugin->get_subtype() . '_' . $plugin->get_type();
                 $fileareas = $plugin->get_file_areas();
                 foreach ($fileareas as $filearea => $notused) {
@@ -1201,9 +1202,11 @@ class assign {
                 }
 
                 if (!$plugin->delete_instance()) {
-                    $status[] = array('component'=>$componentstr,
-                                      'item'=>get_string('deleteallsubmissions', 'assign'),
-                                      'error'=>$plugin->get_error());
+                    $status[] = [
+                        'component' => $componentstr,
+                        'item' => get_string('deleteallsubmissions', 'assign'),
+                        'error' => $plugin->get_error(),
+                    ];
                 }
             }
 
@@ -1216,32 +1219,36 @@ class assign {
                 }
 
                 if (!$plugin->delete_instance()) {
-                    $status[] = array('component'=>$componentstr,
-                                      'item'=>get_string('deleteallsubmissions', 'assign'),
-                                      'error'=>$plugin->get_error());
+                    $status[] = [
+                        'component' => $componentstr,
+                        'item ' => get_string('deleteallsubmissions', 'assign'),
+                        'error' => $plugin->get_error(),
+                    ];
                 }
             }
 
-            $assignids = $DB->get_records('assign', array('course' => $data->courseid), '', 'id');
+            $assignids = $DB->get_records('assign', ['course' => $data->courseid], '', 'id');
             list($sql, $params) = $DB->get_in_or_equal(array_keys($assignids));
 
             $DB->delete_records_select('assign_submission', "assignment $sql", $params);
             $DB->delete_records_select('assign_user_flags', "assignment $sql", $params);
 
-            $status[] = array('component'=>$componentstr,
-                              'item'=>get_string('deleteallsubmissions', 'assign'),
-                              'error'=>false);
+            $status[] = [
+                'component' => $componentstr,
+                'item' => get_string('deleteallsubmissions', 'assign'),
+                'error' => false,
+            ];
 
             if (!empty($data->reset_gradebook_grades)) {
                 $DB->delete_records_select('assign_grades', "assignment $sql", $params);
                 // Remove all grades from gradebook.
-                require_once($CFG->dirroot.'/mod/assign/lib.php');
+                require_once($CFG->dirroot . '/mod/assign/lib.php');
                 assign_reset_gradebook($data->courseid);
             }
 
             // Reset revealidentities for assign if blindmarking is enabled.
             if ($this->get_instance()->blindmarking) {
-                $DB->set_field('assign', 'revealidentities', 0, array('id' => $this->get_instance()->id));
+                $DB->set_field('assign', 'revealidentities', 0, ['id' => $this->get_instance()->id]);
             }
         }
 
@@ -1250,50 +1257,65 @@ class assign {
         // Remove user overrides.
         if (!empty($data->reset_assign_user_overrides)) {
             $DB->delete_records_select('assign_overrides',
-                'assignid IN (SELECT id FROM {assign} WHERE course = ?) AND userid IS NOT NULL', array($data->courseid));
-            $status[] = array(
+                'assignid IN (SELECT id FROM {assign} WHERE course = ?) AND userid IS NOT NULL', [$data->courseid]);
+            $status[] = [
                 'component' => $componentstr,
-                'item' => get_string('useroverridesdeleted', 'assign'),
-                'error' => false);
+                'item' => get_string('useroverrides', 'assign'),
+                'error' => false,
+            ];
             $purgeoverrides = true;
         }
         // Remove group overrides.
         if (!empty($data->reset_assign_group_overrides)) {
             $DB->delete_records_select('assign_overrides',
-                'assignid IN (SELECT id FROM {assign} WHERE course = ?) AND groupid IS NOT NULL', array($data->courseid));
-            $status[] = array(
+                'assignid IN (SELECT id FROM {assign} WHERE course = ?) AND groupid IS NOT NULL', [$data->courseid]);
+            $status[] = [
                 'component' => $componentstr,
-                'item' => get_string('groupoverridesdeleted', 'assign'),
-                'error' => false);
+                'item' => get_string('groupoverrides', 'assign'),
+                'error' => false,
+            ];
             $purgeoverrides = true;
         }
 
         // Updating dates - shift may be negative too.
         if ($data->timeshift) {
-            $DB->execute("UPDATE {assign_overrides}
-                         SET allowsubmissionsfromdate = allowsubmissionsfromdate + ?
-                       WHERE assignid = ? AND allowsubmissionsfromdate <> 0",
-                array($data->timeshift, $this->get_instance()->id));
-            $DB->execute("UPDATE {assign_overrides}
-                         SET duedate = duedate + ?
-                       WHERE assignid = ? AND duedate <> 0",
-                array($data->timeshift, $this->get_instance()->id));
-            $DB->execute("UPDATE {assign_overrides}
-                         SET cutoffdate = cutoffdate + ?
-                       WHERE assignid =? AND cutoffdate <> 0",
-                array($data->timeshift, $this->get_instance()->id));
+            $sql = "UPDATE {assign_overrides}
+                       SET allowsubmissionsfromdate = allowsubmissionsfromdate + ?
+                     WHERE assignid = ? AND allowsubmissionsfromdate <> 0";
+            $DB->execute(
+                $sql,
+                [$data->timeshift, $this->get_instance()->id],
+            );
+            $sql = "UPDATE {assign_overrides}
+                       SET duedate = duedate + ?
+                     WHERE assignid = ? AND duedate <> 0";
+            $DB->execute(
+                $sql,
+                [$data->timeshift, $this->get_instance()->id],
+            );
+            $sql = "UPDATE {assign_overrides}
+                       SET cutoffdate = cutoffdate + ?
+                     WHERE assignid =? AND cutoffdate <> 0";
+            $DB->execute(
+                $sql,
+                [$data->timeshift, $this->get_instance()->id],
+            );
 
             $purgeoverrides = true;
 
             // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
             // See MDL-9367.
-            shift_course_mod_dates('assign',
-                                    array('duedate', 'allowsubmissionsfromdate', 'cutoffdate'),
-                                    $data->timeshift,
-                                    $data->courseid, $this->get_instance()->id);
-            $status[] = array('component'=>$componentstr,
-                              'item'=>get_string('datechanged'),
-                              'error'=>false);
+            shift_course_mod_dates(
+                'assign',
+                ['duedate', 'allowsubmissionsfromdate', 'cutoffdate'],
+                $data->timeshift,
+                $data->courseid, $this->get_instance()->id,
+            );
+            $status[] = [
+                'component' => $componentstr,
+                'item' => get_string('date'),
+                'error' => false,
+            ];
         }
 
         if ($purgeoverrides) {
@@ -4545,9 +4567,13 @@ class assign {
         $buttons = new \mod_assign\output\grading_actionmenu($this->get_course_module()->id,
              $this->is_any_submission_plugin_enabled(), $this->count_submissions());
         $actionformtext = $this->get_renderer()->render($buttons);
+        $currenturl = new moodle_url('/mod/assign/view.php', ['id' => $this->get_course_module()->id, 'action' => 'grading']);
         $PAGE->activityheader->set_attrs(['hidecompletion' => true]);
 
-        $currenturl = new moodle_url('/mod/assign/view.php', ['id' => $this->get_course_module()->id, 'action' => 'grading']);
+        // Conditionally add the group JS if we have groups enabled.
+        if ($this->get_course()->groupmode) {
+            $PAGE->requires->js_call_amd('core_course/actionbar/group', 'init', [$currenturl->out(false)]);
+        }
 
         $header = new assign_header($this->get_instance(),
                                     $this->get_context(),
@@ -4561,10 +4587,7 @@ class assign {
 
         $o .= $actionformtext;
 
-        $o .= $this->get_renderer()->heading(get_string('gradeitem:submissions', 'mod_assign'), 2);
         $o .= $this->get_renderer()->render($gradingactions);
-
-        $o .= groups_print_activity_menu($this->get_course_module(), $currenturl, true);
 
         // Plagiarism update status apearring in the grading book.
         if (!empty($CFG->enableplagiarism)) {
@@ -4579,6 +4602,7 @@ class assign {
         // Load and print the table of submissions.
         if ($showquickgrading && $quickgrading) {
             $gradingtable = new assign_grading_table($this, $perpage, $filter, 0, true);
+            $gradingtable->responsive = false;
             $table = $this->get_renderer()->render($gradingtable);
             $page = optional_param('page', null, PARAM_INT);
             $quickformparams = array('cm'=>$this->get_course_module()->id,
@@ -4590,6 +4614,7 @@ class assign {
             $o .= $this->get_renderer()->render(new assign_form('quickgradingform', $quickgradingform));
         } else {
             $gradingtable = new assign_grading_table($this, $perpage, $filter, 0, false);
+            $gradingtable->responsive = false;
             $o .= $this->get_renderer()->render($gradingtable);
         }
 
@@ -8678,21 +8703,27 @@ class assign {
                               $submission->attemptnumber >= ($instance->maxattempts - 1) &&
                               $instance->maxattempts != ASSIGN_UNLIMITED_ATTEMPTS;
         $shouldreopen = false;
-        if ($instance->attemptreopenmethod == ASSIGN_ATTEMPT_REOPEN_METHOD_UNTILPASS) {
-            // Check the gradetopass from the gradebook.
-            $gradeitem = $this->get_grade_item();
-            if ($gradeitem) {
-                $gradegrade = grade_grade::fetch(array('userid' => $userid, 'itemid' => $gradeitem->id));
+        switch ($instance->attemptreopenmethod) {
+            case ASSIGN_ATTEMPT_REOPEN_METHOD_AUTOMATIC:
+                $shouldreopen = true;
+                break;
+            case ASSIGN_ATTEMPT_REOPEN_METHOD_UNTILPASS:
+                // Check the gradetopass from the gradebook.
+                $gradeitem = $this->get_grade_item();
+                if ($gradeitem) {
+                    $gradegrade = grade_grade::fetch(['userid' => $userid, 'itemid' => $gradeitem->id]);
 
-                // Do not reopen if is_passed returns null, e.g. if there is no pass criterion set.
-                if ($gradegrade && ($gradegrade->is_passed() === false)) {
+                    // Do not reopen if is_passed returns null, e.g. if there is no pass criterion set.
+                    if ($gradegrade && ($gradegrade->is_passed() === false)) {
+                        $shouldreopen = true;
+                    }
+                }
+                break;
+            case ASSIGN_ATTEMPT_REOPEN_METHOD_MANUAL:
+                if (!empty($addattempt)) {
                     $shouldreopen = true;
                 }
-            }
-        }
-        if ($instance->attemptreopenmethod == ASSIGN_ATTEMPT_REOPEN_METHOD_MANUAL &&
-                !empty($addattempt)) {
-            $shouldreopen = true;
+                break;
         }
         if ($shouldreopen && !$maxattemptsreached) {
             $this->add_attempt($userid);
@@ -9462,20 +9493,22 @@ class assign {
         $confirm = optional_param('confirm', 0, PARAM_BOOL);
 
         if ($confirm) {
-            confirm_sesskey();
-
-            // Fix the grades.
-            $this->fix_null_grades();
-            unset_config('has_rescaled_null_grades_' . $instance->id, 'assign');
-
-            // Display the notice.
-            $o .= $this->get_renderer()->notification(get_string('fixrescalednullgradesdone', 'assign'), 'notifysuccess');
+            if (confirm_sesskey()) {
+                // Fix the grades.
+                $this->fix_null_grades();
+                unset_config('has_rescaled_null_grades_' . $instance->id, 'assign');
+                // Display the success notice.
+                $o .= $this->get_renderer()->notification(get_string('fixrescalednullgradesdone', 'assign'), 'notifysuccess');
+            } else {
+                // If the sesskey is not valid, then display the error notice.
+                $o .= $this->get_renderer()->notification(get_string('invalidsesskey', 'error'), 'notifyerror');
+            }
             $url = new moodle_url(
-                '/mod/assign/view.php',
-                array(
+                url: '/mod/assign/view.php',
+                params: [
                     'id' => $this->get_course_module()->id,
-                    'action' => 'grading'
-                )
+                    'action' => 'grading',
+                ],
             );
             $o .= $this->get_renderer()->continue_button($url);
         } else {

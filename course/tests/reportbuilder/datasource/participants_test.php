@@ -53,6 +53,7 @@ final class participants_test extends core_reportbuilder_testcase {
 
         require_once("{$CFG->libdir}/gradelib.php");
         require_once("{$CFG->dirroot}/completion/criteria/completion_criteria_self.php");
+        parent::setUpBeforeClass();
     }
 
     /**
@@ -238,6 +239,43 @@ final class participants_test extends core_reportbuilder_testcase {
             2, // Days until completion.
             '42.50', // Grade.
         ], array_values($content[0]));
+    }
+
+
+    /**
+     * Test creating course report, with aggregated last access date (minimum and maximum)
+     */
+    public function test_course_last_access_aggregation(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+
+        $userone = $this->getDataGenerator()->create_and_enrol($course);
+        $useronelastaccess = $this->getDataGenerator()->create_user_course_lastaccess($userone, $course, 1622502000);
+
+        $usertwo = $this->getDataGenerator()->create_and_enrol($course);
+        $usertwolastaccess = $this->getDataGenerator()->create_user_course_lastaccess($usertwo, $course, 1622847600);
+
+        /** @var core_reportbuilder_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('core_reportbuilder');
+
+        $report = $generator->create_report(['name' => 'Courses', 'source' => participants::class, 'default' => 0]);
+        $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'course:fullname']);
+        $column = $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'access:timeaccess']);
+
+        // Course aggregated with "Minimum" last access.
+        $column->set('aggregation', 'min')->update();
+        $content = $this->get_custom_report_content($report->get('id'));
+        $this->assertEquals([
+            [$course->fullname, userdate($useronelastaccess->timeaccess)],
+        ], array_map('array_values', $content));
+
+        // Course aggregated with "Maximum" last access.
+        $column->set('aggregation', 'max')->update();
+        $content = $this->get_custom_report_content($report->get('id'));
+        $this->assertEquals([
+            [$course->fullname, userdate($usertwolastaccess->timeaccess)],
+        ], array_map('array_values', $content));
     }
 
     /**

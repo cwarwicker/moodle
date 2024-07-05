@@ -184,7 +184,7 @@ $string['configallowemailaddresses'] = 'To restrict new email addresses to parti
 $string['configallowemojipicker'] = 'The emoji picker enables users to select emojis, such as smilies, to add to messages and other text areas via an emoji picker button in the Atto toolbar.';
 $string['configallowemojipickerincompatible'] = 'Your current database configuration does not properly support emojis. In order to enable the emoji picker you will need to <a href="https://docs.moodle.org/en/MySQL_full_unicode_support">upgrade your database for full unicode support</a>.';
 $string['configallowguestmymoodle'] = 'If enabled, guests can access the Dashboard. Otherwise guests are redirected to the site home.';
-$string['configallowobjectembed'] = 'As a default security measure, normal users are not allowed to embed multimedia (like Flash) within texts using explicit EMBED and OBJECT tags in their HTML (although it can still be done safely using the mediaplugins filter).  If you wish to allow these tags then enable this option.';
+$string['configallowobjectembed'] = 'For security, users with the role of student are not allowed to embed multimedia within texts using EMBED and OBJECT tags in HTML, though multimedia can still be displayed using the multimedia plugins filter. If you wish to allow these tags then enable this option.';
 $string['configallowoverride'] = 'You can allow people with the roles on the left side to override some of the column roles';
 $string['configallowoverride2'] = 'For each role in the left column, select which roles that they can set overrides for.<br />Users must also have either the capability moodle/role:override or moodle/role:safeoverride.';
 $string['configallowswitch'] = 'For each role in the left column, select which roles they can switch to.<br />Users must also have the capability moodle/role:switchroles.';
@@ -286,7 +286,7 @@ $string['configfrontpageloggedin'] = 'The items selected above will be displayed
 $string['configfullnamedisplay'] = 'This defines how names are shown when they are displayed in full. The default value, "language", leaves it to the string "fullnamedisplay" in the current language pack to decide. Some languages have different name display conventions.
 
 For most mono-lingual sites the most efficient setting is "firstname lastname", but you may choose to hide last names altogether. Placeholders that can be used are: firstname, lastname, firstnamephonetic, lastnamephonetic, middlename, and alternatename.';
-$string['configgeoipfile'] = 'Location of GeoLite2 City binary data file. This file is not part of Moodle distribution and must be obtained separately from <a href="https://www.maxmind.com/">MaxMind</a>. You can either buy a commercial version or use the free version. You\'ll need to register to download the City database file, which you can do at <a href="https://dev.maxmind.com/geoip/geoip2/geolite2/" >https://dev.maxmind.com/geoip/geoip2/geolite2/</a>. Once you\'ve registered and downloaded the file, extract it into "{$a}" directory on your server.';
+$string['configgeoipfile'] = 'Location of GeoIP City binary data file. This file is not part of Moodle distribution and must be obtained separately from <a href="https://www.maxmind.com/">MaxMind</a>. You can either buy a commercial version or use the free version. You\'ll need to register to download the City database file, which you can do at <a href="https://dev.maxmind.com/geoip/geoip2/geolite2/" >https://dev.maxmind.com/geoip/geoip2/geolite2/</a>. Once you\'ve registered and downloaded the file, extract it into "{$a}" directory on your server.';
 $string['configgetremoteaddrconf'] = 'If your server is behind a reverse proxy, you can use this setting to specify which HTTP headers can be trusted to contain the remote IP address. The headers are read in order, using the first one that is available.';
 $string['configgradebookroles'] = 'This setting allows you to control who appears on the gradebook.  Users need to have at least one of these roles in a course to be shown in the gradebook for that course.';
 $string['configgradeexport'] = 'Choose which gradebook export formats are your primary methods for exporting grades.  Chosen plugins will then set and use a "last exported" field for every grade.  For example, this might result in exported records being identified as being "new" or "updated".  If you are not sure about this then leave everything unchecked.';
@@ -690,7 +690,13 @@ $string['fullnamedisplay'] = 'Full name format';
 $string['fullnamedisplayprivate'] = 'Full name format - private';
 $string['gdrequired'] = 'The GD extension is now required by Moodle for image conversion.';
 $string['generalsettings'] = 'General settings';
-$string['geoipfile'] = 'GeoLite2 City MaxMind DB';
+$string['geoipdbedition'] = 'GeoIP Database Edition';
+$string['geoipdbedition_desc'] = 'Select the edition of the GeoIP database to download. Please be aware that using the GeoIP2-City database requires a valid paid license.';
+$string['geoipfile'] = 'GeoIP City DB';
+$string['geoipmaxmindaccid'] = 'MaxMind account ID';
+$string['geoipmaxmindaccid_desc'] = 'The account ID of the account created on the MaxMind API service.';
+$string['geoipmaxmindlicensekey'] = 'MaxMind license key';
+$string['geoipmaxmindlicensekey_desc'] = 'The license key of the account created on the MaxMind API service.';
 $string['getremoteaddrconf'] = 'Logged IP address source';
 $string['globalsearch'] = 'Global search';
 $string['globalsearchmanage'] = 'Manage global search';
@@ -775,10 +781,10 @@ $string['ipblocked'] = 'This site is not available currently.';
 $string['ipblocker'] = 'IP blocker';
 $string['ipblockersyntax'] = 'Put every entry on one line. Valid entries are either full IP address (such as <b>192.168.10.1</b>) which matches a single host; or partial address (such as <b>192.168</b>) which matches any address starting with those numbers; or CIDR notation (such as <b>231.54.211.0/20</b>); or a range of IP addresses (such as <b>231.3.56.10-20</b>) where the range applies to the last part of the address. Text domain names (like \'example.com\') are not supported. Blank lines, and text following a "#" character are ignored.';
 $string['iplookup'] = 'IP address lookup';
-$string['iplookupgeoplugin'] = 'The <a href="https://www.geoplugin.com">geoPlugin</a> service is currently being used to look up geographical information. For more accurate results we recommend installing a local copy of the MaxMind GeoLite database.';
-$string['iplookupinfo'] = 'The free online NetGeo server is used to look up IP address locations. The database is not maintained any more though, and may return incorrect data. Installing a local copy of the free GeoLite2 City database from MaxMind is recommended.<br />
+$string['iplookupgeoplugin'] = 'The <a href="https://www.geoplugin.com">geoPlugin</a> service is currently being used to look up geographical information. For more accurate results we recommend installing a local copy of the MaxMind GeoIP City database.';
+$string['iplookupinfo'] = 'The free online NetGeo server is used to look up IP address locations. The database is not maintained any more though, and may return incorrect data. Installing a local copy of a GeoIP database from MaxMind is recommended.<br />
 If a Google Maps API V3 key is provided, IP address location is displayed using Google Maps. You need a Google account and to apply for a Google Maps API key. If no Google Maps API V3 key is provided, IP address location is displayed using OpenStreetMap.';
-$string['iplookupmaxmindnote'] = 'This product includes GeoLite2 data created by MaxMind, available from <a href="https://www.maxmind.com">https://www.maxmind.com</a>.';
+$string['iplookupmaxmindnote'] = 'This product includes GeoIP City data created by MaxMind, available from <a href="https://www.maxmind.com">https://www.maxmind.com</a>.';
 $string['iscustomadminwarnings'] = 'It has been detected that your site is using a custom admin directory. This feature is no longer supported and will be removed after Moodle 4.2.';
 $string['ishttpswarning'] = 'It has been detected that your site is not secured using HTTPS. It is strongly recommended to migrate your site to HTTPS for increased security and improved integration with other systems.';
 $string['keeptagnamecase'] = 'Keep tag name casing';
@@ -1261,7 +1267,7 @@ $string['serverchecks'] = 'Server checks';
 $string['serverlimit'] = 'Server limit';
 $string['servicespage'] = 'Services and support link';
 $string['sessionautostartwarning'] = '<p>Serious configuration error detected, please notify server administrator.</p><p> To operate properly, Moodle requires that administrator changes PHP settings.</p><p><code>session.auto_start</code> must be set to <code>off</code>.</p><p>This setting is controlled by editing <code>php.ini</code>, Apache/IIS <br />configuration or <code>.htaccess</code> file on the server.</p>';
-$string['sessioncookie'] = 'Cookie prefix';
+$string['sessioncookie'] = 'Cookie suffix';
 $string['sessioncookiedomain'] = 'Cookie domain';
 $string['sessioncookiepath'] = 'Cookie path';
 $string['sessionhandling'] = 'Session handling';
@@ -1336,6 +1342,7 @@ $string['stickyblockscourseview'] = 'Course page';
 $string['stickyblocksduplicatenotice'] = 'If any block you add here is already present in a particular page, it will result in a duplicate.<br />Only the pinned block will be non-editable, the duplicate will still be editable.';
 $string['stickyblocksmymoodle'] = 'My Moodle';
 $string['stickyblockspagetype'] = 'Page type to configure';
+$string['storedprogressbarcleanuptask'] = 'Stored progress bar cleanup task';
 $string['strictformsrequired'] = 'Strict validation of required fields';
 $string['stripalltitletags'] = 'Remove HTML tags from all activity names';
 $string['supportandservices'] = 'Support and services';
@@ -1436,6 +1443,7 @@ $string['tasksessioncleanup'] = 'Cleanup old sessions';
 $string['taskstatscron'] = 'Background processing for statistics';
 $string['tasktagcron'] = 'Background processing for tags';
 $string['tasktempfilecleanup'] = 'Delete stale temp files';
+$string['taskupdategeoip2file'] = 'Update GeoIP file';
 $string['tempdatafoldercleanup'] = 'Clean up temporary data files older than';
 $string['templates'] = 'Templates';
 $string['testoutgoingmailconf'] = 'Test outgoing mail configuration';
@@ -1569,9 +1577,9 @@ $string['user'] = 'User';
 $string['userbulk'] = 'Bulk user actions';
 $string['userbulkdownload'] = 'Export users as';
 $string['userfeedbackafterupgrade'] = 'After every major upgrade';
-$string['userfeedbackencouragement'] = '<p>In Moodle 3.9 onwards, a new feature is included which gives users the option to provide feedback about Moodle software to Moodle HQ via an external survey site hosted by Moodle HQ. No user-identifying information is forwarded to the survey site.</p>
+$string['userfeedbackencouragement'] = '<p>Moodle includes a feature which gives users the option to provide feedback about Moodle software via an external survey site hosted by Moodle HQ. No user-identifying information is forwarded to the survey site.</p>
 <p>Moodle HQ strives to be open and transparent about its data collection practices. Thus, we want to make sure that you are aware and in control of this functionality.</p>
-<p>Feedback from users will greatly assist Moodle HQ in improving the Moodle software. To enable this feature, please go to <a href="{$a}">Feedback settings</a>.</p>';
+<p>Feedback from users helps Moodle HQ in improving the Moodle software. To enable this feature, please go to <a href="{$a}">Feedback settings</a>.</p>';
 $string['userfeedbacknextreminder'] = 'Next feedback reminder';
 $string['userfeedbacknextreminder_desc'] = 'When should we ask the user to give feedback again?';
 $string['userfeedbackperiodically'] = 'Periodically';
@@ -1614,9 +1622,6 @@ $string['cachesession'] = 'Session cache';
 $string['cachesessionhelp'] = 'User specific cache that expires when the user\'s session ends. Designed to alleviate session bloat/strain.';
 $string['cacheapplication'] = 'Application cache';
 $string['cacheapplicationhelp'] = 'Cached items are shared among all users and expire by a determined time to live (ttl).';
-
-// Deprecated since Moodle 4.1.
-$string['multilangforceold'] = 'Force old multilang syntax: &lt;span&gt; without the class="multilang" and &lt;lang&gt;';
 
 // Deprecated since Moodle 4.2.
 $string['blockunprotect'] = 'Unprotect';
