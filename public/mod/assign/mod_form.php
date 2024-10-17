@@ -243,6 +243,40 @@ class mod_assign_mod_form extends moodleform_mod {
         $mform->addHelpButton('markingallocation', 'markingallocation', 'assign');
         $mform->hideIf('markingallocation', 'markingworkflow', 'eq', 0);
 
+        $name = get_string('markercount', 'assign');
+        $markercount = range(1, ASSIGN_MULTIMARKING_MAX_MARKERS);
+        $mform->addElement('select', 'markercount', $name, array_combine($markercount, $markercount));
+        $mform->addHelpButton('markercount', 'markercount', 'assign');
+
+        $options = [
+            ASSIGN_MULTIMARKING_METHOD_MANUAL => get_string('markgrade' . ASSIGN_MULTIMARKING_METHOD_MANUAL, 'assign'),
+            ASSIGN_MULTIMARKING_METHOD_MAX => get_string('markgrade' . ASSIGN_MULTIMARKING_METHOD_MAX, 'assign'),
+            ASSIGN_MULTIMARKING_METHOD_AVERAGE => get_string('markgrade' . ASSIGN_MULTIMARKING_METHOD_AVERAGE, 'assign'),
+            ASSIGN_MULTIMARKING_METHOD_FIRST => get_string('markgrade' . ASSIGN_MULTIMARKING_METHOD_FIRST, 'assign'),
+        ];
+        $mform->disabledIf('markercount', 'advancedgradingmethod_submissions', 'neq', '');
+        $mform->hideIf('markercount', 'markingallocation', 'neq', '1');
+        $mform->hideIf('markercount', 'markingworkflow', 'neq', '1');
+
+        $name = get_string('multimarkmethod', 'assign');
+        $mform->addElement('select', 'multimarkmethod', $name, $options);
+        $mform->addHelpButton('multimarkmethod', 'multimarkmethod', 'assign');
+        $mform->hideIf('multimarkmethod', 'markingallocation', 'eq', '0');
+        $mform->hideIf('multimarkmethod', 'markercount', 'eq', '1');
+        $mform->disabledIf('multimarkmethod', 'advancedgradingmethod_submissions', 'neq', '');
+
+        $name = get_string('multimarkrounding', 'assign');
+        $options = [
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_NONE  => get_string('multimarkrounding:none', 'assign'),
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL  => get_string('multimarkrounding:natural', 'assign'),
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN => get_string('multimarkrounding:down', 'assign'),
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP  => get_string('multimarkrounding:up', 'assign'),
+        ];
+        $mform->addElement('select', 'multimarkrounding', $name, $options);
+        $mform->addHelpButton('multimarkrounding', 'multimarkrounding', 'assign');
+        $mform->hideIf('multimarkrounding', 'multimarkmethod', 'neq', 'average');
+        $mform->disabledIf('multimarkrounding', 'multimarkmethod', 'neq', 'average');
+
         $name = get_string('markinganonymous', 'assign');
         $mform->addElement('selectyesno', 'markinganonymous', $name);
         $mform->addHelpButton('markinganonymous', 'markinganonymous', 'assign');
