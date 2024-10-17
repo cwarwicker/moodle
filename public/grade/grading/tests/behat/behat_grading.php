@@ -174,4 +174,32 @@ class behat_grading extends behat_base {
         $this->execute("behat_forms::i_set_the_following_fields_to_these_values", $data);
         $this->execute('behat_grading::i_save_the_advanced_grading_form');
     }
+
+    /**
+     * Goes to the student's advanced marking page.
+     *
+     * @Given /^I go to "(?P<user_fullname_string>(?:[^"]|\\")*)" "(?P<activity_name_string>(?:[^"]|\\")*)" activity advanced marking page$/
+     * @param string $userfullname The user full name including firstname and lastname.
+     * @param string $activityname The activity name
+     */
+    public function i_go_to_activity_advanced_marking_page($userfullname, $activityname) {
+
+        // Step to access the user grade page from the grading page.
+        $this->execute('behat_navigation::go_to_breadcrumb_location', $this->escape($activityname));
+
+        $this->execute('behat_general::click_link', get_string('gradeitem:submissions', 'mod_assign'));
+
+        $this->execute(
+            'behat_general::i_click_on_in_the',
+            [
+                $this->escape(get_string('markactions', 'assign')),
+                'actionmenu',
+                $this->escape($userfullname),
+                'table_row',
+            ]
+        );
+
+        $this->execute('behat_action_menu::i_choose_in_the_open_action_menu', get_string('markverb', 'mod_assign'));
+    }
+
 }
