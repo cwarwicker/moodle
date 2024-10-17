@@ -1476,7 +1476,8 @@ function mod_assign_output_fragment_gradingpanel($args) {
     $viewargs = array(
         'userid' => $userid,
         'attemptnumber' => $attemptnumber,
-        'formdata' => $formdata
+        'formdata' => $formdata,
+        'marker' => $args['marker'],
     );
 
     return $assign->view('gradingpanel', $viewargs);
