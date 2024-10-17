@@ -91,6 +91,8 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
                                                   'maxattempts',
                                                   'markingworkflow',
                                                   'markingallocation',
+                                                  'markercount',
+                                                  'multimarkmethod',
                                                   'markinganonymous',
                                                   'preventsubmissionnotingroup',
                                                   'activity',
@@ -101,14 +103,44 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
 
         $userflags = new backup_nested_element('userflags');
 
-        $userflag = new backup_nested_element('userflag', array('id'),
-                                                array('userid',
-                                                      'assignment',
-                                                      'mailed',
-                                                      'locked',
-                                                      'extensionduedate',
-                                                      'workflowstate',
-                                                      'allocatedmarker'));
+        $userflag = new backup_nested_element(
+            'userflag',
+            ['id'],
+            [
+                'userid',
+                'assignment',
+                'mailed',
+                'locked',
+                'extensionduedate',
+                'workflowstate',
+            ]
+        );
+
+        $allocatedmarkers = new backup_nested_element('allocatedmarkers');
+
+        $allocatedmarker = new backup_nested_element(
+            'allocatedmarker',
+            ['id'],
+            [
+                'student',
+                'assignment',
+                'marker',
+            ]
+        );
+
+        $marks = new backup_nested_element('marks');
+
+        $mark = new backup_nested_element(
+            'mark',
+            ['id'],
+            [
+                'assignment',
+                'gradeid',
+                'timecreated',
+                'timemodified',
+                'marker',
+            ]
+        );
 
         $submissions = new backup_nested_element('submissions');
 
@@ -148,6 +180,10 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
         // Build the tree.
         $assign->add_child($userflags);
         $userflags->add_child($userflag);
+        $assign->add_child($allocatedmarkers);
+        $allocatedmarkers->add_child($allocatedmarker);
+        $assign->add_child($marks);
+        $marks->add_child($mark);
         $assign->add_child($submissions);
         $submissions->add_child($submission);
         $assign->add_child($grades);
@@ -168,6 +204,15 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
         if ($userinfo) {
             $userflag->set_source_table('assign_user_flags',
                                      array('assignment' => backup::VAR_PARENTID));
+            $allocatedmarker->set_source_table(
+                'assign_allocated_marker',
+                ['assignment' => backup::VAR_PARENTID]
+            );
+
+            $mark->set_source_table(
+                'assign_mark',
+                ['assignment' => backup::VAR_PARENTID]
+            );
 
             $submissionparams = array('assignment' => backup::VAR_PARENTID);
             if (!$groupinfo) {
@@ -194,7 +239,9 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
 
         // Define id annotations.
         $userflag->annotate_ids('user', 'userid');
-        $userflag->annotate_ids('user', 'allocatedmarker');
+        $allocatedmarker->annotate_ids('user', 'student');
+        $allocatedmarker->annotate_ids('user', 'marker');
+        $mark->annotate_ids('user', 'marker');
         $submission->annotate_ids('user', 'userid');
         $submission->annotate_ids('group', 'groupid');
         $grade->annotate_ids('user', 'userid');
