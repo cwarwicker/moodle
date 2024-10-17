@@ -34,6 +34,7 @@ class mod_assign_batch_set_marking_workflow_state_form extends moodleform {
      * Define this form - called by the parent constructor
      */
     public function definition() {
+        global $PAGE;
         $mform = $this->_form;
         $params = $this->_customdata;
         $formheader = get_string('batchsetmarkingworkflowstateforusers', 'assign', $params['userscount']);
@@ -41,8 +42,25 @@ class mod_assign_batch_set_marking_workflow_state_form extends moodleform {
         $mform->addElement('header', 'general', $formheader);
         $mform->addElement('static', 'userslist', get_string('selectedusers', 'assign'), $params['usershtml']);
 
-        $options = $params['markingworkflowstates'];
-        $mform->addElement('select', 'markingworkflowstate', get_string('markingworkflowstate', 'assign'), $options);
+        $states = $params['markingworkflowstates'];
+
+        // If the assignment is using multi marking, do we want to set this workflow as the overall workflow for the submissions?
+        // Or for our allocated mark on them?
+        if ($this->_customdata['assignment']->is_using_multiple_marking()) {
+            $options = ['mark' => get_string('markverb', 'assign'), 'grade' => get_string('gradenoun')];
+            $mform->addElement('select', 'workflowcontext', get_string('workflowcontext', 'assign'), $options);
+            $mform->addHelpButton('workflowcontext', 'workflowcontext', 'assign');
+            $PAGE->requires->js_call_amd('mod_assign/batch_set_marking_workflow_state', 'init', [[
+                'mark' => [
+                    ASSIGN_MARKING_WORKFLOW_STATE_NOTMARKED,
+                    ASSIGN_MARKING_WORKFLOW_STATE_INMARKING,
+                    ASSIGN_MARKING_WORKFLOW_STATE_READYFORREVIEW,
+                ],
+                'grade' => array_keys($states),
+            ]]);
+        }
+
+        $mform->addElement('select', 'markingworkflowstate', get_string('markingworkflowstate', 'assign'), $states);
 
         // Don't allow notification to be sent until in "Released" state.
         $mform->addElement('selectyesno', 'sendstudentnotifications', get_string('sendstudentnotifications', 'assign'));
