@@ -108,11 +108,23 @@ class provider implements
                 'assignment' => 'privacy:metadata:assignmentid',
                 'userid' => 'privacy:metadata:userid'
         ];
+        $assignmark = [
+            'assignment' => 'privacy:metadata:assignmentid',
+            'gradeid' => 'privacy:metadata:grade',
+            'marker' => 'privacy:metadata:userid',
+        ];
+        $assignallocatedusers = [
+            'assignment' => 'privacy:metadata:assignmentid',
+            'studentid' => 'privacy:metadata:userid',
+            'marker' => 'privacy:metadata:userid',
+        ];
         $collection->add_database_table('assign_grades', $assigngrades, 'privacy:metadata:assigngrades');
         $collection->add_database_table('assign_overrides', $assignoverrides, 'privacy:metadata:assignoverrides');
         $collection->add_database_table('assign_submission', $assignsubmission, 'privacy:metadata:assignsubmissiondetail');
         $collection->add_database_table('assign_user_flags', $assignuserflags, 'privacy:metadata:assignuserflags');
         $collection->add_database_table('assign_user_mapping', $assignusermapping, 'privacy:metadata:assignusermapping');
+        $collection->add_database_table('assign_mark', $assignmark, 'privacy:metadata:assignmark');
+        $collection->add_database_table('assign_allocated_marker', $assignallocatedusers, 'privacy:metadata:assignallocatedmarker');
         $collection->add_user_preference('assign_perpage', 'privacy:metadata:assignperpage');
         $collection->add_user_preference('assign_filter', 'privacy:metadata:assignfilter');
         $collection->add_user_preference('assign_markerfilter', 'privacy:metadata:assignmarkerfilter');

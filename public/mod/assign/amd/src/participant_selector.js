@@ -57,6 +57,8 @@ define(['core/ajax', 'jquery', 'core/templates'], function(ajax, $, templates) {
                 filterstrings[$(element).attr('name')] = $(element).prop('checked');
             });
 
+            var marking = $(selector).attr('data-ismarking');
+
             ajax.call([{
                 methodname: 'mod_assign_list_participants',
                 args: {
@@ -65,7 +67,8 @@ define(['core/ajax', 'jquery', 'core/templates'], function(ajax, $, templates) {
                     filter: query,
                     limit: 30,
                     includeenrolments: false,
-                    tablesort: true
+                    tablesort: true,
+                    marking: marking,
                 }
             }])[0].then(function(results) {
                 var promises = [];
