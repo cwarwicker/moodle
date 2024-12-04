@@ -62,9 +62,25 @@ class behat_qbank_comment extends behat_question_base {
      * @param string $linkdata
      */
     public function i_should_see_on_the_column($linkdata) {
+        self::i_should_see_in_the_column($linkdata, 'link');
+    }
+
+    /**
+     * Looks for the appropriate text/link (:type) comment count in the column.
+     *
+     * @Then I should see :value :type in the comments column
+     * @param string $value
+     * @param string $type
+     */
+    public function i_should_see_in_the_column($value, $type) {
         $exception = new ElementNotFoundException($this->getSession(),
-                'Cannot find any row with the comment count of ' . $linkdata . ' on the column named Comments');
-        $this->find('css', sprintf('table tbody tr td.commentcount a:contains("%s")', $linkdata), $exception);
+            'Cannot find any row with the ' . $type . ' comment count of ' . $value . ' on the column named Comments');
+        if (!in_array($type, ['link', 'text'])) {
+            $exception = new ElementNotFoundException($this->getSession(),
+                'Invalid type specified, must be either "link" or "text"');
+        }
+        $tag = ($type === 'link') ? 'a' : 'span';
+        $this->find('css', sprintf('table tbody tr td.commentcount ' . $tag . ':contains("%s")', $value), $exception);
     }
 
     /**
