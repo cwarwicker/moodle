@@ -56,15 +56,34 @@ class behat_qbank_comment extends behat_question_base {
     }
 
     /**
-     * Looks for the appropriate comment count in the column.
+     * Looks for the appropriate hyperlink comment count in the column.
      *
      * @Then I should see :arg1 on the comments column
      * @param string $linkdata
+     * @deprecated
      */
+    #[\core\attribute\deprecated('behat_qbank_comment::i_should_see_in_the_column', since: 4.4, mdl: 'MDL-79122')]
     public function i_should_see_on_the_column($linkdata) {
+        \core\deprecation::emit_deprecation_if_present([$this, __FUNCTION__]);
+        self::i_should_see_in_the_column($linkdata, 'link');
+    }
+
+    /**
+     * Looks for the appropriate text/link (:type) comment count in the column.
+     *
+     * @Then I should see :value :type in the comments column
+     * @param string $value
+     * @param string $type
+     */
+    public function i_should_see_in_the_column($value, $type) {
         $exception = new ElementNotFoundException($this->getSession(),
-                'Cannot find any row with the comment count of ' . $linkdata . ' on the column named Comments');
-        $this->find('css', sprintf('table tbody tr td.commentcount a:contains("%s")', $linkdata), $exception);
+            'Cannot find any row with the ' . $type . ' comment count of ' . $value . ' on the column named Comments');
+        if (!in_array($type, ['link', 'text'])) {
+            $exception = new ElementNotFoundException($this->getSession(),
+                'Invalid type specified, must be either "link" or "text"');
+        }
+        $tag = ($type === 'link') ? 'a' : 'span';
+        $this->find('css', sprintf('table tbody tr td.commentcount ' . $tag . ':contains("%s")', $value), $exception);
     }
 
     /**

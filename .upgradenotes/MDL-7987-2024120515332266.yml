@@ -1,0 +1,10 @@
+issueNumber: MDL-79122
+notes:
+  core_question:
+    - message: >-
+        Behat step `behat_qbank_comment::i_should_see_on_the_column` has been
+        deprecated in favour of
+        `behat_qbank_comment::i_should_see_in_the_column` which allows us to
+        specify if the value is found in a link or plain text, instead of
+        assuming a link.
+      type: deprecated

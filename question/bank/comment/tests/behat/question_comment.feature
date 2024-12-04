@@ -27,30 +27,30 @@ Feature: A Teacher can comment in a question
   Scenario: Add a comment in question
     Given I am on the "Test quiz" "mod_quiz > question bank" page logged in as "teacher1"
     And I apply question bank filter "Category" with value "Test questions"
-    And I should see "0" on the comments column
+    And I should see "0" "link" in the comments column
     When I click "0" on the row on the comments column
     And I add "Super test comment 01" comment to question
     And I click on "Add comment" "button" in the ".modal-dialog" "css_element"
     And I should see "Super test comment 01"
     And I click on "Close" "button" in the ".modal-dialog" "css_element"
-    Then I should see "1" on the comments column
+    Then I should see "1" "link" in the comments column
 
   @javascript
   Scenario: Delete a comment from question
     Given I am on the "Test quiz" "mod_quiz > question bank" page logged in as "teacher1"
     And I apply question bank filter "Category" with value "Test questions"
-    And I should see "0" on the comments column
+    And I should see "0" "link" in the comments column
     When I click "0" on the row on the comments column
     And I add "Super test comment 01 to be deleted" comment to question
     And I click on "Add comment" "button" in the ".modal-dialog" "css_element"
     And I should see "Super test comment 01 to be deleted"
     And I click on "Close" "button" in the ".modal-dialog" "css_element"
-    Then I should see "1" on the comments column
+    Then I should see "1" "link" in the comments column
     And I click "1" on the row on the comments column
     And I delete "Super test comment 01 to be deleted" comment from question
     And I should not see "Super test comment 01 to be deleted"
     And I click on "Close" "button" in the ".modal-dialog" "css_element"
-    But I should see "0" on the comments column
+    But I should see "0" "link" in the comments column
 
   @javascript
   Scenario: Preview question with comments
@@ -64,13 +64,13 @@ Feature: A Teacher can comment in a question
     And I wait "1" seconds
     Then I should see "Super test comment 01"
     And I click on "Close preview" "button"
-    Then I should see "1" on the comments column
+    Then I should see "1" "link" in the comments column
     And I choose "Preview" action for "First question" in the question bank
     And I click on "Comments" "link"
     And I delete "Super test comment 01" comment from question preview
     And I should not see "Super test comment 01"
     And I click on "Close preview" "button"
-    Then I should see "0" on the comments column
+    Then I should see "0" "link" in the comments column
 
   @javascript
   Scenario: Teacher with comment permissions for their own questions but not others questions
@@ -149,3 +149,12 @@ Feature: A Teacher can comment in a question
     And I should see "Version 1"
     And I set the field "question_version_dropdown" to "Version 1"
     And I should see "Answer the first question"
+
+  @javascript
+  Scenario: User without system moodle/comment:post capability cannot post comments on question
+    Given the following "role capability" exists:
+      | role                            | user     |
+      | moodle/comment:post             | prohibit |
+    Given I am on the "Test quiz" "mod_quiz > question bank" page logged in as "teacher1"
+    And I apply question bank filter "Category" with value "Test questions"
+    And I should see "0" "text" in the comments column
