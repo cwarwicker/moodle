@@ -80,6 +80,12 @@ class update_filter_condition extends external_api {
         self::validate_context($thiscontext);
         require_capability('mod/quiz:manage', $thiscontext);
 
+        $categoryid = json_decode($filtercondition, true)['filter']['category']['values'][0];
+        $category = $DB->get_record('question_categories', ['id' => $categoryid]);
+        if (!$category) {
+            new \moodle_exception('invalidcategoryid');
+        }
+
         // Update filter condition.
         $setparams = [
             'itemid' => $slotid,
@@ -87,6 +93,7 @@ class update_filter_condition extends external_api {
             'component' => 'mod_quiz',
         ];
         $DB->set_field('question_set_references', 'filtercondition', $filtercondition, $setparams);
+        $DB->set_field('question_set_references', 'questionscontextid', $category->contextid, $setparams);
 
         return ['message' => get_string('updatefilterconditon_success', 'mod_quiz')];
     }
