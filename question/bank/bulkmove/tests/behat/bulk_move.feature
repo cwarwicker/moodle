@@ -140,3 +140,12 @@ Feature: Use the qbank plugin manager page for bulkmove
     And I apply question bank filter "Category" with value "Test questions 6"
     # Confirm that selected questions are moved to selected category while unselected questions are not moved.
     Then I should see "First question"
+
+  @javascript
+  Scenario: Unable to bulk move questions from history page
+    Given I am on the "Test quiz" "mod_quiz > question bank" page logged in as "teacher1"
+    And I choose "History" action for "First question" in the question bank
+    And I click on "First question" "checkbox"
+    And I click on "With selected" "button"
+    Then I should see question bulk action "deleteselected"
+    And I should not see question bulk action "move"
