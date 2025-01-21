@@ -1161,16 +1161,7 @@ class view {
         );
         echo $this->get_plugin_controls($catcontext, $categoryid);
 
-        $this->build_query();
-        $totalquestions = $this->get_question_count();
-        $questionsrs = $this->load_page_questions();
-        $questions = [];
-        foreach ($questionsrs as $question) {
-            if (!empty($question->id)) {
-                $questions[$question->id] = $question;
-            }
-        }
-        $questionsrs->close();
+        $questions = $this->load_questions();
 
         // This html will be refactored in the bulk actions implementation.
         echo \html_writer::start_tag('form', ['action' => $this->baseurl, 'method' => 'post', 'id' => 'questionsubmit']);
@@ -1183,7 +1174,7 @@ class view {
         // Embeded filterconditon into the div.
         echo \html_writer::start_tag('div',
             ['class' => 'categoryquestionscontainer', 'data-filtercondition' => $filtercondition]);
-        if ($totalquestions > 0) {
+        if ($this->totalcount > 0) {
             // Bulk load any required statistics.
             $this->load_required_statistics($questions);
 
@@ -1406,6 +1397,7 @@ class view {
      */
     public function load_questions() {
         $this->build_query();
+        $this->get_question_count();
         $questionsrs = $this->load_page_questions();
         $questions = [];
         foreach ($questionsrs as $question) {
@@ -1521,6 +1513,11 @@ class view {
     public function print_table_row($question, $rowcount): void {
         $rowclasses = implode(' ', $this->get_row_classes($question, $rowcount));
         $attributes = [];
+
+        // If the question type is invalid we highlight it red.
+        if (!\question_bank::is_question_valid($question)) {
+            $rowclasses .= ' table-danger';
+        }
         if ($rowclasses) {
             $attributes['class'] = $rowclasses;
         }
@@ -1611,9 +1608,8 @@ class view {
     public function display_questions_table(): string {
         $this->add_standard_search_conditions();
         $questions = $this->load_questions();
-        $totalquestions = $this->get_question_count();
         $questionhtml = '';
-        if ($totalquestions > 0) {
+        if ($this->get_question_count() > 0) {
             $this->load_required_statistics($questions);
             ob_start();
             $this->display_questions($questions, $this->pagevars['qpage'], $this->pagevars['qperpage']);
