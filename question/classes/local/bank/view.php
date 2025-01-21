@@ -1150,16 +1150,8 @@ class view {
         );
         echo $this->get_plugin_controls($catcontext, $categoryid);
 
-        $this->build_query();
-        $totalquestions = $this->get_question_count();
-        $questionsrs = $this->load_page_questions();
-        $questions = [];
-        foreach ($questionsrs as $question) {
-            if (!empty($question->id)) {
-                $questions[$question->id] = $question;
-            }
-        }
-        $questionsrs->close();
+        $questions = $this->load_questions();
+        $totalquestions = count($questions);
 
         // This html will be refactored in the bulk actions implementation.
         echo \html_writer::start_tag('form', ['action' => $this->baseurl, 'method' => 'post', 'id' => 'questionsubmit']);
@@ -1399,6 +1391,10 @@ class view {
         $questions = [];
         foreach ($questionsrs as $question) {
             if (!empty($question->id)) {
+                // If the question type is not installed, mark as invalid.
+                if (!\question_bank::is_qtype_installed($question->qtype)) {
+                    $question->invalid = true;
+                }
                 $questions[$question->id] = $question;
             }
         }
@@ -1510,6 +1506,11 @@ class view {
     public function print_table_row($question, $rowcount): void {
         $rowclasses = implode(' ', $this->get_row_classes($question, $rowcount));
         $attributes = [];
+
+        // If the question type is invalid we highlight it red.
+        if (isset($question->invalid)) {
+            $rowclasses .= ' table-danger';
+        }
         if ($rowclasses) {
             $attributes['class'] = $rowclasses;
         }

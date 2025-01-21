@@ -105,7 +105,8 @@ class comment_count_column extends column_base {
 
         // Build up the comment object to see if we have correct permissions to post.
         $comment = new \comment($args);
-        if (question_has_capability_on($question, 'comment') && $comment->can_post()) {
+        if (question_has_capability_on($question, 'comment') && $comment->can_post()
+            && !isset($question->invalid)) {
             $tag = 'a';
             $target = 'questioncommentpreview_' . $question->id;
             $attributes = [
@@ -118,6 +119,7 @@ class comment_count_column extends column_base {
         } else {
             $tag = 'span';
         }
+
         echo \html_writer::tag($tag, $commentcount, $attributes);
     }
 

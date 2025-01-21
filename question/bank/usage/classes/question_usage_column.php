@@ -56,8 +56,9 @@ class question_usage_column extends column_base {
     protected function display_content($question, $rowclasses): void {
         $usagecount = helper::get_question_entry_usage_count($question, $this->qbank->is_listing_specific_versions());
         $attributes = [];
-        if (question_has_capability_on($question, 'view')) {
+        if (question_has_capability_on($question, 'view') && !isset($question->invalid)) {
             $target = 'questionusagepreview_' . $question->id;
+            $tag = 'a';
             $attributes = [
                 'href' => '#',
                 'data-target' => $target,
@@ -65,8 +66,10 @@ class question_usage_column extends column_base {
                 'data-courseid' => $this->qbank->course->id,
                 'data-contextid' => $question->contextid,
             ];
+        } else {
+            $tag = 'span';
         }
-        echo \html_writer::tag('a', $usagecount, $attributes);
+        echo \html_writer::tag($tag, $usagecount, $attributes);
     }
 
     public function get_extra_classes(): array {
