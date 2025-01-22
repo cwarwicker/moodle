@@ -806,6 +806,7 @@ $string['quiz:emailnotifyattemptgraded'] = 'Receive notification when your attem
 $string['quiz:emailwarnoverdue'] = 'Receive warning when your quiz attempt becomes overdue';
 $string['quiz:grade'] = 'Grade quizzes manually';
 $string['quiz:ignoretimelimits'] = 'Ignore quiz time limit';
+$string['quizinvalidquestions'] = 'This quiz has questions with invalid types. It cannot be used until the questions are fixed.';
 $string['quizisclosed'] = 'This quiz is closed';
 $string['quizisopen'] = 'This quiz is open';
 $string['quizisclosedwillopen'] = 'Quiz closed (opens {$a})';

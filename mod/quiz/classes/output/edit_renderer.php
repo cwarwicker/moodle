@@ -1073,7 +1073,7 @@ class edit_renderer extends \plugin_renderer_base {
         if ($question->qtype === 'missingtype') {
             $output .= html_writer::span($title);
             $output .= html_writer::span(
-                get_string('invalidquestiontype', 'question', $question->qtype),
+                get_string('invalidquestiontype', 'question', $question->originalqtype),
                 'badge bg-danger text-white h-50 ml-3'
             );
         } else {

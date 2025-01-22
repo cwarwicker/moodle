@@ -189,11 +189,13 @@ class qbank_helper {
                 $slot->length = 1;
             } else if (!\question_bank::qtype_exists($slot->qtype)) {
                 // Question of unknown type found in the database. Set to placeholder question types instead.
+                $slot->originalqtype = $slot->qtype;
                 $slot->qtype = 'missingtype';
             } else {
                 $slot->_partiallyloaded = 1;
             }
         }
+
 
         return $slotdata;
     }
