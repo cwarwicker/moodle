@@ -52,6 +52,10 @@ class preview_action_column extends \core_question\local\bank\column_base {
         if (!question_has_capability_on($question, 'use')) {
             return;
         }
+        // If the question is invalid, disable any bulk actions such as moving or adding to quizzes.
+        if (isset($question->invalid)) {
+            return;
+        }
         $editrenderer = $PAGE->get_renderer('quiz', 'edit');
         echo $editrenderer->question_preview_icon($this->qbank->get_quiz(), $question);
     }

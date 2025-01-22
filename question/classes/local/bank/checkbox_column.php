@@ -81,6 +81,11 @@ class checkbox_column extends column_base {
     protected function display_content($question, $rowclasses): void {
         global $OUTPUT;
 
+        // If the question is invalid, disable any bulk actions such as moving or adding to quizzes.
+        if (isset($question->invalid)) {
+            return;
+        }
+
         $checkbox = new checkbox_toggleall('qbank', false, [
             'id' => "checkq{$question->id}",
             'name' => "q{$question->id}",
