@@ -2581,3 +2581,76 @@ function mod_quiz_user_preferences(): array {
     ];
     return $preferences;
 }
+
+/**
+ * Creates a number of quiz activities.
+ *
+ * @param tool_generator_course_backend $backend
+ * @param testing_data_generator $generator
+ * @param int $courseid
+ * @param int $number
+ * @param int $size
+ * @return void
+ */
+function mod_quiz_course_backend_generator_create_activity(
+    tool_generator_course_backend $backend,
+    testing_data_generator $generator,
+    int $courseid,
+    int $number,
+    int $size
+) {
+
+    // Define the number of questions to create depending on the course size.
+    $paramquestions = [1, 5, 50, 250, 500, 1000];
+    $paramquestionsperquizzes = [1, 2, 10, 25, 50, 100];
+
+    $numberofquestions = $paramquestions[$size];
+    $questionsperquiz = $paramquestionsperquizzes[$size];
+    $quizgenerator = $generator->get_plugin_generator('mod_quiz');
+    $questiongenerator = $generator->get_plugin_generator('core_question');
+    $bankgenerator = $generator->get_plugin_generator('mod_qbank');
+
+    // Log that we are creating $number quiz activities.
+    $backend->log('createquiz', $number, true, 'mod_quiz');
+
+    // Use these types for the questions we are creating.
+    $types = ['truefalse', 'shortanswer', 'essay'];
+    $counttypes = count($types);
+
+    // Firstly create a set of questions on the course question bank to be used across the quizzes.
+
+    // Create a question bank on the course.
+    $questionbank = $bankgenerator->create_instance(['course' => $courseid]);
+    $context = \core\context\module::instance(
+        get_coursemodule_from_instance('qbank', $questionbank->id, $courseid)->id
+    );
+
+    // Create a category within the question bank.
+    $cat = $questiongenerator->create_question_category(['contextid' => $context->id]);
+
+    // Then create the questions for the course and add them to the category.
+    $questions = [];
+    for ($j = 0; $j < $numberofquestions; $j++) {
+        $type = $types[mt_rand(0, $counttypes - 1)];
+        $questions[] = $questiongenerator->create_question($type, null, ['category' => $cat->id]);
+    }
+
+    $questioncount = count($questions);
+
+    // Now create the required number of quiz activities.
+    for ($i = 0; $i < $number; $i++) {
+        // Generate the quiz activity on the course.
+        $quiz = $quizgenerator->create_instance(['course' => $courseid]);
+        // Get the array of questions we created to pick from.
+        $possiblequestions = range(0, $questioncount - 1);
+        for ($j = 0; $j < $questionsperquiz; $j++) {
+            // Pick a random question from the ones in the question bank then remove it from future selection.
+            $rand = array_rand($possiblequestions);
+            unset($possiblequestions[$rand]);
+            quiz_add_quiz_question($questions[$rand]->id, $quiz);
+        }
+    }
+
+    $backend->end_log();
+
+}

@@ -247,7 +247,7 @@ class tool_generator_course_backend extends tool_generator_backend {
         foreach ($pluginsfunction as $plugintype => $plugins) {
             foreach ($plugins as $pluginname => $pluginfunction) {
                 if (in_array($pluginname, $this->additionalmodules)) {
-                    $pluginfunction($this, $this->generator, $this->course->id, self::$paramactivities[$this->size]);
+                    $pluginfunction($this, $this->generator, $this->course->id, self::$paramactivities[$this->size], $this->size);
                 }
             }
         }

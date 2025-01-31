@@ -753,6 +753,7 @@ $string['privacy:metadata:quiz_overrides:timelimit'] = 'The new time limit for t
 $string['privacy:metadata:quiz_overrides:timeopen'] = 'The new open time for the quiz.';
 $string['privacy:metadata:quiz_overrides:userid'] = 'The user being overridden';
 $string['privacy:metadata:quizaccess'] = 'The quiz activity makes use of quiz access rules.';
+$string['progress_createquiz'] = 'Creating quiz activity ({$a})';
 $string['publish'] = 'Publish';
 $string['publishedit'] = 'You must have permission in the publishing course to add or edit questions in this category';
 $string['qbrief'] = 'Q. {$a}';
