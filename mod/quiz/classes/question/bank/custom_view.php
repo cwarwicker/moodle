@@ -233,7 +233,7 @@ class custom_view extends \core_question\local\bank\view {
 
     protected function build_query(): void {
         // Get the required tables and fields.
-        [$fields, $joins] = $this->get_component_requirements(array_merge($this->requiredcolumns, $this->questionactions));
+        [$fields, $joins, $params] = $this->get_component_requirements(array_merge($this->requiredcolumns, $this->questionactions));
 
         // Build the order by clause.
         $sorts = [];
@@ -257,6 +257,7 @@ class custom_view extends \core_question\local\bank\view {
             'status' => question_version_status::QUESTION_STATUS_READY,
             'substatus' => question_version_status::QUESTION_STATUS_HIDDEN,
         ];
+        $this->sqlparams = array_merge($this->sqlparams, $params);
         $conditions = [];
         foreach ($this->searchconditions as $searchcondition) {
             if ($searchcondition->where()) {

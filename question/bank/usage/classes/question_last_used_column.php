@@ -55,4 +55,34 @@ class question_last_used_column extends column_base {
         return ['pe-3'];
     }
 
+    #[\Override]
+    public function get_required_fields(): array {
+        return ['attempts.lastused'];
+    }
+
+    #[\Override]
+    public function get_extra_joins(): array {
+
+        return [
+            'LEFT JOIN (
+                SELECT max(qa.timemodified) as lastused, q.id
+                  FROM {quiz_attempts} qa
+                  JOIN {question_usages} qu on qu.id = qa.uniqueid
+                  JOIN {question_attempts} qua on qua.questionusageid = qu.id
+                  JOIN {question} q ON q.id = qua.questionid
+                  JOIN {question_versions} qv ON qv.questionid = q.id
+                  JOIN {question_bank_entries} qbe ON qbe.id = qv.questionbankentryid
+                 WHERE qa.preview = 0
+                 AND qbe.questioncategoryid = :qcatid
+                 GROUP BY q.id
+             ) attempts on attempts.id = q.id',
+        ];
+
+    }
+
+    #[\Override]
+    public function get_extra_join_params(): array {
+        return ['qcatid' => $this->qbank->get_searchconditions()['category']->get_category()->id];
+    }
+
 }

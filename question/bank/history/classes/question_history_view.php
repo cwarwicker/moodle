@@ -117,7 +117,7 @@ class question_history_view extends view {
 
     protected function build_query(): void {
         // Get the required tables and fields.
-        [$fields, $joins] = $this->get_component_requirements(array_merge($this->requiredcolumns, $this->questionactions));
+        [$fields, $joins, $params] = $this->get_component_requirements(array_merge($this->requiredcolumns, $this->questionactions));
 
         // Build the order by clause.
         $sorts = [];
@@ -130,7 +130,7 @@ class question_history_view extends view {
         $entryid = "qbe.id = $this->entryid";
         // Changes done here to get the questions only for the passed entryid.
         $tests = ['q.parent = 0', $entryid];
-        $this->sqlparams = [];
+        $this->sqlparams = $params;
         foreach ($this->searchconditions as $searchcondition) {
             if ($searchcondition->where()) {
                 $tests[] = '((' . $searchcondition->where() .'))';

@@ -270,6 +270,14 @@ class view {
     }
 
     /**
+     * Get the current search conditions.
+     * @return condition[]
+     */
+    public function get_searchconditions(): array {
+        return $this->searchconditions;
+    }
+
+    /**
      * Get an array of plugin features objects for all enabled qbank plugins.
      *
      * @return void
@@ -699,6 +707,7 @@ class view {
     protected function get_component_requirements(array $viewcomponents): array {
         $fields = $this->get_required_fields();
         $joins = $this->get_required_joins();
+        $params = [];
         if (!empty($viewcomponents)) {
             foreach ($viewcomponents as $viewcomponent) {
                 $extrajoins = $viewcomponent->get_extra_joins();
@@ -709,9 +718,10 @@ class view {
                     $joins[$prefix] = $join;
                 }
                 $fields = array_merge($fields, $viewcomponent->get_required_fields());
+                $params = array_merge($params, $viewcomponent->get_extra_join_params());
             }
         }
-        return [array_unique($fields), $joins];
+        return [array_unique($fields), $joins, $params];
     }
 
     /**
@@ -720,7 +730,7 @@ class view {
      */
     protected function build_query(): void {
         // Get the required tables and fields.
-        [$fields, $joins] = $this->get_component_requirements(array_merge($this->requiredcolumns, $this->questionactions));
+        [$fields, $joins, $params] = $this->get_component_requirements(array_merge($this->requiredcolumns, $this->questionactions));
 
         // Build the order by clause.
         $sorts = [];
@@ -728,7 +738,7 @@ class view {
             [$colname, $subsort] = $this->parse_subsort($sortname);
             $sorts[] = $this->requiredcolumns[$colname]->sort_expression($sortorder == SORT_DESC, $subsort);
         }
-        $this->sqlparams = [];
+        $this->sqlparams = $params;
         $conditions = [];
         $showhiddenquestion = true;
         // Build the where clause.

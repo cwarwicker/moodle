@@ -873,6 +873,37 @@ class behat_mod_quiz extends behat_question_base {
         $quizgenerator->submit_responses($attempt->id, $responses, false, true);
 
         $this->set_user();
+
+        return $attempt;
+
+    }
+
+    /**
+     * Attempt a quiz as a user at a specific time
+     *
+     * This functions the same as user_has_attempted_with_responses() but with the added parameter of $time
+     * which lets you set a specific attempt time, if you need it to be in the past or the future, instead of
+     * at the time of the test.
+     *
+     * @param string $username The username of the user that will attempt.
+     * @param string $quizname The name of the quiz the user will attempt.
+     * @param string $time     This lets you set the quiz attempt's time, for example if you need it to have taken
+     *                  place a specific point in the past. It expects a string which can be correctly
+     *                  interpreted by strtotime for example "5 minutes ago".
+     * @param TableNode $attemptinfo information about the questions to ad. See: user_has_attempted_with_responses())
+     * @return void
+     * @Given /^user "([^"]*)" has attempted "([^"]*)" at "([^"]*)" with responses:$/
+     */
+    public function user_has_attempted_at_time_with_responses($username, $quizname, $time, TableNode $attemptinfo) {
+
+        global $DB;
+
+        $attempt = $this->user_has_attempted_with_responses($username, $quizname, $attemptinfo);
+
+        $DB->set_field('quiz_attempts', 'timemodified', strtotime($time), [
+            'id' => $attempt->id,
+        ]);
+
     }
 
     /**

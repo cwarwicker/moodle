@@ -95,6 +95,14 @@ class category_condition extends condition {
         return $this->category;
     }
 
+    /**
+     * Get the loaded category
+     * @return \stdClass
+     */
+    public function get_category(): \stdClass {
+        return $this->category;
+    }
+
     public static function get_condition_key() {
         return 'category';
     }

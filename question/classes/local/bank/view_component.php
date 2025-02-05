@@ -99,4 +99,14 @@ abstract class view_component {
     public function get_required_fields(): array {
         return [];
     }
+
+    /**
+     * Get an array of extra (named) sqlparams to be included with the final query, in case our joins in
+     * get_extra_joins() need to add any extra parameter values.
+     *
+     * @return string[] ['param' => 'value']
+     */
+    public function get_extra_join_params(): array {
+        return [];
+    }
 }
