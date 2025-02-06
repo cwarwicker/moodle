@@ -219,6 +219,11 @@ class view {
     protected $columnmanager;
 
     /**
+     * @var bool Do we want to override the qperpage and show all questions?
+     */
+    protected bool $showall = false;
+
+    /**
      * Constructor for view.
      *
      * @param \core_question\local\bank\question_edit_contexts $contexts
@@ -234,6 +239,10 @@ class view {
         $this->course = $course;
         $this->cm = $cm;
         $this->extraparams = $extraparams;
+
+        if (isset($this->extraparams['showall']) && $this->extraparams['showall'] === true) {
+            $this->showall = true;
+        }
 
         if ($cm === null) {
             debugging('Passing $cm to the view constructor is now required.', DEBUG_DEVELOPER);
@@ -792,15 +801,25 @@ class view {
      */
     protected function load_page_questions(): \moodle_recordset {
         global $DB;
+
+        // With "Show all" we actually limit to 4000, to try and avoid memory issues and timeouts.
+        if ($this->showall) {
+            $limit = MAXIMUM_QUESTIONS_PER_PAGE;
+        } else {
+            $limit = (int)$this->pagevars['qperpage'];
+        }
+
+        // Load the questions based on the page we are on.
         $questions = $DB->get_recordset_sql($this->loadsql, $this->sqlparams,
-            (int)$this->pagevars['qpage'] * (int)$this->pagevars['qperpage'], $this->pagevars['qperpage']);
+            (int)$this->pagevars['qpage'] * $limit, $limit);
+
         if (!$questions->valid()) {
             $questions->close();
             // No questions on this page. Reset to the nearest page that contains questions.
             $this->pagevars['qpage'] = max(0,
-                ceil($this->totalcount / $this->pagevars['qperpage']) - 1);
+                ceil($this->totalcount / $limit) - 1);
             $questions = $DB->get_recordset_sql($this->loadsql, $this->sqlparams,
-                $this->pagevars['qpage'] * (int) $this->pagevars['qperpage'], $this->pagevars['qperpage']);
+                (int)$this->pagevars['qpage'] * $limit, $limit);
         }
         return $questions;
     }
@@ -1136,6 +1155,7 @@ class view {
         // We probably do not want to raise it to unlimited, so randomly picking 5 minutes.
         // Note: We do not call this in the loop because quiz ob_ captures this function (see raise() PHP doc).
         \core_php_time_limit::raise(300);
+        raise_memory_limit(MEMORY_EXTRA);
 
         [$categoryid, $contextid] = category_condition::validate_category_param($this->pagevars['cat']);
         $catcontext = \context::instance_by_id($contextid);
@@ -1191,7 +1211,8 @@ class view {
             foreach ($this->requiredcolumns as $column) {
                 $column->load_additional_data($questions);
             }
-            $this->display_questions($questions, $this->pagevars['qpage'], $this->pagevars['qperpage']);
+            $limit = ($this->showall) ? MAXIMUM_QUESTIONS_PER_PAGE : $this->pagevars['qperpage'];
+            $this->display_questions($questions, $this->pagevars['qpage'], $limit);
         }
         echo \html_writer::end_tag('div');
 
