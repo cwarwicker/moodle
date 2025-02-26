@@ -56,7 +56,7 @@ class timemodified_condition extends condition {
 
     #[\Override]
     public function get_filter_class() {
-        return 'core/datafilter/filtertypes/datetime';
+        return 'qbank_viewcreator/datafilter/filtertypes/timemodified';
     }
 
     /**
