@@ -38,9 +38,8 @@ export default class extends Datetime {
     }
 
     async getContext(initialValues) {
-        // Get the inherited context but override the "now" value to null, so we don't validate the input.
         let context = await super.getContext(initialValues);
-        context.now = null;
+        context.max = context.beforevalue;
         return context;
     }
 
