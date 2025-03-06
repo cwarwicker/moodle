@@ -219,11 +219,6 @@ class view {
     protected $columnmanager;
 
     /**
-     * @var bool Do we want to override the qperpage and show all questions?
-     */
-    protected bool $showall = false;
-
-    /**
      * Constructor for view.
      *
      * @param \core_question\local\bank\question_edit_contexts $contexts
@@ -240,9 +235,9 @@ class view {
         $this->cm = $cm;
         $this->extraparams = $extraparams;
 
-        if (isset($this->extraparams['showall']) && $this->extraparams['showall'] === true) {
-            $this->showall = true;
-        }
+        // Add the default qperpage to extra params array so we can switch back and forth between it and "all".
+        $this->extraparams['defaultqperpage'] = $this->pagesize;
+        $this->extraparams['maxqperpage'] = MAXIMUM_QUESTIONS_PER_PAGE;
 
         // Default filter condition.
         if (!isset($params['filter']) && isset($params['cat'])) {
@@ -821,24 +816,17 @@ class view {
     protected function load_page_questions(): \moodle_recordset {
         global $DB;
 
-        // With "Show all" we actually limit to 4000, to try and avoid memory issues and timeouts.
-        if ($this->showall) {
-            $limit = MAXIMUM_QUESTIONS_PER_PAGE;
-        } else {
-            $limit = (int)$this->pagevars['qperpage'];
-        }
-
         // Load the questions based on the page we are on.
         $questions = $DB->get_recordset_sql($this->loadsql, $this->sqlparams,
-            (int)$this->pagevars['qpage'] * $limit, $limit);
+            (int)$this->pagevars['qpage'] * (int)$this->pagevars['qperpage'], (int)$this->pagevars['qperpage']);
 
         if (!$questions->valid()) {
             $questions->close();
             // No questions on this page. Reset to the nearest page that contains questions.
             $this->pagevars['qpage'] = max(0,
-                ceil($this->totalcount / $limit) - 1);
+                ceil($this->totalcount / (int)$this->pagevars['qperpage']) - 1);
             $questions = $DB->get_recordset_sql($this->loadsql, $this->sqlparams,
-                (int)$this->pagevars['qpage'] * $limit, $limit);
+                (int)$this->pagevars['qpage'] * (int)$this->pagevars['qperpage'], (int)$this->pagevars['qperpage']);
         }
         return $questions;
     }
@@ -1229,8 +1217,7 @@ class view {
             foreach ($this->requiredcolumns as $column) {
                 $column->load_additional_data($questions);
             }
-            $limit = ($this->showall) ? MAXIMUM_QUESTIONS_PER_PAGE : $this->pagevars['qperpage'];
-            $this->display_questions($questions, $this->pagevars['qpage'], $limit);
+            $this->display_questions($questions, $this->pagevars['qpage'], $this->pagevars['qperpage']);
         }
         echo \html_writer::end_tag('div');
 
