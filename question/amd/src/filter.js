@@ -100,7 +100,7 @@ export const init = async(
         showPerPageText,
     ] = await Promise.all([
         getString('showall', 'core', ''),
-        getString('showperpage', 'core', perpage),
+        getString('showperpage', 'core', extraparams.defaultqperpage),
     ]);
 
     /**
@@ -230,21 +230,16 @@ export const init = async(
             cleanUrlParams();
         }
         if (showallLink) {
-            e.preventDefault();
 
-            if (extraparams.length === 0) {
-                extraparams = {};
-            }
+            e.preventDefault();
 
             // Toggle between showing all and going back to the original qperpage.
             if (Number(showallLink.dataset.status) === 0) {
-                extraparams.showall = true;
-                viewData.extraparams = JSON.stringify(extraparams);
+                viewData.qperpage = extraparams.maxqperpage;
                 showallLink.dataset.status = 1;
                 showallLink.innerText = showPerPageText;
             } else {
-                extraparams.showall = false;
-                viewData.extraparams = JSON.stringify(extraparams);
+                viewData.qperpage = extraparams.defaultqperpage;
                 showallLink.dataset.status = 0;
                 showallLink.innerText = showAllText;
             }
