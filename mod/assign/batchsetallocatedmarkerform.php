@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use \mod_assign\exception\invalid_marker_allocation_exception;
+
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 require_once($CFG->libdir.'/formslib.php');
@@ -37,6 +39,7 @@ require_once($CFG->dirroot . '/mod/assign/feedback/file/locallib.php');
 class mod_assign_batch_set_allocatedmarker_form extends moodleform {
     /**
      * Define this form - called by the parent constructor
+     * @throws invalid_marker_allocation_exception
      */
     public function definition() {
         $mform = $this->_form;
@@ -54,6 +57,14 @@ class mod_assign_batch_set_allocatedmarker_form extends moodleform {
         }
 
         $markerids = array_keys($options);
+
+        // If we do not have enough markers to meet the requested number, throw an exception with a meaningful message.
+        if (count($markerids) < $markercount) {
+            throw new invalid_marker_allocation_exception('notenoughmarkers', '', '', [
+                'markers' => count($markerids),
+                'requested' => $markercount
+            ]);
+        }
 
         for ($i = 1; $i <= $markercount; $i++) {
             $mform->addElement('select', "allocatedmarker{$i}", get_string('allocatedmarker', 'assign'), $options);
