@@ -796,9 +796,13 @@ class assign {
 
         // Grade penalties.
         $update->gradepenalty = $formdata->gradepenalty ?? 0;
-        if (property_exists($formdata, 'markercount')) {
-            $update->markercount = $formdata->markercount;
 
+        // If we are using simple grading and we specify a markercount, update the multi marking values.
+        if (property_exists($formdata, 'markercount')
+            && property_exists($formdata, 'advancedgradingmethod_submissions')
+            && $formdata->advancedgradingmethod_submissions === ''
+        ) {
+            $update->markercount = $formdata->markercount;
             if ($formdata->markercount > 1) {
                 $update->multimarkmethod = $formdata->multimarkmethod;
             }
@@ -1597,12 +1601,20 @@ class assign {
 
         // Grade penalties.
         $update->gradepenalty = $formdata->gradepenalty ?? 0;
-        if (property_exists($formdata, 'markercount')) {
-            $update->markercount = $formdata->markercount;
 
+        // If we are using simple grading and we specify a markercount, update the multi marking values.
+        if (property_exists($formdata, 'markercount')
+            && property_exists($formdata, 'advancedgradingmethod_submissions')
+            && $formdata->advancedgradingmethod_submissions === ''
+        ) {
+            $update->markercount = $formdata->markercount;
             if ($formdata->markercount > 1) {
                 $update->multimarkmethod = $formdata->multimarkmethod;
             }
+        } else {
+            // If we don't specify a markercount, or we switched the grading type, return to defaults.
+            $update->markercount = 1;
+            $update->multimarkmethod = null;
         }
 
         $result = $DB->update_record('assign', $update);

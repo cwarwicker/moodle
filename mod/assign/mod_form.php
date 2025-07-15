@@ -253,10 +253,13 @@ class mod_assign_mod_form extends moodleform_mod {
             'average' => get_string('markgradeaverage', 'assign'),
             'first' => get_string('markgradefirst', 'assign'),
         ];
+        $mform->disabledIf('markercount', 'advancedgradingmethod_submissions', 'neq', '');
+
         $name = get_string('multimarkmethod', 'assign');
         $mform->addElement('select', 'multimarkmethod', $name, $options);
         $mform->addHelpButton('multimarkmethod', 'multimarkmethod', 'assign');
         $mform->hideIf('multimarkmethod', 'markercount', 'eq', '1');
+        $mform->disabledIf('multimarkmethod', 'advancedgradingmethod_submissions', 'neq', '');
 
         $name = get_string('markinganonymous', 'assign');
         $mform->addElement('selectyesno', 'markinganonymous', $name);
