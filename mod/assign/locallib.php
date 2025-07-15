@@ -3111,9 +3111,9 @@ class assign {
     /**
      * Add or update an mdl_assign_mark record.
      * @param stdClass $grade a grade record.
-     * @param int $marker The user ID of this marker.
      * @param float $mark The mark awarded by this marker, for example, 55.2.
-     * @param FIXME $workflowstate
+     * @param string $workflowstate
+     * @return void
      */
     public function update_mark($grade, $mark, $workflowstate = null) {
         global $DB;
@@ -8733,8 +8733,6 @@ class assign {
 
         // We do not want to update the timemodified if no grade was added.
         if (empty($formdata->addattempt) && property_exists($formdata, 'mark')) {
-            // FIXME Check if mark has changed before saving.
-            // FIXME What happens to marks when a new attempt is added?
             if (isset($formdata->workflowstate)) {
                 $this->update_mark($grade, $formdata->mark, $formdata->workflowstate);
             } else {
