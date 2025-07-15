@@ -697,18 +697,23 @@ class assign_grading_table extends table_sql implements renderable {
      * list current marker
      *
      * @param stdClass $row - The row of data
-     * @return id the user->id of the marker. FIXME This isn't correct.
+     * @param int $markerpos -
+     * @return string The name of the allocated marker
      */
     public function col_allocatedmarker(stdClass $row, int $markerpos = 1) {
         global $DB;
         static $markers = null;
         static $markerlist = array();
 
-        $markers2 = $DB->get_fieldset('assign_allocated_marker', 'marker', ['student' => $row->userid, 'assignment' => $this->assignment->get_instance()->id]);
-        if (!empty($row) && !empty($markers2)) {
-            $marker1 = fullname(\core_user::get_user($markers2[$markerpos - 1])); // FIXME $marker1 variable name.
+        // Get the allocated markers that have been assigned to this student, if we are using multi-marking.
+        $allocatedmarker = null;
+        $multimarkers = $DB->get_fieldset('assign_allocated_marker', 'marker', ['student' => $row->userid, 'assignment' => $this->assignment->get_instance()->id]);
+        if (!empty($row) && !empty($multimarkers)) {
+            // Then get the name of the one at the column position requested, e.g. marker1, marker2, etc...
+            $allocatedmarker = \core_user::get_user($multimarkers[$markerpos - 1]);
         }
 
+        // Get the potential users who could be assigned as an allocated marker.
         if ($markers === null) {
             list($sort, $params) = users_order_by_sql('u');
             // Only enrolled users could be assigned as potential markers.
@@ -719,10 +724,13 @@ class assign_grading_table extends table_sql implements renderable {
                 $markerlist[$marker->id] = fullname($marker, $viewfullnames);
             }
         }
+
         if (empty($markerlist)) {
             // TODO: add some form of notification here that no markers are available.
             return '';
         }
+
+        // FIXME: Work out what download this is referring to, cos it won't work with multi-marking currently.
         if ($this->is_downloading()) {
             if (isset($markers[$row->allocatedmarker])) {
                 return fullname($markers[$row->allocatedmarker],
@@ -738,16 +746,18 @@ class assign_grading_table extends table_sql implements renderable {
              $row->workflowstate == ASSIGN_MARKING_WORKFLOW_STATE_NOTMARKED)) {
 
             $name = 'quickgrade_' . $row->id . '_allocatedmarker';
-            return  html_writer::select($markerlist, $name, $row->allocatedmarker, false);
-        } else if (!empty($markers2)) {
+            return  html_writer::select($markerlist, $name, $allocatedmarker?->id, false);
+        } else if (!empty($allocatedmarker)) {
             $output = '';
             if ($this->quickgrading) { // Add hidden field for quickgrading page.
                 $name = 'quickgrade_' . $row->id . '_allocatedmarker';
-                $attributes = ['type' => 'hidden', 'name' => $name, 'value' => $row->allocatedmarker];
+                $attributes = ['type' => 'hidden', 'name' => $name, 'value' => $allocatedmarker?->id];
                 $output .= html_writer::empty_tag('input', $attributes);
             }
-            $output .= $marker1;
+            $output .= fullname($allocatedmarker);
             return $output;
+        } else {
+            return '';
         }
     }
 
@@ -1074,6 +1084,7 @@ class assign_grading_table extends table_sql implements renderable {
      * Format a column of data for display.
      *
      * @param stdClass $row
+     * @param int $col Marker number column (1-5)
      * @return string
      */
     public function col_marker(stdClass $row, int $col): string {
