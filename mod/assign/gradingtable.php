@@ -792,9 +792,10 @@ class assign_grading_table extends table_sql implements renderable {
      * @param int $userid The user id of the user this grade belongs to
      * @param int $modified Timestamp showing when the grade was last modified
      * @param float $deductedmark The deducted mark if penalty is applied
+     * @param int|null $markerid The allocated marker id if we are displaying a mark instead of an overall grade
      * @return string The formatted grade
      */
-    public function display_grade($grade, $editable, $userid, $modified, float $deductedmark = 0) {
+    public function display_grade($grade, $editable, $userid, $modified, float $deductedmark = 0, ?int $markerid = null) {
         if ($this->is_downloading()) {
             if ($this->assignment->get_instance()->grade >= 0) {
                 if ($grade == -1 || $grade === null) {
@@ -811,7 +812,7 @@ class assign_grading_table extends table_sql implements renderable {
                 return $scale;
             }
         }
-        return $this->assignment->display_grade($grade, $editable, $userid, $modified, $deductedmark);
+        return $this->assignment->display_grade($grade, $editable, $userid, $modified, $deductedmark, $markerid);
     }
 
     /**
@@ -1111,26 +1112,27 @@ class assign_grading_table extends table_sql implements renderable {
                             (!$gradingdisabled) &&
                                 ($USER->id == $markers[$col - 1]->marker)
                         );
-                        $displaymark = $this->display_grade($mark, $editable, $row->userid, $row->timemarked);
+                        $displaymark = $this->display_grade($mark, $editable, $row->userid, $row->timemarked, 0, $markers[$col - 1]->marker);
                     }
                 }
             } else {
-                // Allocated markers not enabled: get the marks in order and
-                // show the mark for this column.
-                $markrecords = $DB->get_records('assign_mark', ['gradeid' => $row->gradeid], 'id');
-                $alreadymarker = false;
-                $existingmarkers = [];
-                $i = 1;
-                foreach ($markrecords as $markrecord) {
-                    $existingmarkers[$i++] = $markrecord;
-                    if ($markrecord->marker == $USER->id) {
-                        $alreadymarker = true;
-                    }
-                }
-
-                if (count($existingmarkers) >= $col) {
-                    $displaymark = $this->display_grade($existingmarkers[$col]->mark, $this->quickgrading && !$gradingdisabled, $row->userid, $row->timemarked);
-                }
+//                // Allocated markers not enabled: get the marks in order and
+//                // show the mark for this column.
+//                $markrecords = $DB->get_records('assign_mark', ['gradeid' => $row->gradeid], 'id');
+//                $alreadymarker = false;
+//                $existingmarkers = [];
+//                $i = 1;
+//                foreach ($markrecords as $markrecord) {
+//                    $existingmarkers[$i++] = $markrecord;
+//                    if ($markrecord->marker == $USER->id) {
+//                        $alreadymarker = true;
+//                    }
+//                }
+//
+//                if (count($existingmarkers) >= $col) {
+//                    $displaymark = $this->display_grade($existingmarkers[$col]->mark, $this->quickgrading && !$gradingdisabled, $row->userid, $row->timemarked, 0, $col);
+//                }
+                $displaymark = 'when will this happen?';
             }
 
             $urlparams = [

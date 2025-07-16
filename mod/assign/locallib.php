@@ -2061,14 +2061,16 @@ class assign {
      * @param int $userid The user id the grade belongs to
      * @param int $modified Timestamp from when the grade was last modified
      * @param float $deductedmark The deducted mark if penalty is applied
+     * @param int|null $markerid The allocated marker id if we are displaying a mark instead of an overall grade
      * @return string User-friendly representation of grade
      */
-    public function display_grade($grade, $editing, $userid = 0, $modified = 0, float $deductedmark = 0) {
+    public function display_grade($grade, $editing, $userid = 0, $modified = 0, float $deductedmark = 0, ?int $markerid = null) {
         global $DB, $PAGE;
 
         static $scalegrades = array();
 
         $o = '';
+        $fieldname = ($markerid) ? 'quickmark_' . $userid . '_' . $markerid : 'quickgrade_' . $userid;
 
         if ($this->get_instance()->grade >= 0) {
             // Normal number.
@@ -2078,12 +2080,12 @@ class assign {
                 } else {
                     $displaygrade = format_float($grade, $this->get_grade_item()->get_decimals());
                 }
-                $o .= '<label class="accesshide" for="quickgrade_' . $userid . '">' .
+                $o .= '<label class="accesshide" for="'. $fieldname . '">' .
                        get_string('usergrade', 'assign') .
                        '</label>';
                 $o .= '<input type="text"
-                              id="quickgrade_' . $userid . '"
-                              name="quickgrade_' . $userid . '"
+                              id="' . $fieldname . '"
+                              name="' . $fieldname . '"
                               value="' .  $displaygrade . '"
                               size="6"
                               maxlength="10"
@@ -2124,10 +2126,10 @@ class assign {
             }
             if ($editing) {
                 $o .= '<label class="accesshide"
-                              for="quickgrade_' . $userid . '">' .
+                              for="' . $fieldname . '">' .
                       get_string('usergrade', 'assign') .
                       '</label>';
-                $o .= '<select name="quickgrade_' . $userid . '" class="quickgrade">';
+                $o .= '<select name="' . $fieldname . '" class="quickgrade">';
                 $o .= '<option value="-1">' . get_string('nograde') . '</option>';
                 foreach ($this->cache['scale'] as $optionid => $option) {
                     $selected = '';
@@ -7224,7 +7226,18 @@ class assign {
             if ($modified >= 0) {
                 $record->grade = unformat_float(optional_param('quickgrade_' . $record->userid, -1, PARAM_TEXT));
                 $record->workflowstate = optional_param('quickgrade_' . $record->userid.'_workflowstate', false, PARAM_ALPHA);
-                $record->allocatedmarker = optional_param('quickgrade_' . $record->userid.'_allocatedmarker', false, PARAM_INT);
+
+                // Get the possible allocated markers for this student and assignment.
+                $markers = array_values($DB->get_records('assign_allocated_marker', [
+                    'student' => $record->userid, 'assignment' => $this->get_instance()->id
+                ], 'id', 'marker'));
+
+                // Is there a mark submitted for any of these?
+                $record->marks = [];
+                foreach ($markers as $marker) {
+                    $record->marks[$marker->marker] = optional_param('quickmark_' . $userid . '_' . $marker->marker, null, PARAM_INT);
+                }
+
             } else {
                 // This user was not in the grading table.
                 continue;
@@ -7255,7 +7268,7 @@ class assign {
                              WHERE s.assignment = :assignid1 AND s.latest = 1';
 
         $sql = 'SELECT u.id AS userid, g.grade AS grade, g.timemodified AS lastmodified,
-                       uf.workflowstate, uf.allocatedmarker, gmx.maxattempt AS attemptnumber
+                       uf.workflowstate, gmx.maxattempt AS attemptnumber
                   FROM {user} u
              LEFT JOIN ( ' . $grademaxattempt . ' ) gmx ON u.id = gmx.userid
              LEFT JOIN {assign_grades} g ON
@@ -7265,7 +7278,6 @@ class assign {
              LEFT JOIN {assign_user_flags} uf ON uf.assignment = g.assignment AND uf.userid = g.userid
                  WHERE u.id ' . $userids;
         $currentgrades = $DB->get_recordset_sql($sql, $params);
-
         $modifiedusers = array();
         foreach ($currentgrades as $current) {
             $modified = $users[(int)$current->userid];
@@ -7317,10 +7329,13 @@ class assign {
                 $current->grade = floatval($current->grade);
             }
             $gradechanged = $gradecolpresent && grade_floats_different($current->grade, $modified->grade);
-            $markingallocationchanged = $this->get_instance()->markingworkflow &&
-                                        $this->get_instance()->markingallocation &&
-                                            ($modified->allocatedmarker !== false) &&
-                                            ($current->allocatedmarker != $modified->allocatedmarker);
+//            $markingallocationchanged = $this->get_instance()->markingworkflow &&
+//                                        $this->get_instance()->markingallocation &&
+//                                            ($modified->allocatedmarker !== false) &&
+//                                            ($current->allocatedmarker != $modified->allocatedmarker);
+            $markingallocationchanged = true; // testing
+
+
             $workflowstatechanged = $this->get_instance()->markingworkflow &&
                                             ($modified->workflowstate !== false) &&
                                             ($current->workflowstate != $modified->workflowstate);
@@ -7373,22 +7388,29 @@ class assign {
             $workflowstatemodified = ($modified->workflowstate !== false) &&
                                         ($flags->workflowstate != $modified->workflowstate);
 
-            $allocatedmarkermodified = ($modified->allocatedmarker !== false) &&
-                                        ($flags->allocatedmarker != $modified->allocatedmarker);
+//            $allocatedmarkermodified = ($modified->allocatedmarker !== false) &&
+//                                        ($flags->allocatedmarker != $modified->allocatedmarker);
 
             if ($workflowstatemodified) {
                 $flags->workflowstate = $modified->workflowstate;
             }
-            if ($allocatedmarkermodified) {
-                $flags->allocatedmarker = $modified->allocatedmarker;
-            }
-            if ($workflowstatemodified || $allocatedmarkermodified) {
+//            if ($allocatedmarkermodified) {
+//                $flags->allocatedmarker = $modified->allocatedmarker;
+//            }
+            if ($workflowstatemodified){// || $allocatedmarkermodified) {
                 if ($this->update_user_flags($flags) && $workflowstatemodified) {
                     $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
                     \mod_assign\event\workflow_state_updated::create_from_user($this, $user, $flags->workflowstate)->trigger();
                 }
             }
             $this->update_grade($grade);
+
+            // Update marks from allocated markers.
+            foreach ($modified->marks as $marker => $mark) {
+                if (!is_null($mark) && $marker == $grade->grader) {
+                    $this->update_mark($grade, $mark);
+                }
+            }
 
             // Allow teachers to skip sending notifications.
             if (optional_param('sendstudentnotifications', true, PARAM_BOOL)) {
