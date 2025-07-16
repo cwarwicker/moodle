@@ -662,15 +662,6 @@ class assign_grading_table extends table_sql implements renderable {
                 $o .= html_writer::div($allworkflowstates[$workflowstate]);
             } else {
                 $o .= html_writer::select($workflowstates, $name, $workflowstate, ['' => $notmarked]);
-                // Check if this user is a marker that can't manage allocations and doesn't have the marker column added.
-                if ($this->assignment->get_instance()->markingworkflow &&
-                    $this->assignment->get_instance()->markingallocation &&
-                    !has_capability('mod/assign:manageallocations', $this->assignment->get_context())) {
-
-                    $name = 'quickgrade_' . $row->id . '_allocatedmarker';
-                    $o .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name,
-                            'value' => $row->allocatedmarker]);
-                }
             }
         } else {
             $o .= $this->output->container(get_string('markingworkflowstate' . $workflowstate, 'assign'), $workflowstate);
@@ -694,6 +685,26 @@ class assign_grading_table extends table_sql implements renderable {
     }
 
     /**
+     * Get the user object for the marker of a given student and marker number
+     * @param int $studentid
+     * @param int $number
+     * @return mixed
+     * @throws dml_exception
+     */
+    protected function get_marker_number(int $studentid, int $number): mixed {
+        global $DB;
+        $multimarkers = $DB->get_fieldset('assign_allocated_marker', 'marker', [
+            'student' => $studentid, 'assignment' => $this->assignment->get_instance()->id
+        ]);
+        if (!empty($multimarkers)) {
+            // Then get the name of the one at the column position requested, e.g. marker1, marker2, etc...
+            return \core_user::get_user($multimarkers[$number]);
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * list current marker
      *
      * @param stdClass $row - The row of data
@@ -701,17 +712,11 @@ class assign_grading_table extends table_sql implements renderable {
      * @return string The name of the allocated marker
      */
     public function col_allocatedmarker(stdClass $row, int $markerpos = 1) {
-        global $DB;
         static $markers = null;
         static $markerlist = array();
 
         // Get the allocated markers that have been assigned to this student, if we are using multi-marking.
-        $allocatedmarker = null;
-        $multimarkers = $DB->get_fieldset('assign_allocated_marker', 'marker', ['student' => $row->userid, 'assignment' => $this->assignment->get_instance()->id]);
-        if (!empty($row) && !empty($multimarkers)) {
-            // Then get the name of the one at the column position requested, e.g. marker1, marker2, etc...
-            $allocatedmarker = \core_user::get_user($multimarkers[$markerpos - 1]);
-        }
+        $allocatedmarker = $this->get_marker_number($row->userid, $markerpos - 1);
 
         if ($this->is_downloading()) {
             if ($allocatedmarker) {
@@ -1096,11 +1101,17 @@ class assign_grading_table extends table_sql implements renderable {
                 // Allocated markers are enabled: get the mark corresponding to
                 // the marker for this column.
                 $markers = array_values($DB->get_records('assign_allocated_marker', ['student' => $row->userid, 'assignment' => $this->assignment->get_instance()->id], 'id'));
-
                 if (count($markers) > $col - 1) {
                     $mark = $DB->get_field('assign_mark', 'mark', ['gradeid' => $row->gradeid, 'marker' => $markers[$col - 1]->marker]);
                     if ($mark !== false) {
-                        $displaymark = $this->display_grade($mark, $this->quickgrading && !$gradingdisabled, $row->userid, $row->timemarked);
+                        // Mark is only editable if we are quick grading, grading is not disabled, and if we are either
+                        // the marker for this column, or we have manageallocations permissions.
+                        $editable = (
+                            ($this->quickgrading) &&
+                            (!$gradingdisabled) &&
+                                ($USER->id == $markers[$col - 1]->marker)
+                        );
+                        $displaymark = $this->display_grade($mark, $editable, $row->userid, $row->timemarked);
                     }
                 }
             } else {
