@@ -713,24 +713,6 @@ class assign_grading_table extends table_sql implements renderable {
             $allocatedmarker = \core_user::get_user($multimarkers[$markerpos - 1]);
         }
 
-        // Get the potential users who could be assigned as an allocated marker.
-        if ($markers === null) {
-            list($sort, $params) = users_order_by_sql('u');
-            // Only enrolled users could be assigned as potential markers.
-            $markers = get_enrolled_users($this->assignment->get_context(), 'mod/assign:grade', 0, 'u.*', $sort);
-            $markerlist[0] = get_string('choosemarker', 'assign');
-            $viewfullnames = has_capability('moodle/site:viewfullnames', $this->assignment->get_context());
-            foreach ($markers as $marker) {
-                $markerlist[$marker->id] = fullname($marker, $viewfullnames);
-            }
-        }
-
-        if (empty($markerlist)) {
-            // TODO: add some form of notification here that no markers are available.
-            return '';
-        }
-
-        // FIXME: Work out what download this is referring to, cos it won't work with multi-marking currently.
         if ($this->is_downloading()) {
             if ($allocatedmarker) {
                 return fullname($allocatedmarker,
@@ -742,9 +724,25 @@ class assign_grading_table extends table_sql implements renderable {
 
         if ($this->quickgrading && has_capability('mod/assign:manageallocations', $this->assignment->get_context()) &&
             (empty($row->workflowstate) ||
-             $row->workflowstate == ASSIGN_MARKING_WORKFLOW_STATE_INMARKING ||
-             $row->workflowstate == ASSIGN_MARKING_WORKFLOW_STATE_NOTMARKED)) {
+            $row->workflowstate == ASSIGN_MARKING_WORKFLOW_STATE_INMARKING ||
+            $row->workflowstate == ASSIGN_MARKING_WORKFLOW_STATE_NOTMARKED)) {
 
+            // Get the potential users who could be assigned as an allocated marker.
+            if ($markers === null) {
+                list($sort, $params) = users_order_by_sql('u');
+                // Only enrolled users could be assigned as potential markers.
+                $markers = get_enrolled_users($this->assignment->get_context(), 'mod/assign:grade', 0, 'u.*', $sort);
+                $markerlist[0] = get_string('choosemarker', 'assign');
+                $viewfullnames = has_capability('moodle/site:viewfullnames', $this->assignment->get_context());
+                foreach ($markers as $marker) {
+                    $markerlist[$marker->id] = fullname($marker, $viewfullnames);
+                }
+            }
+
+            if (empty($markerlist)) {
+                // TODO: add some form of notification here that no markers are available.
+                return '';
+            }
             $name = 'quickgrade_' . $row->id . '_allocatedmarker';
             return  html_writer::select($markerlist, $name, $allocatedmarker?->id, false);
         } else if (!empty($allocatedmarker)) {
@@ -1085,8 +1083,7 @@ class assign_grading_table extends table_sql implements renderable {
         $allocatedmarker = "";
 
         if ($this->assignment->get_instance()->markingworkflow &&
-                $this->assignment->get_instance()->markingallocation &&
-                has_capability('mod/assign:manageallocations', $this->assignment->get_context())) {
+            $this->assignment->get_instance()->markingallocation) {
             $allocatedmarker = $this->col_allocatedmarker($row, $col);
         }
 
