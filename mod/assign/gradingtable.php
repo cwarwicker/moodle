@@ -732,8 +732,8 @@ class assign_grading_table extends table_sql implements renderable {
 
         // FIXME: Work out what download this is referring to, cos it won't work with multi-marking currently.
         if ($this->is_downloading()) {
-            if (isset($markers[$row->allocatedmarker])) {
-                return fullname($markers[$row->allocatedmarker],
+            if ($allocatedmarker) {
+                return fullname($allocatedmarker,
                         has_capability('moodle/site:viewfullnames', $this->assignment->get_context()));
             } else {
                 return '';
