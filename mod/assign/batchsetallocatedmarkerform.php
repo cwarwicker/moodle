@@ -66,14 +66,11 @@ class mod_assign_batch_set_allocatedmarker_form extends moodleform {
             ]);
         }
 
+        $options = ['' =>  get_string('choosemarker', 'assign')] + $options;
+
         for ($i = 1; $i <= $markercount; $i++) {
             $mform->addElement('select', "allocatedmarker{$i}", get_string('allocatedmarker', 'assign'), $options);
-            // With more than one marker set the default for each marker for
-            // that teacher's position in the options so that we don't have the
-            // same (first) teacher as the default for each marker.
-            $mform->getElement("allocatedmarker{$i}")->setSelected($markerids[$i - 1]);
         }
-
 
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);

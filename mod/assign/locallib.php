@@ -7958,7 +7958,7 @@ class assign {
      * @return void
      */
     public function add_grade_form_elements(MoodleQuickForm $mform, stdClass $data, $params) {
-        global $USER, $CFG, $SESSION, $PAGE;
+        global $USER, $CFG, $SESSION, $PAGE, $DB;
         $settings = $this->get_instance();
 
         $rownum = isset($params['rownum']) ? $params['rownum'] : 0;
@@ -8136,12 +8136,29 @@ class assign {
             foreach ($markers as $marker) {
                 $markerlist[$marker->id] = fullname($marker, $viewfullnames);
             }
-            $mform->addElement('select', 'allocatedmarker', get_string('allocatedmarker', 'assign'), $markerlist);
-            $mform->addHelpButton('allocatedmarker', 'allocatedmarker', 'assign');
-            $mform->disabledIf('allocatedmarker', 'workflowstate', 'eq', ASSIGN_MARKING_WORKFLOW_STATE_READYFORREVIEW);
-            $mform->disabledIf('allocatedmarker', 'workflowstate', 'eq', ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
-            $mform->disabledIf('allocatedmarker', 'workflowstate', 'eq', ASSIGN_MARKING_WORKFLOW_STATE_READYFORRELEASE);
-            $mform->disabledIf('allocatedmarker', 'workflowstate', 'eq', ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
+
+            // How many allocated markers are in use on this assignment?
+            $markercount = $this->get_instance()->markercount;
+
+            // Who are the current markers for this student/assignment?
+            $markers = array_values(
+                $DB->get_records('assign_allocated_marker', [
+                    'student' => $userid,
+                    'assignment' => $this->get_instance()->id],
+                'id')
+            );
+
+            for ($i = 0; $i < $markercount; $i++) {
+                $mform->addElement('select', 'allocatedmarker['.$i.']', get_string('marker1', 'assign', $i + 1), $markerlist);
+                if (array_key_exists($i, $markers)) {
+                    $mform->setDefault('allocatedmarker['.$i.']', $markers[$i]->marker);
+                }
+                $mform->addHelpButton('allocatedmarker['.$i.']', 'allocatedmarker', 'assign');
+                $mform->disabledIf('allocatedmarker['.$i.']', 'workflowstate', 'eq', ASSIGN_MARKING_WORKFLOW_STATE_READYFORREVIEW);
+                $mform->disabledIf('allocatedmarker['.$i.']', 'workflowstate', 'eq', ASSIGN_MARKING_WORKFLOW_STATE_INREVIEW);
+                $mform->disabledIf('allocatedmarker['.$i.']', 'workflowstate', 'eq', ASSIGN_MARKING_WORKFLOW_STATE_READYFORRELEASE);
+                $mform->disabledIf('allocatedmarker['.$i.']', 'workflowstate', 'eq', ASSIGN_MARKING_WORKFLOW_STATE_RELEASED);
+            }
         }
 
         $gradestring = '<span class="currentgrade">' . $gradestring . '</span>';
@@ -8736,7 +8753,6 @@ class assign {
      */
     protected function apply_grade_to_user($formdata, $userid, $attemptnumber) {
         global $USER, $CFG, $DB;
-
         $grade = $this->get_user_grade($userid, true, $attemptnumber);
         $originalgrade = $grade->grade;
         $gradingdisabled = $this->grading_disabled($userid);
@@ -8751,11 +8767,10 @@ class assign {
                     $grade->grade = grade_floatval(unformat_float($formdata->grade));
                 }
             }
-            if (isset($formdata->workflowstate) || isset($formdata->allocatedmarker)) {
+            if (isset($formdata->workflowstate)) {
                 $flags = $this->get_user_flags($userid, true);
                 $oldworkflowstate = $flags->workflowstate;
                 $flags->workflowstate = isset($formdata->workflowstate) ? $formdata->workflowstate : $flags->workflowstate;
-                $flags->allocatedmarker = isset($formdata->allocatedmarker) ? $formdata->allocatedmarker : $flags->allocatedmarker;
                 if ($this->update_user_flags($flags) &&
                         isset($formdata->workflowstate) &&
                         $formdata->workflowstate !== $oldworkflowstate) {
@@ -8763,6 +8778,12 @@ class assign {
                     \mod_assign\event\workflow_state_updated::create_from_user($this, $user, $formdata->workflowstate)->trigger();
                 }
             }
+
+            // Update allocated markers.
+            if (isset($formdata->allocatedmarker)) {
+                $this->update_allocated_markers($userid, $this->get_instance()->id, $formdata->allocatedmarker);
+            }
+
         }
         $grade->grader= $USER->id;
 
