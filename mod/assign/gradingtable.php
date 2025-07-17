@@ -707,7 +707,7 @@ class assign_grading_table extends table_sql implements renderable {
      * list current marker
      *
      * @param stdClass $row - The row of data
-     * @param int $markerpos -
+     * @param int $markerpos - Marker position number - related to the markercount
      * @return string The name of the allocated marker
      */
     public function col_allocatedmarker(stdClass $row, int $markerpos = 1) {
@@ -747,12 +747,12 @@ class assign_grading_table extends table_sql implements renderable {
                 // TODO: add some form of notification here that no markers are available.
                 return '';
             }
-            $name = 'quickgrade_' . $row->id . '_allocatedmarker';
+            $name = 'quickgrade_' . $row->id . '_allocatedmarker_' . $markerpos;
             return  html_writer::select($markerlist, $name, $allocatedmarker?->id, false);
         } else if (!empty($allocatedmarker)) {
             $output = '';
             if ($this->quickgrading) { // Add hidden field for quickgrading page.
-                $name = 'quickgrade_' . $row->id . '_allocatedmarker';
+                $name = 'quickgrade_' . $row->id . '_allocatedmarker_' . $markerpos;
                 $attributes = ['type' => 'hidden', 'name' => $name, 'value' => $allocatedmarker?->id];
                 $output .= html_writer::empty_tag('input', $attributes);
             }
