@@ -444,8 +444,7 @@ class assign_grading_table extends table_sql implements renderable {
         }
 
         // Multiple markers.
-        if (property_exists($assignment->get_instance(), 'markercount') &&
-                ($assignment->get_instance()->markercount > 1)) {
+        if (property_exists($assignment->get_instance(), 'markercount')) {
             for ($i = 1; $i <= $assignment->get_instance()->markercount; $i++) {
                 $columns[] = "marker$i";
                 $headers[] = get_string('marker1', 'assign', $i);
