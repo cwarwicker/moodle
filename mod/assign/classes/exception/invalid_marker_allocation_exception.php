@@ -14,16 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_assign\exception;
+
+use core\exception\moodle_exception;
+
 /**
- * Version information
+ * Exception class for handling invalid marker allocations in mod/assign.
  *
  * @package    mod_assign
- * @copyright 2012 NetSpot {@link http://www.netspot.com.au}
+ * @copyright  2025 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author     Conn Warwicker <conn.warwicker@catalyst-eu.net>
  */
+class invalid_marker_allocation_exception extends moodle_exception {
 
-defined('MOODLE_INTERNAL') || die();
+    /**
+     * {@inheritDoc}
+     */
+    public function __construct($errorcode, $module = '', $link = '', $a = null, $debuginfo = null) {
+        parent::__construct('invalidmarkerallocation:' . $errorcode, 'assign', $link, $a, $debuginfo);
+    }
 
-$plugin->component = 'mod_assign'; // Full name of the plugin (used for diagnostics).
-$plugin->version  = 2025041401.02;    // The current module version (Date: YYYYMMDDXX).
-$plugin->requires = 2025040800;    // Requires this Moodle version.
+}

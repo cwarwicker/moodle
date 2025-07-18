@@ -243,6 +243,35 @@ class mod_assign_mod_form extends moodleform_mod {
         $mform->addHelpButton('markingallocation', 'markingallocation', 'assign');
         $mform->hideIf('markingallocation', 'markingworkflow', 'eq', 0);
 
+        $name = get_string('markercount', 'assign');
+        $mform->addElement('select', 'markercount', $name, ['1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5']);
+        $mform->addHelpButton('markercount', 'markercount', 'assign');
+
+        $options = [
+            'manual' => get_string('markgrademanual', 'assign'),
+            'maximum' => get_string('markgrademaximum', 'assign'),
+            'average' => get_string('markgradeaverage', 'assign'),
+            'first' => get_string('markgradefirst', 'assign'),
+        ];
+        $mform->disabledIf('markercount', 'advancedgradingmethod_submissions', 'neq', '');
+
+        $name = get_string('multimarkmethod', 'assign');
+        $mform->addElement('select', 'multimarkmethod', $name, $options);
+        $mform->addHelpButton('multimarkmethod', 'multimarkmethod', 'assign');
+        $mform->hideIf('multimarkmethod', 'markercount', 'eq', '1');
+        $mform->disabledIf('multimarkmethod', 'advancedgradingmethod_submissions', 'neq', '');
+
+        $name = get_string('multimarkrounding', 'assign');
+        $options = [
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL  => get_string('multimarkrounding:natural', 'assign'),
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN => get_string('multimarkrounding:down', 'assign'),
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP  => get_string('multimarkrounding:up', 'assign'),
+        ];
+        $mform->addElement('select', 'multimarkrounding', $name, $options);
+        $mform->addHelpButton('multimarkrounding', 'multimarkrounding', 'assign');
+        $mform->hideIf('multimarkrounding', 'multimarkmethod', 'neq', 'average');
+        $mform->disabledIf('multimarkrounding', 'multimarkmethod', 'neq', 'average');
+
         $name = get_string('markinganonymous', 'assign');
         $mform->addElement('selectyesno', 'markinganonymous', $name);
         $mform->addHelpButton('markinganonymous', 'markinganonymous', 'assign');
