@@ -154,7 +154,7 @@ function xmldb_assign_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2025041401, 'assign');
     }
 
-    if ($oldversion < 2025041401.01) {
+    if ($oldversion < 2025041401.02) {
 
         // Define field markercount to be added to assign.
         $table = new xmldb_table('assign');
@@ -230,8 +230,16 @@ function xmldb_assign_upgrade($oldversion) {
             $dbman->drop_field($table, $field);
         }
 
+        // Define field multimarkrounding to be added to assign.
+        $table = new xmldb_table('assign');
+        $field = new xmldb_field('multimarkrounding', XMLDB_TYPE_INTEGER, '2', null, false, false, null, 'multimarkmethod');
+        // Conditionally launch add field multimarkrounding.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
         // Assign savepoint reached.
-        upgrade_mod_savepoint(true, 2025041401.01, 'assign');
+        upgrade_mod_savepoint(true, 2025041401.02, 'assign');
     }
 
     return true;

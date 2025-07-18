@@ -91,6 +91,10 @@ define('ASSIGN_EVENT_TYPE_OPEN', 'open');
 define('ASSIGN_EVENT_TYPE_CLOSE', 'close');
 define('ASSIGN_EVENT_TYPE_EXTENSION', 'extension');
 
+define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN', -1);
+define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL', 0);
+define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP', 1);
+
 require_once($CFG->libdir . '/accesslib.php');
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/repository/lib.php');
@@ -1610,11 +1614,13 @@ class assign {
             $update->markercount = $formdata->markercount;
             if ($formdata->markercount > 1) {
                 $update->multimarkmethod = $formdata->multimarkmethod;
+                $update->multimarkrounding = $formdata->multimarkrounding;
             }
         } else {
             // If we don't specify a markercount, or we switched the grading type, return to defaults.
             $update->markercount = 1;
             $update->multimarkmethod = null;
+            $update->multimarkrounding = null;
         }
 
         $result = $DB->update_record('assign', $update);
@@ -3131,13 +3137,12 @@ class assign {
                 }
             } else {
                 // This is a scale.
-                // FIXME - Look at scales.
-//                if ($scale = $DB->get_record('scale', array('id' => -($this->get_instance()->grade)))) {
-//                    $scaleoptions = make_menu_from_list($scale->scale);
-//                    if (!array_key_exists((int) $grade->grade, $scaleoptions)) {
-//                        return false;
-//                    }
-//                }
+                if ($scale = $DB->get_record('scale', array('id' => -($this->get_instance()->grade)))) {
+                    $scaleoptions = make_menu_from_list($scale->scale);
+                    if (!array_key_exists((int) $mark, $scaleoptions)) {
+                        return false;
+                    }
+                }
             }
         }
 
@@ -3174,7 +3179,23 @@ class assign {
                 break;
             case 'average':
                 if (count($marks) == $this->get_instance()->markercount) {
-                    $grade->grade = array_sum($marks) / count($marks);
+
+                    $value = array_sum($marks) / count($marks);
+
+                    // Do we need to round?
+                    if (is_float($value)) {
+
+                        if ($this->get_instance()->multimarkrounding == ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP) {
+                            $value = ceil($value);
+                        } else if ($this->get_instance()->multimarkrounding == ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN) {
+                            $value = floor($value);
+                        } else {
+                            // Default to natural if it's somehow not set.
+                            $value = round($value);
+                        }
+
+                    }
+                    $grade->grade = $value;
                     return $this->update_grade($grade);
                 }
                 break;

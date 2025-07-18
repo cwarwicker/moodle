@@ -261,6 +261,17 @@ class mod_assign_mod_form extends moodleform_mod {
         $mform->hideIf('multimarkmethod', 'markercount', 'eq', '1');
         $mform->disabledIf('multimarkmethod', 'advancedgradingmethod_submissions', 'neq', '');
 
+        $name = get_string('multimarkrounding', 'assign');
+        $options = [
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL  => get_string('multimarkrounding:natural', 'assign'),
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN => get_string('multimarkrounding:down', 'assign'),
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP  => get_string('multimarkrounding:up', 'assign'),
+        ];
+        $mform->addElement('select', 'multimarkrounding', $name, $options);
+        $mform->addHelpButton('multimarkrounding', 'multimarkrounding', 'assign');
+        $mform->hideIf('multimarkrounding', 'multimarkmethod', 'neq', 'average');
+        $mform->disabledIf('multimarkrounding', 'multimarkmethod', 'neq', 'average');
+
         $name = get_string('markinganonymous', 'assign');
         $mform->addElement('selectyesno', 'markinganonymous', $name);
         $mform->addHelpButton('markinganonymous', 'markinganonymous', 'assign');
