@@ -3046,7 +3046,6 @@ class assign {
                 return false;
             }
         }
-
         if ($grade->grade && $grade->grade != -1) {
             if ($this->get_instance()->grade > 0) {
                 if (!is_numeric($grade->grade)) {
@@ -3115,10 +3114,32 @@ class assign {
      * @param stdClass $grade a grade record.
      * @param float $mark The mark awarded by this marker, for example, 55.2.
      * @param string $workflowstate
-     * @return void
+     * @return bool
      */
-    public function update_mark($grade, $mark, $workflowstate = null) {
+    public function update_mark($grade, $mark, $workflowstate = null): bool {
         global $DB;
+
+        // Validate the mark, using the same logic as from update_grade().
+        if ($mark) {
+            if ($this->get_instance()->grade > 0) {
+                if (!is_numeric($mark)) {
+                    return false;
+                } else if ($mark > $this->get_instance()->grade) {
+                    return false;
+                } else if ($mark < 0) {
+                    return false;
+                }
+            } else {
+                // This is a scale.
+                // FIXME - Look at scales.
+//                if ($scale = $DB->get_record('scale', array('id' => -($this->get_instance()->grade)))) {
+//                    $scaleoptions = make_menu_from_list($scale->scale);
+//                    if (!array_key_exists((int) $grade->grade, $scaleoptions)) {
+//                        return false;
+//                    }
+//                }
+            }
+        }
 
         if ($record = $this->get_mark($grade->id, $grade->grader)) {
             $updategrade = ($record->mark != $mark);
@@ -3139,7 +3160,7 @@ class assign {
         }
 
         if (!$updategrade) {
-            return;
+            return false;
         }
 
         $marks = $DB->get_fieldset_sql('SELECT mark FROM {assign_mark} WHERE gradeid = :gradeid ORDER BY id', ['gradeid' => $grade->id]);
@@ -3148,22 +3169,25 @@ class assign {
             case 'maximum':
                 if (count($marks) == $this->get_instance()->markercount) {
                     $grade->grade = grade_floatval(max($marks));
-                    $this->update_grade($grade);
+                    return $this->update_grade($grade);
                 }
                 break;
             case 'average':
                 if (count($marks) == $this->get_instance()->markercount) {
                     $grade->grade = array_sum($marks) / count($marks);
-                    $this->update_grade($grade);
+                    return $this->update_grade($grade);
                 }
                 break;
             case 'first':
                 $grade->grade = $marks[0];
-                $this->update_grade($grade);
+                return $this->update_grade($grade);
                 break;
             case 'manual':
                 break;
         }
+
+        return true;
+
     }
 
     /**
@@ -7242,7 +7266,9 @@ class assign {
                 // Is there a mark submitted for any of these?
                 $record->marks = [];
                 foreach ($markers as $marker) {
-                    $record->marks[$marker->marker] = optional_param('quickmark_' . $userid . '_' . $marker->marker, null, PARAM_INT);
+                    $record->marks[$marker->marker] = unformat_float(
+                        optional_param('quickmark_' . $userid . '_' . $marker->marker, null, PARAM_TEXT)
+                    );
                 }
 
                 // Then check if we changed the allocated marker for this student.
@@ -7345,6 +7371,16 @@ class assign {
             if ($current->grade !== null) {
                 $current->grade = floatval($current->grade);
             }
+
+            // Get current marks.
+            $currentmarks = $DB->get_records('assign_mark', [
+                'gradeid' => $grade->id,
+            ], '', 'marker, mark');
+
+            foreach ($currentmarks as $currentmark) {
+                $current->marks[$currentmark->marker] = unformat_float($currentmark->mark);
+            }
+
             $gradechanged = $gradecolpresent && grade_floats_different($current->grade, $modified->grade);
 
             $markingallocationchanged = $this->get_instance()->markingworkflow &&
@@ -7354,7 +7390,14 @@ class assign {
             $workflowstatechanged = $this->get_instance()->markingworkflow &&
                                             ($modified->workflowstate !== false) &&
                                             ($current->workflowstate != $modified->workflowstate);
-            if ($gradechanged || $markingallocationchanged || $workflowstatechanged) {
+
+            // Have any of the marks changed?
+            $markschanged = array_filter($modified->marks, fn($v, $k) => (!isset($current->marks[$k]) || $current->marks[$k] !== $v) && !is_null($modified->marks[$k]), ARRAY_FILTER_USE_BOTH);
+            $markschanged = $this->get_instance()->markingworkflow &&
+                            $this->get_instance()->markingallocation &&
+                            $markschanged;
+
+            if ($gradechanged || $markingallocationchanged || $workflowstatechanged || $markschanged) {
                 // Grade changed.
                 if ($this->grading_disabled($modified->userid)) {
                     continue;

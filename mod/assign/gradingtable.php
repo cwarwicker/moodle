@@ -1103,16 +1103,14 @@ class assign_grading_table extends table_sql implements renderable {
                 $markers = array_values($DB->get_records('assign_allocated_marker', ['student' => $row->userid, 'assignment' => $this->assignment->get_instance()->id], 'id'));
                 if (count($markers) > $col - 1) {
                     $mark = $DB->get_field('assign_mark', 'mark', ['gradeid' => $row->gradeid, 'marker' => $markers[$col - 1]->marker]);
-                    if ($mark !== false) {
-                        // Mark is only editable if we are quick grading, grading is not disabled, and if we are either
-                        // the marker for this column, or we have manageallocations permissions.
-                        $editable = (
-                            ($this->quickgrading) &&
-                            (!$gradingdisabled) &&
-                                ($USER->id == $markers[$col - 1]->marker)
-                        );
-                        $displaymark = $this->display_grade($mark, $editable, $row->userid, $row->timemarked, 0, $markers[$col - 1]->marker);
-                    }
+                    // Mark is only editable if we are quick grading, grading is not disabled, and if we are either
+                    // the marker for this column, or we have manageallocations permissions.
+                    $editable = (
+                        ($this->quickgrading) &&
+                        (!$gradingdisabled) &&
+                            ($USER->id == $markers[$col - 1]->marker)
+                    );
+                    $displaymark = $this->display_grade($mark, $editable, $row->userid, $row->timemarked, 0, $markers[$col - 1]->marker);
                 }
             } else {
 //                // Allocated markers not enabled: get the marks in order and
