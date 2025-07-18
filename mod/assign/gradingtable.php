@@ -752,7 +752,7 @@ class assign_grading_table extends table_sql implements renderable {
                 $attributes = ['type' => 'hidden', 'name' => $name, 'value' => $allocatedmarker?->id];
                 $output .= html_writer::empty_tag('input', $attributes);
             }
-            $output .= fullname($allocatedmarker);
+            $output .= html_writer::tag('strong', fullname($allocatedmarker));
             return $output;
         } else {
             return '';
