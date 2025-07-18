@@ -444,17 +444,13 @@ class assign_grading_table extends table_sql implements renderable {
         }
 
         // Multiple markers.
-        if (property_exists($assignment->get_instance(), 'markercount')) {
+        if ($this->assignment->get_instance()->markingworkflow &&
+            $this->assignment->get_instance()->markingallocation &&
+            property_exists($assignment->get_instance(), 'markercount')) {
             for ($i = 1; $i <= $assignment->get_instance()->markercount; $i++) {
                 $columns[] = "marker$i";
                 $headers[] = get_string('marker1', 'assign', $i);
             }
-        } else if ($this->assignment->get_instance()->markingworkflow &&
-                $this->assignment->get_instance()->markingallocation &&
-                has_capability('mod/assign:manageallocations', $this->assignment->get_context())) {
-            // Add a column for the allocated marker.
-            $columns[] = 'allocatedmarker';
-            $headers[] = get_string('marker', 'assign');
         }
 
         // Grade.
@@ -1112,24 +1108,6 @@ class assign_grading_table extends table_sql implements renderable {
                     );
                     $displaymark = $this->display_grade($mark, $editable, $row->userid, $row->timemarked, 0, $markers[$col - 1]->marker);
                 }
-            } else {
-//                // Allocated markers not enabled: get the marks in order and
-//                // show the mark for this column.
-//                $markrecords = $DB->get_records('assign_mark', ['gradeid' => $row->gradeid], 'id');
-//                $alreadymarker = false;
-//                $existingmarkers = [];
-//                $i = 1;
-//                foreach ($markrecords as $markrecord) {
-//                    $existingmarkers[$i++] = $markrecord;
-//                    if ($markrecord->marker == $USER->id) {
-//                        $alreadymarker = true;
-//                    }
-//                }
-//
-//                if (count($existingmarkers) >= $col) {
-//                    $displaymark = $this->display_grade($existingmarkers[$col]->mark, $this->quickgrading && !$gradingdisabled, $row->userid, $row->timemarked, 0, $col);
-//                }
-                $displaymark = 'when will this happen?';
             }
 
             $urlparams = [
