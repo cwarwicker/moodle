@@ -7373,9 +7373,12 @@ class assign {
             }
 
             // Get current marks.
-            $currentmarks = $DB->get_records('assign_mark', [
-                'gradeid' => $grade->id,
-            ], '', 'marker, mark');
+            $currentmarks = [];
+            if ($grade) {
+                $currentmarks = $DB->get_records('assign_mark', [
+                    'gradeid' => $grade->id,
+                ], '', 'marker, mark');
+            }
 
             foreach ($currentmarks as $currentmark) {
                 $current->marks[$currentmark->marker] = unformat_float($currentmark->mark);
@@ -8003,7 +8006,6 @@ class assign {
     public function add_grade_form_elements(MoodleQuickForm $mform, stdClass $data, $params) {
         global $USER, $CFG, $SESSION, $PAGE, $DB;
         $settings = $this->get_instance();
-
         $rownum = isset($params['rownum']) ? $params['rownum'] : 0;
         $last = isset($params['last']) ? $params['last'] : true;
         $useridlistid = isset($params['useridlistid']) ? $params['useridlistid'] : 0;
@@ -8071,15 +8073,28 @@ class assign {
             } else {
                 $grademenu = array(-1 => get_string("nograde")) + make_grades_menu($this->get_instance()->grade);
                 if (count($grademenu) > 1) {
-                    $gradingelement = $mform->addElement('select', 'grade', get_string('gradenoun') . ':', $grademenu);
+                    if (array_key_exists('marker', $params) && $params['marker']) {
+                        $name = get_string('markverb', 'assign');
+                        $gradingelement = $mform->addElement('select', 'mark', $name . ':', $grademenu);
+                        // The mark is already formatted with format_float so it needs to be converted back to an integer.
+                        if (!empty($data->mark)) {
+                            $data->mark = (int)unformat_float($data->mark);
+                        }
+                        $mform->setType('mark', PARAM_INT);
+                        if ($gradingdisabled) {
+                            $gradingelement->freeze();
+                        }
+                    } else {
+                        $gradingelement = $mform->addElement('select', 'grade', get_string('gradenoun') . ':', $grademenu);
 
-                    // The grade is already formatted with format_float so it needs to be converted back to an integer.
-                    if (!empty($data->grade)) {
-                        $data->grade = (int)unformat_float($data->grade);
-                    }
-                    $mform->setType('grade', PARAM_INT);
-                    if ($gradingdisabled) {
-                        $gradingelement->freeze();
+                        // The grade is already formatted with format_float so it needs to be converted back to an integer.
+                        if (!empty($data->grade)) {
+                            $data->grade = (int)unformat_float($data->grade);
+                        }
+                        $mform->setType('grade', PARAM_INT);
+                        if ($gradingdisabled) {
+                            $gradingelement->freeze();
+                        }
                     }
                 }
             }
