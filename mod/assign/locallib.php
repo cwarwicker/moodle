@@ -1614,7 +1614,7 @@ class assign {
             $update->markercount = $formdata->markercount;
             if ($formdata->markercount > 1) {
                 $update->multimarkmethod = $formdata->multimarkmethod;
-                $update->multimarkrounding = $formdata->multimarkrounding;
+                $update->multimarkrounding = $formdata->multimarkrounding ?? null;
             }
         } else {
             // If we don't specify a markercount, or we switched the grading type, return to defaults.
