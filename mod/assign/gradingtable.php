@@ -691,7 +691,7 @@ class assign_grading_table extends table_sql implements renderable {
         $multimarkers = $DB->get_fieldset('assign_allocated_marker', 'marker', [
             'student' => $studentid, 'assignment' => $this->assignment->get_instance()->id
         ]);
-        if (!empty($multimarkers)) {
+        if (!empty($multimarkers) && count($multimarkers) >= ($number + 1)) {
             // Then get the name of the one at the column position requested, e.g. marker1, marker2, etc...
             return \core_user::get_user($multimarkers[$number]);
         } else {
@@ -1130,25 +1130,17 @@ class assign_grading_table extends table_sql implements renderable {
             $gradecontainer = $this->output->container($displaymark, 'w-100');
 
             // Should this user get the 'Mark' action menu item?
-            $isallocatedmarker = false;  // Is allocated marker for column?
-            $iscandidatemarker = false;
+            $isallocatedmarker = false;
 
             if ($this->assignment->get_instance()->markingworkflow &&
                     $this->assignment->get_instance()->markingallocation) {
-                // If allocated marking is enabled is this user the marker for
-                // this column?
-                $markers = $DB->get_fieldset('assign_allocated_marker', 'marker', ['student' => $row->userid, 'assignment' => $this->assignment->get_instance()->id]);
+                // If allocated marking is enabled is this user the marker for this column?
                 if ($markers = $DB->get_fieldset('assign_allocated_marker', 'marker', ['student' => $row->userid, 'assignment' => $this->assignment->get_instance()->id])) {
-                    $isallocatedmarker = ($markers[$col - 1] == $USER->id);
+                    $isallocatedmarker = (array_key_exists($col - 1, $markers) && $markers[$col - 1] == $USER->id);
                 }
-            } else if (((count($existingmarkers) >= $col) && ($existingmarkers[$col]->marker == $USER->id)) ||
-                    ((count($existingmarkers) == $col - 1) && !$alreadymarker)) {
-                // Is this user potentially a marker for this column, i.e. have
-                // they not yet marked?
-                $iscandidatemarker = true;
             }
 
-            if ($isallocatedmarker || $iscandidatemarker) {
+            if ($isallocatedmarker) {
                 $menu = new action_menu();
                 $menu->set_owner_selector('.gradingtable-actionmenu');
                 $menu->set_boundary('window');

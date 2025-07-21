@@ -7548,13 +7548,23 @@ class assign {
         // This leaves the marks in place orphaned, so they can be brought back if the marker is re-allocated.
         $DB->delete_records('assign_allocated_marker', ['student' => $studentid, 'assignment' => $assignmentid]);
 
+        // Store array of markers to make sure we don't try to add the same marker twice.
+        $markers = [];
+
         // Then loop through the requested markers and assign them to the student/assignment.
         foreach ($markerids as $markerid) {
+
+            if (in_array($markerid, $markers)) {
+                continue;
+            }
+
+            $markers[] = $markerid;
             $record = new stdClass();
             $record->student = $studentid;
             $record->assignment = $assignmentid;
             $record->marker = $markerid;
             $DB->insert_record('assign_allocated_marker', $record);
+
         }
     }
 
