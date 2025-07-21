@@ -418,6 +418,7 @@ $string['multimarkrounding_help'] = 'If using the "average" mark method, how sho
 $string['multimarkrounding:natural'] = 'Natural rounding';
 $string['multimarkrounding:up'] = 'Round up';
 $string['multimarkrounding:down'] = 'Round down';
+$string['multimarkrounding:none'] = 'No rounding';
 $string['maxattempts'] = 'Allowed attempts';
 $string['maxattempts_help'] = 'The maximum number of submission attempts that can be made by a student. After this number has been reached, the submission can no longer be reopened.';
 $string['maxgrade'] = 'Maximum grade';

@@ -263,6 +263,7 @@ class mod_assign_mod_form extends moodleform_mod {
 
         $name = get_string('multimarkrounding', 'assign');
         $options = [
+            ASSIGN_MULTIMARKING_AVERAGE_ROUND_NONE  => get_string('multimarkrounding:none', 'assign'),
             ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL  => get_string('multimarkrounding:natural', 'assign'),
             ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN => get_string('multimarkrounding:down', 'assign'),
             ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP  => get_string('multimarkrounding:up', 'assign'),

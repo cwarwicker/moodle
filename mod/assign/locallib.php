@@ -94,6 +94,7 @@ define('ASSIGN_EVENT_TYPE_EXTENSION', 'extension');
 define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN', -1);
 define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL', 0);
 define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP', 1);
+define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_NONE', null);
 
 require_once($CFG->libdir . '/accesslib.php');
 require_once($CFG->libdir . '/formslib.php');
@@ -3189,10 +3190,11 @@ class assign {
                             $value = ceil($value);
                         } else if ($this->get_instance()->multimarkrounding == ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN) {
                             $value = floor($value);
-                        } else {
-                            // Default to natural if it's somehow not set.
+                        } else if ($this->get_instance()->multimarkrounding == ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL) {
                             $value = round($value);
                         }
+
+                        // If rounding is not one of those options - default to no rounding. So $value unchanged.
 
                     }
                     $grade->grade = $value;
