@@ -8844,6 +8844,16 @@ class assign {
      */
     protected function apply_grade_to_user($formdata, $userid, $attemptnumber) {
         global $USER, $CFG, $DB;
+
+        // If we are using marker allocation, are we allocated to this student? If not, we should not be able to update
+        // anything, even if they are in the same group as a student we are allocated to.
+        if ($this->get_instance()->markingworkflow && $this->get_instance()->markingallocation) {
+            $markers = $DB->get_fieldset('assign_allocated_marker', 'marker', ['student' => $userid, 'assignment' => $this->get_instance()->id]);
+            if (!in_array($USER->id, $markers)) {
+                return;
+            }
+        }
+
         $grade = $this->get_user_grade($userid, true, $attemptnumber);
         $originalgrade = $grade->grade;
         $gradingdisabled = $this->grading_disabled($userid);
