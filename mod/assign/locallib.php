@@ -8880,8 +8880,9 @@ class assign {
                 }
             }
 
-            // Update allocated markers.
-            if (isset($formdata->allocatedmarker)) {
+            // Update allocated markers, but only if this is not a group submission.
+            // Otherwise we can end up overriding allocated markers by trying to apply a mark/workflow.
+            if (isset($formdata->allocatedmarker) && !$this->get_instance()->teamsubmission) {
                 $this->update_allocated_markers($userid, $this->get_instance()->id, $formdata->allocatedmarker);
             }
 
