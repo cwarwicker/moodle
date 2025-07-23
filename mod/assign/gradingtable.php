@@ -1098,7 +1098,7 @@ class assign_grading_table extends table_sql implements renderable {
                 // the marker for this column.
                 $markers = array_values($DB->get_records('assign_allocated_marker', ['student' => $row->userid, 'assignment' => $this->assignment->get_instance()->id], 'id'));
                 if (count($markers) > $col - 1) {
-                    $mark = $DB->get_field('assign_mark', 'mark', ['gradeid' => $row->gradeid, 'marker' => $markers[$col - 1]->marker]);
+                    $mark = $DB->get_record('assign_mark', ['gradeid' => $row->gradeid, 'marker' => $markers[$col - 1]->marker]);
                     // Mark is only editable if we are quick grading, grading is not disabled, and if we are either
                     // the marker for this column, or we have manageallocations permissions.
                     $editable = (
@@ -1106,7 +1106,12 @@ class assign_grading_table extends table_sql implements renderable {
                         (!$gradingdisabled) &&
                             ($USER->id == $markers[$col - 1]->marker)
                     );
-                    $displaymark = $this->display_grade($mark, $editable, $row->userid, $row->timemarked, 0, $markers[$col - 1]->marker);
+                    $displaymark = $this->display_grade($mark->mark ?? null, $editable, $row->userid, $row->timemarked, 0, $markers[$col - 1]->marker);
+                    // Display the workflow state for this mark.
+                    $displaymark .= html_writer::div(
+                        get_string('markingworkflowstate' . ($mark->workflowstate ?? 'notmarked'), 'assign'),
+                        'badge bg-info'
+                    );
                 }
             }
 
