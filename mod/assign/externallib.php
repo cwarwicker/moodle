@@ -1562,7 +1562,6 @@ class mod_assign_external extends \mod_assign\external\external_api {
      */
     public static function submit_grading_form($assignmentid, $userid, $marker, $jsonformdata) {
         global $CFG, $USER;
-
         require_once($CFG->dirroot . '/mod/assign/locallib.php');
         require_once($CFG->dirroot . '/mod/assign/gradeform.php');
 
@@ -1603,7 +1602,6 @@ class mod_assign_external extends \mod_assign\external\external_api {
         // Data is injected into the form by the last param for the constructor.
         $mform = new mod_assign_grade_form(null, $formparams, 'post', '', null, true, $data);
         $validateddata = $mform->get_data();
-
         if ($validateddata) {
             $assignment->save_grade($params['userid'], $validateddata);
         } else {
