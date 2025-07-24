@@ -254,6 +254,8 @@ class mod_assign_mod_form extends moodleform_mod {
             'first' => get_string('markgradefirst', 'assign'),
         ];
         $mform->disabledIf('markercount', 'advancedgradingmethod_submissions', 'neq', '');
+        $mform->hideIf('markercount', 'markingallocation', 'neq', '1');
+        $mform->hideIf('markercount', 'markingworkflow', 'neq', '1');
 
         $name = get_string('multimarkmethod', 'assign');
         $mform->addElement('select', 'multimarkmethod', $name, $options);
