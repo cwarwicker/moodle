@@ -1108,10 +1108,12 @@ class assign_grading_table extends table_sql implements renderable {
                     );
                     $displaymark = $this->display_grade($mark->mark ?? null, $editable, $row->userid, $row->timemarked, 0, $markers[$col - 1]->marker);
                     // Display the workflow state for this mark.
-                    $displaymark .= html_writer::div(
-                        get_string('markingworkflowstate' . ($mark->workflowstate ?? 'notmarked'), 'assign'),
-                        'badge bg-info'
-                    );
+                    if ($markers[$col - 1]->marker > 0) {
+                        $displaymark .= html_writer::div(
+                            get_string('markingworkflowstate' . ($mark->workflowstate ?? 'notmarked'), 'assign'),
+                            'badge bg-info'
+                        );
+                    }
                 }
             }
 
