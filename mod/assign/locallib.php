@@ -8728,6 +8728,7 @@ class assign {
                     $mark = $this->get_mark($grade->id, $USER->id);
                     $grade->grader = $USER->id;
                     $this->update_mark($grade, $mark ? $mark->mark : null, $state);
+                    $this->calculate_and_save_overall_workflow_state($grade, $flags, $flags->workflowstate);
                 }
 
                 // Then we still want to process the flags for notifications and write the event.
