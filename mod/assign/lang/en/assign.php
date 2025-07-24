@@ -734,6 +734,8 @@ $string['viewfull'] = 'View full';
 $string['viewsummary'] = 'View summary';
 $string['viewsubmissiongradingtable'] = 'View submission grading table.';
 $string['viewrevealidentitiesconfirm'] = 'View reveal student identities confirmation page.';
+$string['workflowcontext'] = 'Workflow context';
+$string['workflowcontext_help'] = 'Grade = Apply the workflow state to the overall grade for the submission.<br>Mark = Apply the workflow state to your mark, where you are an allocated marker.';
 $string['workflowfilter'] = 'Workflow filter';
 $string['xofy'] = '{$a->x} of {$a->y}';
 

@@ -181,7 +181,7 @@ function xmldb_assign_upgrade($oldversion) {
         $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('marker', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('mark', XMLDB_TYPE_NUMBER, '10,5', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('mark', XMLDB_TYPE_NUMBER, '10,5', null, false, null, null);
         $table->add_field('workflowstate', XMLDB_TYPE_CHAR, '20', null, null, null, null);
 
         // Adding keys to table assign_grades_mark.
