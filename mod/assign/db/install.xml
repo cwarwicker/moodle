@@ -35,7 +35,7 @@
         <FIELD NAME="markingworkflow" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If enabled, marking workflow features will be used in this assignment."/>
         <FIELD NAME="markingallocation" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If enabled, marking allocation features will be used in this assignment"/>
         <FIELD NAME="markercount" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Number of markers for this assignment, for example, 2 for double marking"/>
-        <FIELD NAME="multimarkmethod" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="How to calculate grade when markercount > 1"/>
+        <FIELD NAME="multimarkmethod" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="How to calculate grade when markercount greater than 1"/>
         <FIELD NAME="multimarkrounding" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="How to round the grade calculation if using an average of marks"/>
         <FIELD NAME="markinganonymous" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If enabled, marking anonymous features will be used in this assignment"/>
         <FIELD NAME="sendstudentnotifications" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Default for send student notifications checkbox when grading."/>
