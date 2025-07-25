@@ -1742,7 +1742,6 @@ final class externallib_test extends \mod_assign\externallib_advanced_testcase {
         $userflags = array();
         $userflag['userid'] = $student->id;
         $userflag['workflowstate'] = 'inmarking';
-        $userflag['allocatedmarker'] = $USER->id;
         $userflags = array($userflag);
 
         $createduserflags = mod_assign_external::set_user_flags($assign->id, $userflags);
@@ -1759,7 +1758,6 @@ final class externallib_test extends \mod_assign\externallib_advanced_testcase {
         $this->assertEquals(2, $createduserflag->mailed);
         $this->assertEquals(0, $createduserflag->extensionduedate);
         $this->assertEquals('inmarking', $createduserflag->workflowstate);
-        $this->assertEquals($USER->id, $createduserflag->allocatedmarker);
 
         // Create update data.
         $userflags = array();
@@ -1781,7 +1779,6 @@ final class externallib_test extends \mod_assign\externallib_advanced_testcase {
         $this->assertEquals(2, $updateduserflag->mailed);
         $this->assertEquals(0, $updateduserflag->extensionduedate);
         $this->assertEquals('readyforreview', $updateduserflag->workflowstate);
-        $this->assertEquals($USER->id, $updateduserflag->allocatedmarker);
     }
 
     /**
