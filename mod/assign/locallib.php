@@ -7575,6 +7575,10 @@ class assign {
             $record->marker = $markerid;
             $DB->insert_record('assign_allocated_marker', $record);
 
+            $student = $DB->get_record('user', array('id' => $studentid), '*', MUST_EXIST);
+            $marker = $DB->get_record('user', array('id' => $markerid), '*', MUST_EXIST);
+            \mod_assign\event\marker_updated::create_from_marker($this, $student, $marker)->trigger();
+
         }
     }
 
