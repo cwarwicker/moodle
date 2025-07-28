@@ -130,7 +130,7 @@ Feature: In an assignment, teachers can filter displayed submissions by assigned
     And I change window size to "large"
     And I go to "Student 1" "Test assignment name" activity advanced grading page
     # Allocate Marker 1 as the marker of Student 1.
-    And I set the field "allocatedmarker" to "Marker 1"
+    And I set the field "Marker 1" to "Marker 1"
     And I set the field "Notify student" to "0"
     And I press "Save changes"
     And I follow "View all submissions"
