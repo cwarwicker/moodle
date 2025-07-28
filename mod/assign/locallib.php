@@ -8112,6 +8112,7 @@ class assign {
                         $mform->setType('grade', PARAM_RAW);
                     }
                 } else {
+                    $name = get_string('gradeoutof', 'assign', $this->get_instance()->grade);
                     $strgradelocked = get_string('gradelocked', 'assign');
                     $mform->addElement('static', 'gradedisabled', $name, $strgradelocked);
                     $mform->addHelpButton('gradedisabled', 'gradeoutofhelp', 'assign');
@@ -8206,7 +8207,7 @@ class assign {
                 $mark = $this->get_mark($grade->id, $USER->id);
                 $currentstate = ($mark) ? $mark->workflowstate : null;
             } else {
-                $currentstate = $data->workflowstate;
+                $currentstate = $data->workflowstate ?? null;
             }
             $states = $this->get_marking_workflow_states_for_current_user($marker);
             $options = array('' => get_string('markingworkflowstatenotmarked', 'assign')) + $states;
@@ -8949,8 +8950,8 @@ class assign {
     protected function apply_grade_to_user($formdata, $userid, $attemptnumber) {
         global $USER, $CFG, $DB;
         // If we are using marker allocation, are we allocated to this student? If not, we should not be able to update
-        // anything, even if they are in the same group as a student we are allocated to.
-        if ($this->get_instance()->markingworkflow && $this->get_instance()->markingallocation) {
+        // their marks, even if they are in the same group as a student we are allocated to.
+        if (isset($formdata->mark) && $this->get_instance()->markingworkflow && $this->get_instance()->markingallocation) {
             $markers = $DB->get_fieldset('assign_allocated_marker', 'marker', ['student' => $userid, 'assignment' => $this->get_instance()->id]);
             if (!in_array($USER->id, $markers)) {
                 return;
