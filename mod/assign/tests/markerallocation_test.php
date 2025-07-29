@@ -47,6 +47,11 @@ final class markerallocation_test extends \advanced_testcase {
      */
     private assign $assign;
 
+    /**
+     * Create the assignment object for testing
+     * @param array $args Array of options that can be overwritten
+     * @return void
+     */
     private function create_assignment(array $args = []): void {
 
         // Setting assign module, markingworkflow and markingallocation set to 1 to enable marker allocation.
@@ -82,6 +87,10 @@ final class markerallocation_test extends \advanced_testcase {
 
     }
 
+    /**
+     * Setup all required test data
+     * @return void
+     */
     private function setup_data(): void {
 
         global $DB;
@@ -393,6 +402,46 @@ final class markerallocation_test extends \advanced_testcase {
 
     }
 
-    public function test_calculated_marker_workflow(): void {}
+    /**
+     * Test that the workflow state changes on the overall grade based on marker states.
+     * @return void
+     */
+    public function test_calculated_marker_workflow(): void {
+
+        $this->setup_data();
+
+        // First confirm that the overall grade workflow state is not set.
+        $flags = $this->assign->get_user_flags($this->users[2]->id, true);
+        $this->assertEmpty($flags->workflowstate);
+
+        // One marker then sets their mark to be in the state "In Marking".
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, true);
+        $gradeobject->grader = $this->users[0]->id;
+        $this->assign->update_mark($gradeobject, null, ASSIGN_MARKING_WORKFLOW_STATE_INMARKING);
+        $this->assign->calculate_and_save_overall_workflow_state($gradeobject, $flags, $flags->workflowstate);
+
+        // Re-check the overall workflow. This should now be "In Marking" as well.
+        $flags = $this->assign->get_user_flags($this->users[2]->id, true);
+        $this->assertEquals(ASSIGN_MARKING_WORKFLOW_STATE_INMARKING, $flags->workflowstate);
+
+        // Now this teacher marks theirs as "Marking Complete".
+        $gradeobject->grader = $this->users[0]->id;
+        $this->assign->update_mark($gradeobject, 90, ASSIGN_MARKING_WORKFLOW_STATE_READYFORREVIEW);
+        $this->assign->calculate_and_save_overall_workflow_state($gradeobject, $flags, $flags->workflowstate);
+
+        // Nothing should change on the overall state, that should still be In Marking.
+        $flags = $this->assign->get_user_flags($this->users[2]->id, true);
+        $this->assertEquals(ASSIGN_MARKING_WORKFLOW_STATE_INMARKING, $flags->workflowstate);
+
+        // Now the second marker sets theirs as "Marking Complete".
+        $gradeobject->grader = $this->users[1]->id;
+        $this->assign->update_mark($gradeobject, 70, ASSIGN_MARKING_WORKFLOW_STATE_READYFORREVIEW);
+        $this->assign->calculate_and_save_overall_workflow_state($gradeobject, $flags, $flags->workflowstate);
+
+        // Now that both are complete, the overall state should be the same.
+        $flags = $this->assign->get_user_flags($this->users[2]->id, true);
+        $this->assertEquals(ASSIGN_MARKING_WORKFLOW_STATE_READYFORREVIEW, $flags->workflowstate);
+
+    }
 
 }

@@ -8889,7 +8889,7 @@ class assign {
      * @param $oldworkflowstate
      * @return void
      */
-    protected function calculate_and_save_overall_workflow_state($grade, $flags, $oldworkflowstate): void {
+    public function calculate_and_save_overall_workflow_state($grade, $flags, $oldworkflowstate): void {
 
         global $DB;
 
