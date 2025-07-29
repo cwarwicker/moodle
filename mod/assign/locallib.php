@@ -739,7 +739,6 @@ class assign {
     public function add_instance(stdClass $formdata, $callplugins) {
         global $DB;
         $adminconfig = $this->get_admin_config();
-
         $err = '';
 
         // Add the database record.
@@ -808,13 +807,13 @@ class assign {
         $update->gradepenalty = $formdata->gradepenalty ?? 0;
 
         // If we are using simple grading and we specify a markercount, update the multi marking values.
-        if (property_exists($formdata, 'markercount')
-            && property_exists($formdata, 'advancedgradingmethod_submissions')
-            && $formdata->advancedgradingmethod_submissions === ''
-        ) {
+        if (property_exists($formdata, 'markercount')) {
             $update->markercount = $formdata->markercount;
             if ($formdata->markercount > 1) {
                 $update->multimarkmethod = $formdata->multimarkmethod;
+                if (property_exists($formdata, 'multimarkrounding')) {
+                    $update->multimarkrounding = $formdata->multimarkrounding;
+                }
             }
         } else {
             $update->markercount = 1;

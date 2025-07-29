@@ -50,9 +50,8 @@ final class markerallocation_test extends \advanced_testcase {
     private function create_assignment(array $args = []): void {
 
         // Setting assign module, markingworkflow and markingallocation set to 1 to enable marker allocation.
-        $record = new \stdClass();
-        $record->course = $this->course;
         $modulesettings = [
+            'course'                            => $this->course->id,
             'alwaysshowdescription'             => 1,
             'submissiondrafts'                  => 1,
             'requiresubmissionstatement'        => 0,
@@ -65,19 +64,17 @@ final class markerallocation_test extends \advanced_testcase {
             'cutoffdate'                        => 0,
             'teamsubmission'                    => 0,
             'requireallteammemberssubmit'       => 0,
-            'teamsubmissiongroupingid'          => 0,
             'blindmarking'                      => 0,
             'attemptreopenmethod'               => 'untilpass',
             'maxattempts'                       => 1,
             'markingworkflow'                   => 1,
             'markingallocation'                 => 1,
             'markercount'                       => 2,
-            'multimarkmethod'                   => ($args['multimarkmethod']) ?? ASSIGN_MULTIMARKING_METHOD_MANUAL
+            'multimarkmethod'                   => ($args['multimarkmethod']) ?? ASSIGN_MULTIMARKING_METHOD_MANUAL,
+            'multimarkrounding'                 => ($args['multimarkrounding']) ?? null,
         ];
 
-        $assignment = $this->getDataGenerator()->create_module('assign', $record, $modulesettings);
-
-        dd($assignment);
+        $assignment = $this->getDataGenerator()->create_module('assign', $modulesettings);
 
         list ($course, $cm) = get_course_and_cm_from_instance($assignment->id, 'assign');
         $context = \core\context\module::instance($cm->id);
@@ -225,9 +222,174 @@ final class markerallocation_test extends \advanced_testcase {
         $this->assign->update_mark($gradeobject, 11);
 
         // With manual calculation, there should be no grade set yet.
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, false);
+        $this->assertEquals(-1, $gradeobject->grade);
 
-        dump($this->assign, $this->assign->get_marks($gradeobject->id));
+    }
 
+    /**
+     * Test that the grade calculation from marks using method "first" sets the correct grade.
+     * @return void
+     */
+    public function test_calculated_marker_grade_first(): void {
+
+        $this->setup_data();
+        $this->create_assignment([
+            'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_FIRST,
+        ]);
+
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, true);
+
+        // Assign a mark as teacher1.
+        $gradeobject->grader = $this->users[0]->id;
+        $this->assign->update_mark($gradeobject, 11);
+
+        // Assign a mark as teacher2.
+        $gradeobject->grader = $this->users[1]->id;
+        $this->assign->update_mark($gradeobject, 99);
+
+        // With first calculation, the grade should be the first one set.
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, false);
+        $this->assertEquals(11, $gradeobject->grade);
+
+    }
+
+    /**
+     * Test that the grade calculation from marks using method "maximum" sets the correct grade.
+     * @return void
+     */
+    public function test_calculated_marker_grade_maximum(): void {
+
+        $this->setup_data();
+        $this->create_assignment([
+            'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_MAX,
+        ]);
+
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, true);
+
+        // Assign a mark as teacher1.
+        $gradeobject->grader = $this->users[0]->id;
+        $this->assign->update_mark($gradeobject, 11);
+
+        // Assign a mark as teacher2.
+        $gradeobject->grader = $this->users[1]->id;
+        $this->assign->update_mark($gradeobject, 99);
+
+        // With max calculation, the grade should be the highest one.
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, false);
+        $this->assertEquals(99, $gradeobject->grade);
+
+    }
+
+    /**
+     * Test that the grade calculation from marks using method "average" with no rounding, sets the correct grade.
+     * @return void
+     */
+    public function test_calculated_marker_grade_average_round_none(): void {
+
+        $this->setup_data();
+        $this->create_assignment([
+            'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_AVERAGE,
+            'multimarkrounding' => ASSIGN_MULTIMARKING_AVERAGE_ROUND_NONE,
+        ]);
+
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, true);
+
+        // Assign a mark as teacher1.
+        $gradeobject->grader = $this->users[0]->id;
+        $this->assign->update_mark($gradeobject, 90);
+
+        // Assign a mark as teacher2.
+        $gradeobject->grader = $this->users[1]->id;
+        $this->assign->update_mark($gradeobject, 25);
+
+        // With avg calculation and no rounding, the grade should be 57.5.
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, false);
+        $this->assertEquals(57.5, $gradeobject->grade);
+
+    }
+
+    /**
+     * Test that the grade calculation from marks using method "average" with down rounding, sets the correct grade.
+     * @return void
+     */
+    public function test_calculated_marker_grade_average_round_down(): void {
+
+        $this->setup_data();
+        $this->create_assignment([
+            'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_AVERAGE,
+            'multimarkrounding' => ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN,
+        ]);
+
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, true);
+
+        // Assign a mark as teacher1.
+        $gradeobject->grader = $this->users[0]->id;
+        $this->assign->update_mark($gradeobject, 90);
+
+        // Assign a mark as teacher2.
+        $gradeobject->grader = $this->users[1]->id;
+        $this->assign->update_mark($gradeobject, 25);
+
+        // With avg calculation and down rounding, the grade should be 57.
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, false);
+        $this->assertEquals(57, $gradeobject->grade);
+
+    }
+
+    /**
+     * Test that the grade calculation from marks using method "average" with up rounding, sets the correct grade.
+     * @return void
+     */
+    public function test_calculated_marker_grade_average_round_up(): void {
+
+        $this->setup_data();
+        $this->create_assignment([
+            'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_AVERAGE,
+            'multimarkrounding' => ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP,
+        ]);
+
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, true);
+
+        // Assign a mark as teacher1.
+        $gradeobject->grader = $this->users[0]->id;
+        $this->assign->update_mark($gradeobject, 90);
+
+        // Assign a mark as teacher2.
+        $gradeobject->grader = $this->users[1]->id;
+        $this->assign->update_mark($gradeobject, 25);
+
+        // With avg calculation and up rounding, the grade should be 58.
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, false);
+        $this->assertEquals(58, $gradeobject->grade);
+
+    }
+
+    /**
+     * Test that the grade calculation from marks using method "average" with natural rounding, sets the correct grade.
+     * @return void
+     */
+    public function test_calculated_marker_grade_average_round_natural(): void {
+
+        $this->setup_data();
+        $this->create_assignment([
+            'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_AVERAGE,
+            'multimarkrounding' => ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL,
+        ]);
+
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, true);
+
+        // Assign a mark as teacher1.
+        $gradeobject->grader = $this->users[0]->id;
+        $this->assign->update_mark($gradeobject, 90);
+
+        // Assign a mark as teacher2.
+        $gradeobject->grader = $this->users[1]->id;
+        $this->assign->update_mark($gradeobject, 25);
+
+        // With avg calculation and natural rounding, the grade should be 58.
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, false);
+        $this->assertEquals(58, $gradeobject->grade);
 
     }
 
