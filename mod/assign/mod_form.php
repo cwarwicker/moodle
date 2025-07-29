@@ -248,10 +248,10 @@ class mod_assign_mod_form extends moodleform_mod {
         $mform->addHelpButton('markercount', 'markercount', 'assign');
 
         $options = [
-            'manual' => get_string('markgrademanual', 'assign'),
-            'maximum' => get_string('markgrademaximum', 'assign'),
-            'average' => get_string('markgradeaverage', 'assign'),
-            'first' => get_string('markgradefirst', 'assign'),
+            ASSIGN_MULTIMARKING_METHOD_MANUAL => get_string('markgrade' . ASSIGN_MULTIMARKING_METHOD_MANUAL, 'assign'),
+            ASSIGN_MULTIMARKING_METHOD_MAX => get_string('markgrade' . ASSIGN_MULTIMARKING_METHOD_MAX, 'assign'),
+            ASSIGN_MULTIMARKING_METHOD_AVERAGE => get_string('markgrade' . ASSIGN_MULTIMARKING_METHOD_AVERAGE, 'assign'),
+            ASSIGN_MULTIMARKING_METHOD_FIRST => get_string('markgrade' . ASSIGN_MULTIMARKING_METHOD_FIRST, 'assign'),
         ];
         $mform->disabledIf('markercount', 'advancedgradingmethod_submissions', 'neq', '');
         $mform->hideIf('markercount', 'markingallocation', 'neq', '1');

@@ -91,6 +91,11 @@ define('ASSIGN_EVENT_TYPE_OPEN', 'open');
 define('ASSIGN_EVENT_TYPE_CLOSE', 'close');
 define('ASSIGN_EVENT_TYPE_EXTENSION', 'extension');
 
+define('ASSIGN_MULTIMARKING_METHOD_MANUAL', 'manual');
+define('ASSIGN_MULTIMARKING_METHOD_MAX', 'maximum');
+define('ASSIGN_MULTIMARKING_METHOD_AVERAGE', 'average');
+define('ASSIGN_MULTIMARKING_METHOD_FIRST', 'first');
+
 define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN', -1);
 define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL', 0);
 define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP', 1);
@@ -7280,25 +7285,18 @@ class assign {
             $record->userid = $userid;
             if ($modified >= 0) {
 
-                $record->currentallocatedmarkerids = $DB->get_fieldset('assign_allocated_marker', 'marker', [
-                    'student' => $record->userid, 'assignment' => $this->get_instance()->id
-                ]);
-
+                // Get the current markers for this student assignment.
+                $record->currentallocatedmarkerids = array_column($this->get_allocated_markers($record->userid), 'marker');
                 sort($record->currentallocatedmarkerids);
 
                 $record->grade = unformat_float(optional_param('quickgrade_' . $record->userid, -1, PARAM_TEXT));
                 $record->workflowstate = optional_param('quickgrade_' . $record->userid.'_workflowstate', false, PARAM_ALPHA);
 
-                // Get the possible allocated markers for this student and assignment.
-                $markers = array_values($DB->get_records('assign_allocated_marker', [
-                    'student' => $record->userid, 'assignment' => $this->get_instance()->id
-                ], 'id', 'marker'));
-
-                // Is there a mark submitted for any of these?
+                // Loop through current makers and check if there is a mark submitted for any of them.
                 $record->marks = [];
-                foreach ($markers as $marker) {
-                    $record->marks[$marker->marker] = unformat_float(
-                        optional_param('quickmark_' . $userid . '_' . $marker->marker, null, PARAM_TEXT)
+                foreach ($record->currentallocatedmarkerids as $markerid) {
+                    $record->marks[$markerid] = unformat_float(
+                        optional_param('quickmark_' . $userid . '_' . $markerid, null, PARAM_TEXT)
                     );
                 }
 
@@ -7500,7 +7498,7 @@ class assign {
 
             // Update allocated markers.
             if ($markingallocationchanged) {
-                $this->update_allocated_markers($modified->userid, $this->get_instance()->id, $modified->allocatedmarkerids);
+                $this->update_allocated_markers($modified->userid, $modified->allocatedmarkerids);
             }
 
             // Update marks from allocated markers.
@@ -7546,17 +7544,16 @@ class assign {
     /**
      * Update the markers allocated to a student's assignment
      * @param int $studentid ID of the student user record
-     * @param int $assignmentid ID of the assignment record
      * @param array $markerids Array of user IDs for the markers
      * @return void
      */
-    protected function update_allocated_markers(int $studentid, int $assignmentid, array $markerids): void {
+    public function update_allocated_markers(int $studentid, array $markerids): void {
 
         global $DB;
 
         // First, remove all markers allocated to this student and assignment.
         // This leaves the marks in place orphaned, so they can be brought back if the marker is re-allocated.
-        $DB->delete_records('assign_allocated_marker', ['student' => $studentid, 'assignment' => $assignmentid]);
+        $DB->delete_records('assign_allocated_marker', ['student' => $studentid, 'assignment' => $this->get_instance()->id]);
 
         // Store array of markers to make sure we don't try to add the same marker twice.
         $markers = [];
@@ -7571,7 +7568,7 @@ class assign {
             $markers[] = $markerid;
             $record = new stdClass();
             $record->student = $studentid;
-            $record->assignment = $assignmentid;
+            $record->assignment = $this->get_instance()->id;
             $record->marker = $markerid;
             $DB->insert_record('assign_allocated_marker', $record);
 
@@ -8252,12 +8249,7 @@ class assign {
             $markercount = $this->get_instance()->markercount;
 
             // Who are the current markers for this student/assignment?
-            $markers = array_values(
-                $DB->get_records('assign_allocated_marker', [
-                    'student' => $userid,
-                    'assignment' => $this->get_instance()->id],
-                'id')
-            );
+            $markers = array_values($this->get_allocated_markers($userid));
 
             for ($i = 0; $i < $markercount; $i++) {
                 $mform->addElement('select', 'allocatedmarker['.$i.']', get_string('marker1', 'assign', $i + 1), $markerlist);
@@ -8808,7 +8800,7 @@ class assign {
                     continue; // Allocated marker can only be changed in certain workflow states.
                 }
 
-                $this->update_allocated_markers($userid, $flags->assignment, $markers);
+                $this->update_allocated_markers($userid, $markers);
             }
         }
     }
@@ -8886,7 +8878,7 @@ class assign {
      * @param int $gradeid
      * @return array
      */
-    protected function get_marks(int $gradeid): array {
+    public function get_marks(int $gradeid): array {
         global $DB;
         return $DB->get_records('assign_mark', ['gradeid' => $gradeid]);
     }
@@ -8952,8 +8944,8 @@ class assign {
         // If we are using marker allocation, are we allocated to this student? If not, we should not be able to update
         // their marks, even if they are in the same group as a student we are allocated to.
         if (isset($formdata->mark) && $this->get_instance()->markingworkflow && $this->get_instance()->markingallocation) {
-            $markers = $DB->get_fieldset('assign_allocated_marker', 'marker', ['student' => $userid, 'assignment' => $this->get_instance()->id]);
-            if (!in_array($USER->id, $markers)) {
+            $markerids = array_column($this->get_allocated_markers($userid), 'marker');
+            if (!in_array($USER->id, $markerids)) {
                 return;
             }
         }
@@ -8991,7 +8983,7 @@ class assign {
             // Update allocated markers, but only if this is not a group submission.
             // Otherwise we can end up overriding allocated markers by trying to apply a mark/workflow.
             if (isset($formdata->allocatedmarker) && !$this->get_instance()->teamsubmission) {
-                $this->update_allocated_markers($userid, $this->get_instance()->id, $formdata->allocatedmarker);
+                $this->update_allocated_markers($userid, $formdata->allocatedmarker);
             }
 
         }
@@ -10195,6 +10187,23 @@ class assign {
         ]);
 
         return ($record > 0);
+
+    }
+
+    /**
+     * Get the markers allocated to the specified student on this assignment.
+     * @param int $studentid
+     * @return array
+     * @throws dml_exception
+     */
+    public function get_allocated_markers(int $studentid): array {
+
+        global $DB;
+
+        return $DB->get_records('assign_allocated_marker', [
+            'student' => $studentid,
+            'assignment' => $this->get_instance()->id
+        ], 'id');
 
     }
 

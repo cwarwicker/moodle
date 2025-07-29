@@ -16,6 +16,8 @@
 
 namespace mod_assign;
 
+use assign;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -36,19 +38,20 @@ final class markerallocation_test extends \advanced_testcase {
     private $course;
 
     /**
-     * Create all the needed elements to test the difference between both functions.
+     * @var array Generated users
      */
-    public function test_markerusers(): void {
-        $this->resetAfterTest();
-        global $DB;
+    private array $users = [];
 
-        // Create a course, by default it is created with 5 sections.
-        $this->course = $this->getDataGenerator()->create_course();
+    /**
+     * @var assign Assignment object generated
+     */
+    private assign $assign;
 
-        // Setting assing module, markingworkflow and markingallocation set to 1 to enable marker allocation.
+    private function create_assignment(array $args = []): void {
+
+        // Setting assign module, markingworkflow and markingallocation set to 1 to enable marker allocation.
         $record = new \stdClass();
         $record->course = $this->course;
-
         $modulesettings = [
             'alwaysshowdescription'             => 1,
             'submissiondrafts'                  => 1,
@@ -68,53 +71,72 @@ final class markerallocation_test extends \advanced_testcase {
             'maxattempts'                       => 1,
             'markingworkflow'                   => 1,
             'markingallocation'                 => 1,
+            'markercount'                       => 2,
+            'multimarkmethod'                   => ($args['multimarkmethod']) ?? ASSIGN_MULTIMARKING_METHOD_MANUAL
         ];
 
-        $assignelement = $this->getDataGenerator()->create_module('assign', $record, $modulesettings);
+        $assignment = $this->getDataGenerator()->create_module('assign', $record, $modulesettings);
 
-        $coursesectionid = course_add_cm_to_section($this->course->id, $assignelement->id, 1, null, 'assign');
+        dd($assignment);
+
+        list ($course, $cm) = get_course_and_cm_from_instance($assignment->id, 'assign');
+        $context = \core\context\module::instance($cm->id);
+        $this->assign = new assign($context, $cm, $course);
+
+    }
+
+    private function setup_data(): void {
+
+        global $DB;
+
+        $this->resetAfterTest();
+
+        // Create a course, by default it is created with 5 sections.
+        $this->course = $this->getDataGenerator()->create_course();
+
+        $this->create_assignment();
+        $coursesectionid = course_add_cm_to_section($this->course->id, $this->assign->get_instance()->id, 1, null, 'assign');
 
         // Adding users to the course.
         $userdata = array();
         $userdata['firstname'] = 'teacher1';
         $userdata['lasttname'] = 'lastname_teacher1';
-
-        $user1 = $this->getDataGenerator()->create_user($userdata);
-
-        $this->getDataGenerator()->enrol_user($user1->id, $this->course->id, 'teacher');
+        $this->users[0] = $this->getDataGenerator()->create_user($userdata);
+        $this->getDataGenerator()->enrol_user($this->users[0]->id, $this->course->id, 'teacher');
 
         $userdata = array();
         $userdata['firstname'] = 'teacher2';
         $userdata['lasttname'] = 'lastname_teacher2';
-
-        $user2 = $this->getDataGenerator()->create_user($userdata);
-
-        $this->getDataGenerator()->enrol_user($user2->id, $this->course->id, 'teacher');
+        $this->users[1] = $this->getDataGenerator()->create_user($userdata);
+        $this->getDataGenerator()->enrol_user($this->users[1]->id, $this->course->id, 'teacher');
 
         $userdata = array();
         $userdata['firstname'] = 'student';
         $userdata['lasttname'] = 'lastname_student';
-
-        $user3 = $this->getDataGenerator()->create_user($userdata);
-
-        $this->getDataGenerator()->enrol_user($user3->id, $this->course->id, 'student');
+        $this->users[2] = $this->getDataGenerator()->create_user($userdata);
+        $this->getDataGenerator()->enrol_user($this->users[2]->id, $this->course->id, 'student');
 
         // Adding manager to the system.
         $userdata = array();
         $userdata['firstname'] = 'Manager';
         $userdata['lasttname'] = 'lastname_Manager';
-
-        $user4 = $this->getDataGenerator()->create_user($userdata);
-
-        // Getting id of manager role.
+        $this->users[3] = $this->getDataGenerator()->create_user($userdata);
         $managerrole = $DB->get_record('role', array('shortname' => 'manager'));
         if (!empty($managerrole)) {
             // By default the context of the system is assigned.
-            $idassignment = $this->getDataGenerator()->role_assign($managerrole->id, $user4->id);
+            $this->getDataGenerator()->role_assign($managerrole->id, $this->users[3]->id);
         }
 
-        $oldusers = array($user1, $user2, $user4);
-        $newusers = array($user1, $user2);
+    }
+
+    /**
+     * Create all the needed elements to test the difference between both functions.
+     */
+    public function test_markerusers(): void {
+        $this->setup_data();
+
+        $oldusers = array($this->users[0], $this->users[1], $this->users[3]);
+        $newusers = array($this->users[0], $this->users[1]);
 
         list($sort, $params) = users_order_by_sql('u');
 
@@ -142,4 +164,73 @@ final class markerallocation_test extends \advanced_testcase {
         $this->assertEquals(count($oldmarkers), 0);
 
     }
+
+    /**
+     * Test functionality around having multiple allocated markers
+     * @return void
+     */
+    public function test_multiple_marker_allocation(): void {
+
+        $this->setup_data();
+
+        // To start with, confirm that no markers are allocated to the student submission.
+        $markers = $this->assign->get_allocated_markers($this->users[2]->id);
+        $this->assertCount(0, $markers);
+
+        // Allocate both teachers to the student assignment.
+        $this->assign->update_allocated_markers($this->users[2]->id, [
+            $this->users[0]->id,
+            $this->users[1]->id,
+        ]);
+        $markers = $this->assign->get_allocated_markers($this->users[2]->id);
+        $this->assertCount(2, $markers);
+
+        // Now test that we can add a mark to the submission.
+        // Firstly, there should be no mark currently for either marker.
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, true);
+        $mark = $this->assign->get_mark($gradeobject->id, $this->users[0]->id);
+        $this->assertFalse($mark);
+
+        // Assign a mark as teacher1.
+        $gradeobject->grader = $this->users[0]->id;
+        $this->assign->update_mark($gradeobject, 99);
+
+        // Now check that we can find the mark.
+        $mark = $this->assign->get_mark($gradeobject->id, $this->users[0]->id);
+        $this->assertEquals("99.00000", $mark->mark);
+
+        // Assign a mark as teacher2.
+        $gradeobject->grader = $this->users[1]->id;
+        $this->assign->update_mark($gradeobject, 11);
+
+        // Now check that we can find the mark.
+        $mark = $this->assign->get_mark($gradeobject->id, $this->users[1]->id);
+        $this->assertEquals("11.00000", $mark->mark);
+
+    }
+
+    public function test_calculated_marker_grade_manual(): void {
+
+        // By default it will be manual calculation in the tests.
+        $this->setup_data();
+
+        $gradeobject = $this->assign->get_user_grade($this->users[2]->id, true);
+
+        // Assign a mark as teacher1.
+        $gradeobject->grader = $this->users[0]->id;
+        $this->assign->update_mark($gradeobject, 99);
+
+        // Assign a mark as teacher2.
+        $gradeobject->grader = $this->users[1]->id;
+        $this->assign->update_mark($gradeobject, 11);
+
+        // With manual calculation, there should be no grade set yet.
+
+        dump($this->assign, $this->assign->get_marks($gradeobject->id));
+
+
+    }
+
+    public function test_calculated_marker_workflow(): void {}
+
 }
