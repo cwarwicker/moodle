@@ -43,6 +43,11 @@ final class markerallocation_test extends \advanced_testcase {
     private array $users = [];
 
     /**
+     * @var array Generated groups
+     */
+    private array $groups = [];
+
+    /**
      * Create the assignment object for testing
      * @param array $args Array of options that can be overwritten
      * @return assign
@@ -61,7 +66,7 @@ final class markerallocation_test extends \advanced_testcase {
             'allowsubmissionsfromdate'          => 0,
             'grade'                             => (!isset($args['scale'])) ? 100 : null,
             'cutoffdate'                        => 0,
-            'teamsubmission'                    => 0,
+            'teamsubmission'                    => ($args['teamsubmission']) ?? 0,
             'requireallteammemberssubmit'       => 0,
             'blindmarking'                      => 0,
             'attemptreopenmethod'               => 'untilpass',
@@ -73,7 +78,6 @@ final class markerallocation_test extends \advanced_testcase {
             'multimarkrounding'                 => ($args['multimarkrounding']) ?? null,
         ];
 
-        $scale = null;
         if (isset($args['scale'])) {
             $scale = $this->getDataGenerator()->create_scale();
             $modulesettings['gradetype'] = GRADE_TYPE_SCALE;
@@ -107,13 +111,13 @@ final class markerallocation_test extends \advanced_testcase {
         $userdata['firstname'] = 'teacher1';
         $userdata['lasttname'] = 'lastname_teacher1';
         $this->users[0] = $this->getDataGenerator()->create_user($userdata);
-        $this->getDataGenerator()->enrol_user($this->users[0]->id, $this->course->id, 'teacher');
+        $this->getDataGenerator()->enrol_user($this->users[0]->id, $this->course->id, 'editingteacher');
 
         $userdata = array();
         $userdata['firstname'] = 'teacher2';
         $userdata['lasttname'] = 'lastname_teacher2';
         $this->users[1] = $this->getDataGenerator()->create_user($userdata);
-        $this->getDataGenerator()->enrol_user($this->users[1]->id, $this->course->id, 'teacher');
+        $this->getDataGenerator()->enrol_user($this->users[1]->id, $this->course->id, 'editingteacher');
 
         $userdata = array();
         $userdata['firstname'] = 'student';
@@ -130,6 +134,129 @@ final class markerallocation_test extends \advanced_testcase {
         if (!empty($managerrole)) {
             // By default the context of the system is assigned.
             $this->getDataGenerator()->role_assign($managerrole->id, $this->users[3]->id);
+        }
+
+    }
+
+    /**
+     * Setup group data for teamsubmission tests
+     * @return void
+     */
+    private function setup_group_data(): void {
+
+        $this->resetAfterTest(false);
+
+        // Create a course, by default it is created with 5 sections.
+        $this->course = $this->getDataGenerator()->create_course();
+
+        // Split users into seaprate arrays for easier use here.
+        $teachers = [];
+        $students = [];
+
+        // Adding teachers to the course.
+        for ($i = 1; $i <= 2; $i++) {
+            $userdata = array();
+            $userdata['firstname'] = 'teacher' . $i;
+            $userdata['lasttname'] = 'lastname_teacher' . $i;
+            $teachers[$i] = $this->getDataGenerator()->create_user($userdata);
+            $this->getDataGenerator()->enrol_user($teachers[$i]->id, $this->course->id, 'teacher');
+        }
+
+        // Adding students to the course.
+        for ($i = 1; $i <= 6; $i++) {
+            $userdata = array();
+            $userdata['firstname'] = 'student' . $i;
+            $userdata['lasttname'] = 'lastname_student' . $i;
+            $students[$i] = $this->getDataGenerator()->create_user($userdata);
+            $this->getDataGenerator()->enrol_user($students[$i]->id, $this->course->id, 'student');
+        }
+
+        // Adding students to groups.
+        $this->groups['A'] = $this->getDataGenerator()->create_group(['courseid' => $this->course->id, 'name' => 'A']);
+        $this->groups['B'] = $this->getDataGenerator()->create_group(['courseid' => $this->course->id, 'name' => 'B']);
+        foreach ($students as $studentnumber => $user) {
+            if ($studentnumber <= 3) {
+                groups_add_member($this->groups['A'], $user);
+            } else {
+                groups_add_member($this->groups['B'], $user);
+            }
+        }
+
+        $this->users = ['students' => $students, 'teachers' => $teachers];
+
+    }
+
+    /**
+     * Test marker allocation and marking with group submissions.
+     * @return void
+     */
+    public function test_allocated_markers_with_group_submissions(): void {
+
+        $this->setup_group_data();
+        $assignment = $this->create_assignment([
+            'teamsubmission' => 1,
+        ]);
+
+        // To test the logic that a marker should not be able to update anyone not in their group
+        // we will use the "public" method `save_grade` instead of the internal `update_mark`.
+
+        // Firstly, allocate teacher1 to every student in group A.
+        foreach ($this->users['students'] as $studentnumber => $student) {
+            if ($studentnumber <= 3) {
+                $assignment->update_allocated_markers($student->id, [$this->users['teachers'][1]->id]);
+            }
+        }
+
+        // Allocate a mark to the first student in the group.
+        // This should spread out to the other students in the group as well.
+        $this->setUser($this->users['teachers'][1]);
+
+        // Before we save it, we need to create the submission record, which won't happen from just saving it.
+        $assignment->get_group_submission(-1, $this->groups['A']->id, true);
+
+        // Then save it.
+        $assignment->save_grade($this->users['students'][1]->id, (object)[
+            'mark' => 50,
+            'applytoall' => 1,
+            'attemptnumber' => -1,
+        ]);
+
+        // All 3 students in the group should now have the same mark from this allocated marker.
+        foreach ($this->users['students'] as $studentnumber => $student) {
+            if ($studentnumber <= 3) {
+                $gradeobject = $assignment->get_user_grade($student->id, true);
+                $mark = $assignment->get_mark($gradeobject->id, $this->users['teachers'][1]->id);
+                $this->assertEquals(50, $mark->mark);
+            }
+        }
+
+        // Now allocate teacher2 to 2 out of 3 students in group B.
+        foreach ($this->users['students'] as $studentnumber => $student) {
+            if ($studentnumber > 3 && $studentnumber < 6) {
+                $assignment->update_allocated_markers($student->id, [$this->users['teachers'][2]->id]);
+            }
+        }
+
+        // Allocate a mark to the first student in the group.
+        $this->setUser($this->users['teachers'][2]);
+        $assignment->get_group_submission(-1, $this->groups['B']->id, true);
+        $assignment->save_grade($this->users['students'][4]->id, (object)[
+            'mark' => 99,
+            'applytoall' => 1,
+            'attemptnumber' => -1,
+        ]);
+
+        // Only 2 out of 3 students should have the grade applied.
+        foreach ($this->users['students'] as $studentnumber => $student) {
+            if ($studentnumber > 3) {
+                $gradeobject = $assignment->get_user_grade($student->id, true);
+                $mark = $assignment->get_mark($gradeobject->id, $this->users['teachers'][2]->id);
+                if ($studentnumber < 6) {
+                    $this->assertEquals(99, $mark->mark);
+                } else {
+                    $this->assertFalse($mark);
+                }
+            }
         }
 
     }
@@ -448,5 +575,7 @@ final class markerallocation_test extends \advanced_testcase {
         $this->assertEquals(ASSIGN_MARKING_WORKFLOW_STATE_READYFORREVIEW, $flags->workflowstate);
 
     }
+
+
 
 }
