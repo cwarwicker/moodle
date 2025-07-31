@@ -380,6 +380,7 @@ $string['locksubmissionforstudent'] = 'Prevent any more submissions for student:
 $string['locksubmissions'] = 'Lock submissions';
 $string['manageassignfeedbackplugins'] = 'Manage assignment feedback plugins';
 $string['manageassignsubmissionplugins'] = 'Manage assignment submission plugins';
+$string['markactions'] = 'Mark actions';
 $string['marker'] = 'Marker';
 $string['markercount'] = 'Markers';
 $string['markercount_help'] = 'Number of markers for this assignment.';

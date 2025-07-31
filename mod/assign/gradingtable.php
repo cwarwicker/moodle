@@ -1154,7 +1154,7 @@ class assign_grading_table extends table_sql implements renderable {
                 $menu = new action_menu();
                 $menu->set_owner_selector('.gradingtable-actionmenu');
                 $menu->set_boundary('window');
-                $menu->set_kebab_trigger(get_string('gradeactions', 'assign'));
+                $menu->set_kebab_trigger(get_string('markactions', 'assign'));
                 $menu->set_additional_classes('ps-2 ms-auto');
                 // Prioritise the menu ahead of all other actions.
                 $menu->prioritise = true;

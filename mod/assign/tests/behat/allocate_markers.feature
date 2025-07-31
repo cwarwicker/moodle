@@ -78,6 +78,3 @@ Background:
     And "Student One" row "Marker 2" column of "generaltable" table should contain "Teacher Two"
     And "Student Two" row "Marker 1" column of "generaltable" table should not contain "Teacher"
     And "Student Two" row "Marker 2" column of "generaltable" table should not contain "Teacher"
-
-    # Setting marks - new file?
-    # Workflow stuff - new file?

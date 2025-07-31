@@ -206,4 +206,38 @@ class mod_assign_generator extends testing_module_generator {
 
         $DB->insert_record('assign_overrides', (object) $data);
     }
+
+    /**
+     * Create a marker allocation record
+     * @param $data ['assignid', 'userid', 'markerid']
+     * @return void
+     */
+    public function create_marker_allocation($data): void {
+
+        global $DB;
+
+        if (!isset($data['cmid'])) {
+            throw new coding_exception('Must specify assign when creating a marker allocation.');
+        }
+
+        if (!isset($data['userid'])) {
+            throw new coding_exception('Must specify user when creating a marker allocation.');
+        }
+
+        if (!isset($data['markerid'])) {
+            throw new coding_exception('Must specify marker when creating a marker allocation.');
+        }
+
+        [$course, $cm] = get_course_and_cm_from_cmid($data['cmid'], 'assign');
+        $context = context_module::instance($cm->id);
+        $assign = new assign($context, $cm, $course);
+
+        $DB->insert_record('assign_allocated_marker', [
+            'student' => $data['userid'],
+            'assignment' => $assign->get_instance()->id,
+            'marker' => $data['markerid'],
+        ]);
+
+    }
+
 }
