@@ -65,5 +65,19 @@ Background:
     And "Student Two" row "Marker 1" column of "generaltable" table should contain "Teacher One"
     And "Student Two" row "Marker 2" column of "generaltable" table should contain "Teacher Two"
 
-#  @javascript
-#  Scenario: Allocating markers to students via the grader page
+  @javascript
+  Scenario: Allocating markers to students via the grader page
+    Given I am on the "A1" "assign activity" page logged in as teacher1
+    And I go to "Student One" "Assignment 1" activity advanced grading page
+    And I set the field "Marker 1" to "Teacher One"
+    And I set the field "Marker 2" to "Teacher Two"
+    And I press "Save changes"
+    And I am on the "A1" "assign activity" page
+    And I navigate to "Submissions" in current page administration
+    Then "Student One" row "Marker 1" column of "generaltable" table should contain "Teacher One"
+    And "Student One" row "Marker 2" column of "generaltable" table should contain "Teacher Two"
+    And "Student Two" row "Marker 1" column of "generaltable" table should not contain "Teacher"
+    And "Student Two" row "Marker 2" column of "generaltable" table should not contain "Teacher"
+
+    # Setting marks - new file?
+    # Workflow stuff - new file?
