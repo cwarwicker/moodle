@@ -2084,6 +2084,9 @@ class assign {
 
         $o = '';
         $fieldname = ($markerid) ? 'quickmark_' . $userid . '_' . $markerid : 'quickgrade_' . $userid;
+        $fieldtitle = ($markerid) ?
+            get_string('usermark', 'assign') :
+            get_string('usergrade', 'assign');
 
         if ($this->get_instance()->grade >= 0) {
             // Normal number.
@@ -2093,9 +2096,7 @@ class assign {
                 } else {
                     $displaygrade = format_float($grade, $this->get_grade_item()->get_decimals());
                 }
-                $o .= '<label class="accesshide" for="'. $fieldname . '">' .
-                       get_string('usergrade', 'assign') .
-                       '</label>';
+                $o .= '<label class="accesshide" for="' . $fieldname . '">' . $fieldtitle . '</label>';
                 $o .= '<input type="text"
                               id="' . $fieldname . '"
                               name="' . $fieldname . '"
@@ -2138,10 +2139,7 @@ class assign {
                 }
             }
             if ($editing) {
-                $o .= '<label class="accesshide"
-                              for="' . $fieldname . '">' .
-                      get_string('usergrade', 'assign') .
-                      '</label>';
+                $o .= '<label class="accesshide" for="' . $fieldname . '">' . $fieldtitle . '</label>';
                 $o .= '<select name="' . $fieldname . '" class="quickgrade">';
                 $o .= '<option value="-1">' . get_string('nograde') . '</option>';
                 foreach ($this->cache['scale'] as $optionid => $option) {

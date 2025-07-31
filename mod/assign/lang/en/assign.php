@@ -718,6 +718,7 @@ $string['usersubmissioncannotberemoved'] = 'The submission of {$a} cannot be rem
 $string['usersnone'] = 'No students have access to this assignment.';
 $string['userswhoneedtosubmit'] = 'Users who need to submit: {$a}';
 $string['usergrade'] = 'User grade';
+$string['usermark'] = 'User mark';
 $string['validmarkingworkflowstates'] = 'Valid marking workflow states';
 $string['viewadifferentattempt'] = 'View a different attempt';
 $string['viewbatchsetmarkingworkflowstate'] = 'View batch set marking workflow state page.';

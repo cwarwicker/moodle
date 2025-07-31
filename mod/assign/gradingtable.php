@@ -743,7 +743,11 @@ class assign_grading_table extends table_sql implements renderable {
                 return '';
             }
             $name = 'quickgrade_' . $row->id . '_allocatedmarker_' . $markerpos;
-            return  html_writer::select($markerlist, $name, $allocatedmarker?->id, false);
+            return html_writer::label(
+                    get_string('allocatedmarker', 'assign') . ' ' . $markerpos,
+                    'menu' . $name
+                ) .
+                html_writer::select($markerlist, $name, $allocatedmarker?->id, false);
         } else if (!empty($allocatedmarker)) {
             $output = '';
             if ($this->quickgrading) { // Add hidden field for quickgrading page.

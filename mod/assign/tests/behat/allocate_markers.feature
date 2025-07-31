@@ -37,7 +37,6 @@ Background:
   Scenario: Allocating markers to students via the Allocate Markers page
     Given I am on the "A1" "assign activity" page logged in as teacher1
     And I navigate to "Submissions" in current page administration
-    # Remove wait when it works
     And I set the field "selectall" to "1"
     And I click on "Allocate marker" "button" in the "sticky-footer" "region"
     And I click on "Allocate marker" "button" in the ".modal-footer" "css_element"
@@ -49,10 +48,22 @@ Background:
     And "Student Two" row "Marker 1" column of "generaltable" table should contain "Teacher One"
     And "Student Two" row "Marker 2" column of "generaltable" table should contain "Teacher Two"
 
-
-
-#  @javascript
-#  Scenario: Allocating markers to students via the Quick Grading page
+  @javascript
+  Scenario: Allocating markers to students via the Quick Grading page
+    Given I am on the "A1" "assign activity" page logged in as teacher1
+    And I navigate to "Submissions" in current page administration
+    And I click on "Quick grading" "checkbox"
+    And I set the field "Allocated marker 1" in the "Student One" "table_row" to "Teacher One"
+    And I set the field "Allocated marker 1" in the "Student Two" "table_row" to "Teacher One"
+    And I set the field "Allocated marker 2" in the "Student One" "table_row" to "Teacher Two"
+    And I set the field "Allocated marker 2" in the "Student Two" "table_row" to "Teacher Two"
+    And I click on "Save" "button" in the "sticky-footer" "region"
+    And I press "Continue"
+    And I click on "Quick grading" "checkbox"
+    Then "Student One" row "Marker 1" column of "generaltable" table should contain "Teacher One"
+    And "Student One" row "Marker 2" column of "generaltable" table should contain "Teacher Two"
+    And "Student Two" row "Marker 1" column of "generaltable" table should contain "Teacher One"
+    And "Student Two" row "Marker 2" column of "generaltable" table should contain "Teacher Two"
 
 #  @javascript
 #  Scenario: Allocating markers to students via the grader page
