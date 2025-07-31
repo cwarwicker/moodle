@@ -69,7 +69,7 @@ class mod_assign_batch_set_allocatedmarker_form extends moodleform {
         $options = ['' =>  get_string('choosemarker', 'assign')] + $options;
 
         for ($i = 1; $i <= $markercount; $i++) {
-            $mform->addElement('select', "allocatedmarker{$i}", get_string('allocatedmarker', 'assign'), $options);
+            $mform->addElement('select', "allocatedmarker{$i}", get_string('allocatedmarker', 'assign') . ' ' . $i, $options);
         }
 
         $mform->addElement('hidden', 'id');
