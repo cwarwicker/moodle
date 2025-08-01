@@ -1,4 +1,4 @@
-@mod @mod_assign
+@mod @mod_assign @javascript
 Feature: Allocate markers to student submissions
   In order to use the marking workflow and record provisional marks before calculating a final grade
   As a teacher
@@ -33,7 +33,6 @@ Background:
     | grade[modgrade_type]     | point         |
     | grade[modgrade_point]    | 100           |
 
-  @javascript
   Scenario: Allocating markers to students via the Allocate Markers page
     Given I am on the "A1" "assign activity" page logged in as teacher1
     And I navigate to "Submissions" in current page administration
@@ -48,7 +47,6 @@ Background:
     And "Student Two" row "Marker 1" column of "generaltable" table should contain "Teacher One"
     And "Student Two" row "Marker 2" column of "generaltable" table should contain "Teacher Two"
 
-  @javascript
   Scenario: Allocating markers to students via the Quick Grading page
     Given I am on the "A1" "assign activity" page logged in as teacher1
     And I navigate to "Submissions" in current page administration
@@ -65,7 +63,6 @@ Background:
     And "Student Two" row "Marker 1" column of "generaltable" table should contain "Teacher One"
     And "Student Two" row "Marker 2" column of "generaltable" table should contain "Teacher Two"
 
-  @javascript
   Scenario: Allocating markers to students via the grader page
     Given I am on the "A1" "assign activity" page logged in as teacher1
     And I go to "Student One" "Assignment 1" activity advanced grading page

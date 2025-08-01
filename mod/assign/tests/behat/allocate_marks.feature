@@ -1,4 +1,4 @@
-@mod @mod_assign
+@mod @mod_assign @javascript
 Feature: Allocate marks to student submissions
   In order to assess a submission with multiple markers
   As a teacher
@@ -37,22 +37,17 @@ Background:
     | Assignment 1 | student1      | teacher1    |
     | Assignment 1 | student1      | teacher2    |
 
-
-  # Allocate marks via quick grading
-  @javascript
   Scenario: Allocating marks to students via the Quick Grading page
     Given I am on the "A1" "assign activity" page logged in as teacher1
     And I navigate to "Submissions" in current page administration
     And I click on "Quick grading" "checkbox"
-    And I set the field "User mark" in the "Student One" "table_row" to "100"
+    And I set the field "User mark" in the "Student One" "table_row" to "99"
     And I click on "Save" "button" in the "sticky-footer" "region"
     And I press "Continue"
     And I click on "Quick grading" "checkbox"
-    Then "Student One" row "Marker 1" column of "generaltable" table should contain "100"
+    Then "Student One" row "Marker 1" column of "generaltable" table should contain "99"
 
-  # Allocate marks via marker window
-  @javascript
-  Scenario: Allocating marks to students via the advanced marker window
+  Scenario: Allocating marks to students via the Advanced Marker window
     Given I am on the "A1" "assign activity" page logged in as teacher1
     And I go to "Student One" "Assignment 1" activity advanced marking page
     And I set the field "Mark out of 100" to "50"
@@ -61,7 +56,26 @@ Background:
     And I navigate to "Submissions" in current page administration
     Then "Student One" row "Marker 1" column of "generaltable" table should contain "50"
 
-  # Confirm can't use mark allocation with rubrics (yet)
+  Scenario: Setting workflow state for an allocated mark via Advanced Marker window
+    Given I am on the "A1" "assign activity" page logged in as teacher1
+    And I go to "Student One" "Assignment 1" activity advanced marking page
+    And I set the field "Mark out of 100" to "42"
+    And I set the field "Marking workflow state" to "Marking completed"
+    And I press "Save changes"
+    And I am on the "A1" "assign activity" page
+    And I navigate to "Submissions" in current page administration
+    Then "Student One" row "Marker 1" column of "generaltable" table should contain "42"
+    And "Student One" row "Marker 1" column of "generaltable" table should contain "Marking completed"
 
-  # groups?
-  #workflow
+  Scenario: Bulk setting workflow state as allocated marker
+    Given I am on the "A1" "assign activity" page logged in as teacher1
+    And I navigate to "Submissions" in current page administration
+    And I set the field "selectall" to "1"
+    And I click on "Change marking state" "button" in the "sticky-footer" "region"
+    And I click on "Change marking state" "button" in the ".modal-footer" "css_element"
+    And I select "Mark" from the "Workflow context" singleselect
+    And I select "Marking completed" from the "Marking workflow state" singleselect
+    And I press "Save changes"
+    Then "Student One" row "Marker 1" column of "generaltable" table should contain "Marking completed"
+    And "Student One" row "Marker 2" column of "generaltable" table should contain "Not marked"
+    And I should not see "Marking completed" in the table row containing "Student Two"
