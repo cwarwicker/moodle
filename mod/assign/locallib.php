@@ -8783,7 +8783,9 @@ class assign {
             $markers = [];
             $markerindex = 1;
             while (property_exists($formdata, 'allocatedmarker' . $markerindex)) {
-                $markers[] = $formdata->{'allocatedmarker' . $markerindex};
+                if (!empty($formdata->{'allocatedmarker' . $markerindex})) {
+                    $markers[] = $formdata->{'allocatedmarker' . $markerindex};
+                }
                 $markerindex++;
             }
 
