@@ -224,6 +224,11 @@ class assign {
     protected array $usersearch = [];
 
     /**
+     * @var bool $ismarking Are we marking, instead of grading?
+     */
+    protected bool $ismarking = false;
+
+    /**
      * Constructor for the base assign class.
      *
      * Note: For $coursemodule you can supply a stdclass if you like, but it
@@ -252,6 +257,15 @@ class assign {
 
         // Extra entropy is required for uniqid() to work on cygwin.
         $this->useridlistid = clean_param(uniqid('', true), PARAM_ALPHANUM);
+    }
+
+    /**
+     * Set if we are marking instead of grading
+     * @param bool $value
+     * @return void
+     */
+    public function set_is_marking(bool $value): void {
+        $this->ismarking = $value;
     }
 
     /**
@@ -2366,7 +2380,6 @@ class assign {
         global $DB, $USER;
 
         // Get the last known sort order for the grading table.
-
         if (empty($currentgroup)) {
             $currentgroup = 0;
         }
@@ -2406,10 +2419,12 @@ class assign {
                 }
             }
 
-            if ($instance->markingworkflow &&
-                    $instance->markingallocation &&
-                    !has_capability('mod/assign:manageallocations', $this->get_context()) &&
-                    has_capability('mod/assign:grade', $this->get_context())) {
+            if ($this->ismarking || (
+                $instance->markingworkflow &&
+                $instance->markingallocation &&
+                !has_capability('mod/assign:manageallocations', $this->get_context()) &&
+                has_capability('mod/assign:grade', $this->get_context()))
+            ) {
 
                 $additionaljoins .= ' LEFT JOIN {assign_allocated_marker} am
                                      ON u.id = am.student

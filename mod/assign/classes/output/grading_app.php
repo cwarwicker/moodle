@@ -110,6 +110,7 @@ class grading_app implements templatable, renderable {
         $export->hasmarkingworkflow = count($export->markingworkflowfilters) > 0;
         $export->markingallocationfilters = $this->assignment->get_marking_allocation_filters(true);
         $export->hasmarkingallocation = count($export->markingallocationfilters) > 0;
+        $export->ismarking = (int)$this->marker;
 
         $num = 1;
         foreach ($this->participants as $idx => $record) {

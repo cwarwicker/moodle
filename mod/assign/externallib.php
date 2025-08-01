@@ -2640,7 +2640,8 @@ class mod_assign_external extends \mod_assign\external\external_api {
                 'includeenrolments' => new external_value(PARAM_BOOL, 'Do return courses where the user is enrolled',
                                                           VALUE_DEFAULT, true),
                 'tablesort' => new external_value(PARAM_BOOL, 'Apply current user table sorting preferences.',
-                                                          VALUE_DEFAULT, false)
+                                                          VALUE_DEFAULT, false),
+                'marking' => new external_value(PARAM_BOOL, 'Are we marking instead of grading?', VALUE_DEFAULT, false),
             )
         );
     }
@@ -2656,12 +2657,13 @@ class mod_assign_external extends \mod_assign\external\external_api {
      * @param bool $onlyids Only return user ids.
      * @param bool $includeenrolments Return courses where the user is enrolled.
      * @param bool $tablesort Apply current user table sorting params from the grading table.
+     * @param bool $marking Are we marking instead of grading?
      * @return array of warnings and status result
      * @since Moodle 3.1
      * @throws moodle_exception
      */
     public static function list_participants($assignid, $groupid, $filter, $skip,
-            $limit, $onlyids, $includeenrolments, $tablesort) {
+            $limit, $onlyids, $includeenrolments, $tablesort, $marking) {
         global $DB, $CFG;
         require_once($CFG->dirroot . "/mod/assign/locallib.php");
         require_once($CFG->dirroot . "/user/lib.php");
@@ -2676,7 +2678,8 @@ class mod_assign_external extends \mod_assign\external\external_api {
                                                 'limit' => $limit,
                                                 'onlyids' => $onlyids,
                                                 'includeenrolments' => $includeenrolments,
-                                                'tablesort' => $tablesort
+                                                'tablesort' => $tablesort,
+                                                'marking' => $marking,
                                             ));
         $warnings = array();
 
@@ -2684,6 +2687,7 @@ class mod_assign_external extends \mod_assign\external\external_api {
 
         require_capability('mod/assign:view', $context);
 
+        $assign->set_is_marking($marking);
         $assign->require_view_grades();
 
         $participants = array();
