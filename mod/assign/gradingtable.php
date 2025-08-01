@@ -1114,7 +1114,7 @@ class assign_grading_table extends table_sql implements renderable {
                     if ($markers[$col - 1]->marker > 0) {
                         $displaymark .= html_writer::div(
                             get_string('markingworkflowstate' . ($mark->workflowstate ?? 'notmarked'), 'assign'),
-                            'badge bg-info'
+                            'badge bg-info d-block'
                         );
                     }
                 }
