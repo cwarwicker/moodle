@@ -30,10 +30,10 @@ use moodle_url;
 class actionmenu implements templatable, renderable {
 
     /** @var int The course module ID. */
-    private $cmid;
+    private int $cmid;
 
     /** @var int Number of markers. */
-    private $markercount;
+    private int $markercount;
 
     /**
      * Constructor for this object.
