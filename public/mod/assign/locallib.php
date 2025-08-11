@@ -3141,7 +3141,37 @@ class assign {
     }
 
     /**
-     * Add or update an mdl_assign_mark record.
+     * Validate that the given mark is valid for the point grading of the assignment
+     * @param float $mark
+     * @param string $gradevalue
+     * @return bool
+     */
+    protected function validate_point_mark(float $mark, string $gradevalue): bool {
+        if ($mark > $gradevalue) {
+            return false;
+        } else if ($mark < 0) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validate that a given mark is valid for the assignment's grading scale
+     * @param float $mark
+     * @param stdClass $scale
+     * @return bool
+     * @throws dml_exception
+     */
+    protected function validate_scale_mark(float $mark, stdClass $scale): bool {
+        $scaleoptions = make_menu_from_list($scale->scale);
+        if (!array_key_exists((int) $mark, $scaleoptions)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Add or update an assign_mark record.
      * @param stdClass $grade a grade record.
      * @param mixed $mark The mark awarded by this marker, for example, 55.2.
      * @param string|null $workflowstate The workflow state
@@ -3155,23 +3185,12 @@ class assign {
         }
 
         // Validate the mark, using the same logic as from update_grade().
+        $gradevalue = $this->get_instance()->grade;
         if ($mark) {
-            if ($this->get_instance()->grade > 0) {
-                if (!is_numeric($mark)) {
-                    return false;
-                } else if ($mark > $this->get_instance()->grade) {
-                    return false;
-                } else if ($mark < 0) {
-                    return false;
-                }
-            } else {
-                // This is a scale.
-                if ($scale = $DB->get_record('scale', ['id' => -($this->get_instance()->grade)])) {
-                    $scaleoptions = make_menu_from_list($scale->scale);
-                    if (!array_key_exists((int) $mark, $scaleoptions)) {
-                        return false;
-                    }
-                }
+            if ($gradevalue > 0 && !$this->validate_point_mark($mark, $gradevalue)) {
+                return false;
+            } else if ($scale = $DB->get_record('scale', ['id' => -$gradevalue]) && !$this->validate_scale_mark($mark, $scale)) {
+                return false;
             }
         }
 
@@ -3207,36 +3226,61 @@ class assign {
         // Calculate the grade based on the marks.
         switch ($this->get_instance()->multimarkmethod) {
             case 'maximum':
-                $grade->grade = grade_floatval(max($marks));
-                return $this->update_grade($grade);
-            break;
+                return $this->calculate_and_update_grade_from_maximum_mark($grade, $marks);
             case 'average':
-                $value = array_sum($marks) / count($marks);
-
-                // Do we need to round?
-                if (is_float($value)) {
-                    if ($this->get_instance()->multimarkrounding == ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP) {
-                        $value = ceil($value);
-                    } else if ($this->get_instance()->multimarkrounding == ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN) {
-                        $value = floor($value);
-                    } else if ($this->get_instance()->multimarkrounding == ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL) {
-                        $value = round($value);
-                    }
-
-                    // If rounding is not one of those options - default to no rounding. So $value unchanged.
-                }
-                $grade->grade = $value;
-                return $this->update_grade($grade);
-            break;
+                return $this->calculate_and_update_grade_from_average_mark($grade, $marks);
             case 'first':
-                $grade->grade = reset($marks);
-                return $this->update_grade($grade);
-                break;
-            case 'manual':
-                break;
+                return $this->calculate_and_update_grade_from_first_mark($grade, $marks);
         }
 
+        // The manual method requires a manual intervention to set the grade, so nothing to do here.
+
         return true;
+    }
+
+    /**
+     * Calculate and update the assignment grade to be the first mark received
+     * @param stdClass $grade
+     * @param array $marks
+     * @return bool
+     */
+    protected function calculate_and_update_grade_from_first_mark(stdClass $grade, array $marks): bool {
+        $grade->grade = reset($marks);
+        return $this->update_grade($grade);
+    }
+
+    /**
+     * Calculate and update the assignment grade to be the average of the marks received, taking into account rounding.
+     * @param stdClass $grade
+     * @param array $marks
+     * @return bool
+     */
+    protected function calculate_and_update_grade_from_average_mark(stdClass $grade, array $marks): bool {
+        $value = array_sum($marks) / count($marks);
+        // Do we need to round?
+        if (is_float($value)) {
+            if ($this->get_instance()->multimarkrounding == ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP) {
+                $value = ceil($value);
+            } else if ($this->get_instance()->multimarkrounding == ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN) {
+                $value = floor($value);
+            } else if ($this->get_instance()->multimarkrounding == ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL) {
+                $value = round($value);
+            }
+            // If rounding is not one of those options - default to no rounding. So $value unchanged.
+        }
+        $grade->grade = $value;
+        return $this->update_grade($grade);
+    }
+
+    /**
+     * Calculate and update the assignment grade to be the maximum mark received
+     * @param stdClass $grade
+     * @param array $marks
+     * @return bool
+     */
+    protected function calculate_and_update_grade_from_maximum_mark(stdClass $grade, array $marks) {
+        $grade->grade = grade_floatval(max($marks));
+        return $this->update_grade($grade);
     }
 
     /**
@@ -7505,9 +7549,6 @@ class assign {
 
             if ($workflowstatemodified) {
                 $flags->workflowstate = $modified->workflowstate;
-            }
-
-            if ($workflowstatemodified) {
                 if ($this->update_user_flags($flags) && $workflowstatemodified) {
                     $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
                     \mod_assign\event\workflow_state_updated::create_from_user($this, $user, $flags->workflowstate)->trigger();
@@ -8120,12 +8161,12 @@ class assign {
                 if (!$gradingdisabled) {
                     if (array_key_exists('marker', $params) && $params['marker']) {
                         $name = get_string('markoutof', 'assign', $this->get_instance()->grade);
-                        $gradingelement = $mform->addElement('text', 'mark', $name);
+                        $mform->addElement('text', 'mark', $name);
                         $mform->addHelpButton('mark', 'markoutofhelp', 'assign');
                         $mform->setType('mark', PARAM_RAW);
                     } else {
                         $name = get_string('gradeoutof', 'assign', $this->get_instance()->grade);
-                        $gradingelement = $mform->addElement('text', 'grade', $name);
+                        $mform->addElement('text', 'grade', $name);
                         $mform->addHelpButton('grade', 'gradeoutofhelp', 'assign');
                         $mform->setType('grade', PARAM_RAW);
                     }
@@ -8146,9 +8187,6 @@ class assign {
                             $data->mark = (int)unformat_float($data->mark);
                         }
                         $mform->setType('mark', PARAM_INT);
-                        if ($gradingdisabled) {
-                            $gradingelement->freeze();
-                        }
                     } else {
                         $gradingelement = $mform->addElement('select', 'grade', get_string('gradenoun') . ':', $grademenu);
 
@@ -8157,9 +8195,9 @@ class assign {
                             $data->grade = (int)unformat_float($data->grade);
                         }
                         $mform->setType('grade', PARAM_INT);
-                        if ($gradingdisabled) {
-                            $gradingelement->freeze();
-                        }
+                    }
+                    if ($gradingdisabled) {
+                        $gradingelement->freeze();
                     }
                 }
             }
@@ -8227,7 +8265,7 @@ class assign {
             } else {
                 $currentstate = $data->workflowstate ?? null;
             }
-            $states = $this->get_marking_workflow_states_for_current_user($marker);
+            $states = $this->get_marking_workflow_states_for_current_user((int)$marker);
             $options = array('' => get_string('markingworkflowstatenotmarked', 'assign')) + $states;
             $select = $mform->addElement('select', 'workflowstate', get_string('markingworkflowstate', 'assign'), $options);
             $mform->addHelpButton('workflowstate', 'markingworkflowstate', 'assign');
@@ -8756,7 +8794,7 @@ class assign {
                 $cm = $modinfo->get_cm($this->get_course_module()->id);
                 if (
                     $formdata->sendstudentnotifications && $cm->uservisible &&
-                    $state == ASSIGN_MARKING_WORKFLOW_STATE_RELEASED
+                    $state === ASSIGN_MARKING_WORKFLOW_STATE_RELEASED
                 ) {
                     $flags->mailed = 0;
                 }
@@ -9717,11 +9755,11 @@ class assign {
     /**
      * Get the list of marking_workflow states the current user has permission to transition a grade to.
      *
-     * @param bool $marker Are we on the Marker panel instead of the Grader panel?
+     * @param int $marker Are we on the Marker panel instead of the Grader panel? Integer representation of a bool
+     *                    as it's used as an array key to return values if already retrieved.
      * @return array of state => description
      */
-    public function get_marking_workflow_states_for_current_user(bool $marker = false) {
-        $marker = (int)$marker;
+    public function get_marking_workflow_states_for_current_user(int $marker = 0) {
         if (!empty($this->markingworkflowstates[$marker])) {
             return $this->markingworkflowstates[$marker];
         }
