@@ -931,6 +931,7 @@ class assign {
         $DB->delete_records('assign_user_flags', array('assignment' => $this->get_instance()->id));
         $DB->delete_records('assign_user_mapping', array('assignment' => $this->get_instance()->id));
         $DB->delete_records('assign_allocated_marker', ['assignment' => $this->get_instance()->id]);
+        $DB->delete_records('assign_mark', ['assignment' => $this->get_instance()->id]);
 
         // Delete items from the gradebook.
         if (! $this->delete_grades()) {
