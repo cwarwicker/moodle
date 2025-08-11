@@ -686,10 +686,10 @@ class assign_grading_table extends table_sql implements renderable {
      * Get the user object for the marker of a given student and marker number
      * @param int $studentid
      * @param int $number
-     * @return mixed
+     * @return stdClass|bool
      * @throws dml_exception
      */
-    protected function get_marker_number(int $studentid, int $number): mixed {
+    protected function get_marker_number(int $studentid, int $number): stdClass|bool {
         global $DB;
         $multimarkers = $DB->get_fieldset('assign_allocated_marker', 'marker', [
             'student' => $studentid, 'assignment' => $this->assignment->get_instance()->id,
@@ -697,9 +697,8 @@ class assign_grading_table extends table_sql implements renderable {
         if (!empty($multimarkers) && count($multimarkers) >= ($number + 1)) {
             // Then get the name of the one at the column position requested, e.g. marker1, marker2, etc...
             return \core_user::get_user($multimarkers[$number]);
-        } else {
-            return null;
         }
+        return false;
     }
 
     /**
