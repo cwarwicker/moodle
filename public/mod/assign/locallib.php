@@ -101,6 +101,8 @@ define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL', 0);
 define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP', 1);
 define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_NONE', -2);
 
+define('ASSIGN_MULTIMARKING_MAX_MARKERS', 5);
+
 require_once($CFG->libdir . '/accesslib.php');
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/repository/lib.php');
@@ -7363,7 +7365,7 @@ class assign {
 
                 // Then check if we changed the allocated marker for this student.
                 $record->allocatedmarkerids = [];
-                for ($i = 1; $i < 5; $i++) {
+                for ($i = 1; $i <= ASSIGN_MULTIMARKING_MAX_MARKERS; $i++) {
                     $allocatedmarker = optional_param('quickgrade_' . $userid . '_allocatedmarker_' . $i, null, PARAM_INT);
                     if ($allocatedmarker) {
                         $record->allocatedmarkerids[] = $allocatedmarker;
