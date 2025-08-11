@@ -46,7 +46,7 @@ class mod_assign_batch_set_marking_workflow_state_form extends moodleform {
 
         // If the assignment is using multi marking, do we want to set this workflow as the overall workflow for the submissions?
         // Or for our allocated mark on them?
-        if ($this->_customdata['assignment']->is_using_multiple_marking()) {
+        if ($params['assignment'] && $params['assignment']->is_using_multiple_marking()) {
             $options = ['mark' => get_string('markverb', 'assign'), 'grade' => get_string('gradenoun')];
             $mform->addElement('select', 'workflowcontext', get_string('workflowcontext', 'assign'), $options);
             $mform->addHelpButton('workflowcontext', 'workflowcontext', 'assign');
