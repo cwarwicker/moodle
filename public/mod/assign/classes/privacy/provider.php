@@ -206,6 +206,37 @@ class provider implements
 
         $contextlist->add_from_sql($sql, $params);
 
+        // Contexts where the given user has assignment marks.
+        $sql = "SELECT ctx.id
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON cm.module = m.id AND m.name = :modulename
+                  JOIN {assign} a ON cm.instance = a.id
+                  JOIN {context} ctx ON cm.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {assign_grades} ag ON a.id = ag.assignment
+                  JOIN {assign_mark} am ON am.gradeid = ag.id
+                 WHERE ag.userid = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
+        // Contexts where the given user has assigned assignment marks.
+        $sql = "SELECT ctx.id
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON cm.module = m.id AND m.name = :modulename
+                  JOIN {assign} a ON cm.instance = a.id
+                  JOIN {context} ctx ON cm.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {assign_mark} am ON am.assignment = a.id
+                 WHERE am.marker = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
+        // Contexts where the given user is either an allocated marker or has an allocated marker.
+        $sql = "SELECT ctx.id
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON cm.module = m.id AND m.name = :modulename
+                  JOIN {assign} a ON cm.instance = a.id
+                  JOIN {context} ctx ON cm.id = ctx.instanceid AND ctx.contextlevel = :contextlevel
+                  JOIN {assign_allocated_marker} am ON am.assignment = a.id
+                 WHERE am.marker = :graderid OR am.student = :userid";
+        $contextlist->add_from_sql($sql, $params);
+
         manager::plugintype_class_callback('assignfeedback', self::ASSIGNFEEDBACK_INTERFACE,
                 'get_context_for_userid_within_feedback', [$userid, $contextlist]);
         manager::plugintype_class_callback('assignsubmission', self::ASSIGNSUBMISSION_INTERFACE,
@@ -278,6 +309,29 @@ class provider implements
                  WHERE ctx.id = :contextid AND ctx.contextlevel = :contextlevel";
         $userlist->add_from_sql('userid', $sql, $params);
 
+        // Users who are either a student with a mark, or the teacher who has given a mark.
+        $sql = "SELECT g.userid, am.marker
+                  FROM {context} ctx
+                  JOIN {course_modules} cm ON cm.id = ctx.instanceid
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {assign} a ON a.id = cm.instance
+                  JOIN {assign_grades} g ON a.id = g.assignment
+                  JOIN {assign_mark} am ON am.gradeid = g.id
+                 WHERE ctx.id = :contextid AND ctx.contextlevel = :contextlevel";
+        $userlist->add_from_sql('userid', $sql, $params);
+        $userlist->add_from_sql('marker', $sql, $params);
+
+        // Users who are either a student with an allocated marker, or the allocated marker.
+        $sql = "SELECT am.student, am.marker
+                  FROM {context} ctx
+                  JOIN {course_modules} cm ON cm.id = ctx.instanceid
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {assign} a ON a.id = cm.instance
+                  JOIN {assign_allocated_marker} am ON am.assignment = a.id
+                 WHERE ctx.id = :contextid AND ctx.contextlevel = :contextlevel";
+        $userlist->add_from_sql('student', $sql, $params);
+        $userlist->add_from_sql('marker', $sql, $params);
+
         manager::plugintype_class_callback('assignsubmission', self::ASSIGNSUBMISSION_USER_INTERFACE,
                 'get_userids_from_context', [$userlist]);
         manager::plugintype_class_callback('assignfeedback', self::ASSIGNFEEDBACK_USER_INTERFACE,
@@ -314,6 +368,8 @@ class provider implements
 
             static::export_overrides($context, $assign, $user);
             static::export_submission($assign, $user, $context, []);
+            static::export_marks($assign, $user, $context);
+            static::export_allocations($assign, $user, $context);
             // Meta data.
             self::store_assign_user_flags($context, $assign, $user->id);
             if ($assign->is_blind_marking()) {
@@ -361,6 +417,8 @@ class provider implements
                 $DB->delete_records('assign_submission', ['assignment' => $assign->get_instance()->id]);
                 $DB->delete_records('assign_user_flags', ['assignment' => $assign->get_instance()->id]);
                 $DB->delete_records('assign_user_mapping', ['assignment' => $assign->get_instance()->id]);
+                $DB->delete_records('assign_mark', ['assignment' => $assign->get_instance()->id]);
+                static::delete_allocated_markers_for_users($assign);
             }
         }
     }
@@ -496,6 +554,16 @@ class provider implements
     }
 
     /**
+     * Deletes assignment allocated markers in bulk
+     * @param \assign $assign
+     * @param array $userids
+     * @return void
+     */
+    protected function delete_allocated_markers_for_users(\assign $assign, array $userids = []): void {
+        // TODO.
+    }
+
+    /**
      * Find out if this user has graded any users.
      *
      * @param  int $userid The user ID (potential teacher).
@@ -615,6 +683,75 @@ class provider implements
                 writer::with_context($context)->export_user_preference('mod_assign', $key, $value, $preference['string']);
             }
         }
+    }
+
+    /**
+     * Export the user's marks for the given assignment.
+     * @param \assign $assign
+     * @param \stdClass $user
+     * @param \context $context
+     * @return void
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function export_marks(\assign $assign, \stdClass $user, \context $context): void {
+        global $DB;
+
+        $records = $DB->get_records_sql("
+            SELECT am.*
+              FROM {assign_mark} am
+         LEFT JOIN {assign_grades} ag on ag.id = am.gradeid
+             WHERE am.assignment = :assignment
+               AND (ag.userid = :uid1 OR am.marker = :uid2)",
+            [
+                'assignment' => $assign->get_instance()->id,
+                'uid1' => $user->id,
+                'uid2' => $user->id,
+            ]
+        );
+
+        $data = [];
+        foreach ($records as $row) {
+            $row = (array)$row;
+            unset($row['id']);
+            $data[] = $row;
+        }
+
+        writer::with_context($context)->export_data([get_string('marks', 'mod_assign')], (object) ['data' => $data]);
+    }
+
+    /**
+     * Export the user's marker allocations for the given assignment.
+     * @param \assign $assign
+     * @param \stdClass $user
+     * @param \context $context
+     * @return void
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
+    public static function export_allocations(\assign $assign, \stdClass $user, \context $context): void {
+        global $DB;
+
+        $records = $DB->get_records_sql("
+            SELECT *
+              FROM {assign_allocated_marker}
+             WHERE assignment = :assignment
+               AND (student = :uid1 OR marker = :uid2)",
+            [
+                'assignment' => $assign->get_instance()->id,
+                'uid1' => $user->id,
+                'uid2' => $user->id,
+            ]
+        );
+
+        $data = [];
+        foreach ($records as $row) {
+            $row = (array)$row;
+            unset($row['id']);
+            $data[] = $row;
+        }
+
+        writer::with_context($context)->export_data([get_string('markerallocations', 'mod_assign')], (object) ['data' => $data]);
     }
 
     /**
