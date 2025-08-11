@@ -416,6 +416,7 @@ $string['markingworkflowstatereleased'] = 'Released';
 $string['markoutof'] = 'Mark out of {$a}';
 $string['markoutofhelp'] = 'Mark';
 $string['markoutofhelp_help'] = 'Enter the mark for the student\'s submission here. You may include decimals.';
+$string['marks'] = 'Marks';
 $string['markverb'] = 'Mark';
 $string['multimarkmethod'] = 'Calculate grade';
 $string['multimarkmethod_help'] = 'How the grade will be calculated when there are multiple markers';
