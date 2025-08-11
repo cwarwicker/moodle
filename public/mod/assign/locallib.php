@@ -7576,6 +7576,9 @@ class assign {
         // Store array of markers to make sure we don't try to add the same marker twice.
         $markers = [];
 
+        // Filter out empty markers.
+        $markerids = array_filter($markerids);
+
         // Then loop through the requested markers and assign them to the student/assignment.
         foreach ($markerids as $markerid) {
             if (in_array($markerid, $markers)) {

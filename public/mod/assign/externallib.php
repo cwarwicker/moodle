@@ -1543,8 +1543,8 @@ class mod_assign_external extends \mod_assign\external\external_api {
             array(
                 'assignmentid' => new external_value(PARAM_INT, 'The assignment id to operate on'),
                 'userid' => new external_value(PARAM_INT, 'The user id the submission belongs to'),
-                'marker' => new external_value(PARAM_BOOL, 'Flag, false if grading, true if marking'),
-                'jsonformdata' => new external_value(PARAM_RAW, 'The data from the grading form, encoded as a json array')
+                'jsonformdata' => new external_value(PARAM_RAW, 'The data from the grading form, encoded as a json array'),
+                'marker' => new external_value(PARAM_BOOL, 'Flag, false if grading, true if marking', VALUE_OPTIONAL, false),
             )
         );
     }
@@ -1554,12 +1554,12 @@ class mod_assign_external extends \mod_assign\external\external_api {
      *
      * @param int $assignmentid The id of the assignment
      * @param int $userid The id of the user the submission belongs to.
-     * @param bool $marker Are we marking instead of grading?
      * @param string $jsonformdata The data from the form, encoded as a json array.
+     * @param bool $marker Are we marking instead of grading?
      * @return array of warnings to indicate any errors.
      * @since Moodle 3.1
      */
-    public static function submit_grading_form($assignmentid, $userid, $marker, $jsonformdata) {
+    public static function submit_grading_form($assignmentid, $userid, $jsonformdata, $marker) {
         global $CFG, $USER;
         require_once($CFG->dirroot . '/mod/assign/locallib.php');
         require_once($CFG->dirroot . '/mod/assign/gradeform.php');
@@ -1568,8 +1568,8 @@ class mod_assign_external extends \mod_assign\external\external_api {
                                             array(
                                                 'assignmentid' => $assignmentid,
                                                 'userid' => $userid,
-                                                'jsonformdata' => $jsonformdata,
                                                 'marker' => $marker,
+                                                'jsonformdata' => $jsonformdata,
                                             ));
 
         list($assignment, $course, $cm, $context) = self::validate_assign($params['assignmentid']);
@@ -2644,7 +2644,7 @@ class mod_assign_external extends \mod_assign\external\external_api {
                     VALUE_DEFAULT,
                     false
                 ),
-                'marking' => new external_value(PARAM_BOOL, 'Are we marking instead of grading?', VALUE_DEFAULT, false),
+                'marking' => new external_value(PARAM_BOOL, 'Are we marking instead of grading?', VALUE_OPTIONAL, false),
             )
         );
     }
