@@ -721,15 +721,18 @@ class assign_grading_table extends table_sql implements renderable {
                     $allocatedmarker,
                     has_capability('moodle/site:viewfullnames', $this->assignment->get_context())
                 );
-            } else {
-                return '';
             }
+            return '';
         }
 
-        if ($this->quickgrading && has_capability('mod/assign:manageallocations', $this->assignment->get_context()) &&
-            (empty($row->workflowstate) ||
-            $row->workflowstate == ASSIGN_MARKING_WORKFLOW_STATE_INMARKING ||
-            $row->workflowstate == ASSIGN_MARKING_WORKFLOW_STATE_NOTMARKED)
+        if (
+            $this->quickgrading &&
+            has_capability('mod/assign:manageallocations', $this->assignment->get_context()) &&
+            (
+                empty($row->workflowstate) ||
+                $row->workflowstate == ASSIGN_MARKING_WORKFLOW_STATE_INMARKING ||
+                $row->workflowstate == ASSIGN_MARKING_WORKFLOW_STATE_NOTMARKED
+            )
         ) {
             // Get the potential users who could be assigned as an allocated marker.
             if ($markers === null) {
@@ -750,20 +753,21 @@ class assign_grading_table extends table_sql implements renderable {
             return html_writer::label(
                 get_string('allocatedmarker', 'assign') . ' ' . $markerpos,
                 'menu' . $name
-            ) .
-            html_writer::select($markerlist, $name, $allocatedmarker?->id, false);
-        } else if (!empty($allocatedmarker)) {
+            ) . html_writer::select($markerlist, $name, ($allocatedmarker) ? $allocatedmarker->id : '', false);
+        }
+
+        if ($allocatedmarker) {
             $output = '';
             if ($this->quickgrading) { // Add hidden field for quickgrading page.
                 $name = 'quickgrade_' . $row->id . '_allocatedmarker_' . $markerpos;
-                $attributes = ['type' => 'hidden', 'name' => $name, 'value' => $allocatedmarker?->id];
+                $attributes = ['type' => 'hidden', 'name' => $name, 'value' => $allocatedmarker->id];
                 $output .= html_writer::empty_tag('input', $attributes);
             }
             $output .= html_writer::tag('strong', fullname($allocatedmarker));
             return $output;
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     /**
