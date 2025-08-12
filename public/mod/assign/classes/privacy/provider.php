@@ -753,12 +753,14 @@ class provider implements
     public static function export_marks(\assign $assign, \stdClass $user, \context $context): void {
         global $DB;
 
-        $records = $DB->get_records_sql("
-            SELECT am.*
-              FROM {assign_mark} am
-         LEFT JOIN {assign_grades} ag on ag.id = am.gradeid
-             WHERE am.assignment = :assignment
-               AND (ag.userid = :uid1 OR am.marker = :uid2)",
+        $records = $DB->get_records_sql(
+            "
+                SELECT am.*
+                  FROM {assign_mark} am
+             LEFT JOIN {assign_grades} ag on ag.id = am.gradeid
+                 WHERE am.assignment = :assignment
+                   AND (ag.userid = :uid1 OR am.marker = :uid2)
+                ",
             [
                 'assignment' => $assign->get_instance()->id,
                 'uid1' => $user->id,
@@ -788,11 +790,13 @@ class provider implements
     public static function export_allocations(\assign $assign, \stdClass $user, \context $context): void {
         global $DB;
 
-        $records = $DB->get_records_sql("
-            SELECT *
-              FROM {assign_allocated_marker}
-             WHERE assignment = :assignment
-               AND (student = :uid1 OR marker = :uid2)",
+        $records = $DB->get_records_sql(
+            "
+                SELECT *
+                  FROM {assign_allocated_marker}
+                 WHERE assignment = :assignment
+                   AND (student = :uid1 OR marker = :uid2)
+               ",
             [
                 'assignment' => $assign->get_instance()->id,
                 'uid1' => $user->id,
