@@ -512,6 +512,8 @@ class provider implements
         $params['assignment'] = $assignid;
         $DB->delete_records_select('assign_user_flags', "assignment = :assignment AND userid $sql", $params);
         $DB->delete_records_select('assign_user_mapping', "assignment = :assignment AND userid $sql", $params);
+        static::delete_allocated_markers_for_users($assign, $userids);
+        static::delete_marks_for_users($assign, $userids);
         $DB->delete_records_select('assign_grades', "assignment = :assignment AND userid $sql", $params);
         $DB->delete_records_select('assign_submission', "assignment = :assignment AND userid $sql", $params);
     }
