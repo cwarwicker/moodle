@@ -417,8 +417,8 @@ class provider implements
                 $DB->delete_records('assign_submission', ['assignment' => $assign->get_instance()->id]);
                 $DB->delete_records('assign_user_flags', ['assignment' => $assign->get_instance()->id]);
                 $DB->delete_records('assign_user_mapping', ['assignment' => $assign->get_instance()->id]);
-                $DB->delete_records('assign_mark', ['assignment' => $assign->get_instance()->id]);
                 static::delete_allocated_markers_for_users($assign);
+                static::delete_marks_for_users($assign);
             }
         }
     }
@@ -464,6 +464,8 @@ class provider implements
             static::delete_overrides_for_users($assign, [$user->id]);
             $DB->delete_records('assign_user_flags', ['assignment' => $assignid, 'userid' => $user->id]);
             $DB->delete_records('assign_user_mapping', ['assignment' => $assignid, 'userid' => $user->id]);
+            static::delete_allocated_markers_for_users($assign, [$user->id]);
+            static::delete_marks_for_users($assign, [$user->id]);
             $DB->delete_records('assign_grades', ['assignment' => $assignid, 'userid' => $user->id]);
             $DB->delete_records('assign_submission', ['assignment' => $assignid, 'userid' => $user->id]);
         }
@@ -554,13 +556,65 @@ class provider implements
     }
 
     /**
-     * Deletes assignment allocated markers in bulk
-     * @param \assign $assign
-     * @param array $userids
+     * Delete all allocated markers for an array of users, for the given assignment
+     * @param \assign $assign The assignment object.
+     * @param array $userids If empty, delete all marks for the assignment.
      * @return void
      */
-    protected function delete_allocated_markers_for_users(\assign $assign, array $userids = []): void {
-        // TODO.
+    protected static function delete_allocated_markers_for_users(\assign $assign, array $userids = []): void {
+        global $DB;
+
+        if ($userids) {
+            [$insql, $inparams] = $DB->get_in_or_equal($userids);
+            $params = [$assign->get_instance()->id];
+            // We need this twice as we're using the same $insql for student and marker.
+            $params = array_merge($params, $inparams);
+            $params = array_merge($params, $inparams);
+            $sql = "
+                SELECT *
+                  FROM {assign_allocated_marker}
+                 WHERE assignment = ?
+                   AND (student {$insql} OR marker {$insql})
+            ";
+            $records = $DB->get_records_sql($sql, $params);
+        } else {
+            $records = $DB->get_records('assign_allocated_marker', ['assignment' => $assign->get_instance()->id]);
+        }
+
+        foreach ($records as $record) {
+            $DB->delete_records('assign_allocated_marker', ['id' => $record->id]);
+        }
+    }
+
+    /**
+     * Delete all assignment marks for an array of users, for the given assignment
+     * @param \assign $assign The assignment object.
+     * @param array $userids If empty, delete all marks for the assignment.
+     * @return void
+     */
+    protected static function delete_marks_for_users(\assign $assign, array $userids = []): void {
+        global $DB;
+        if ($userids) {
+            [$insql, $inparams] = $DB->get_in_or_equal($userids);
+            $params = [$assign->get_instance()->id];
+            // We need this twice as we're using the same $insql for student and marker.
+            $params = array_merge($params, $inparams);
+            $params = array_merge($params, $inparams);
+            $sql = "
+                SELECT am.*
+                  FROM {assign_mark} am
+             LEFT JOIN {assign_grades} ag ON ag.id = am.gradeid
+                 WHERE am.assignment = ?
+                   AND (ag.userid {$insql} OR am.marker {$insql})
+            ";
+            $records = $DB->get_records_sql($sql, $params);
+        } else {
+            $records = $DB->get_records('assign_mark', ['assignment' => $assign->get_instance()->id]);
+        }
+
+        foreach ($records as $record) {
+            $DB->delete_records('assign_mark', ['id' => $record->id]);
+        }
     }
 
     /**
