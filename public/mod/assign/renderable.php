@@ -299,12 +299,18 @@ class assign_feedback_status implements renderable {
     public $plugins = [];
 
     /**
+     * @var array Array of markers => marks.
+     */
+    public $marks = [];
+
+    /**
      * Constructor
      * @param string $gradefordisplay
      * @param mixed $gradeddate
      * @param mixed $grader
      * @param array $feedbackplugins
      * @param mixed $grade
+     * @param array $marks
      * @param int $coursemoduleid
      * @param string $returnaction The action required to return to this page
      * @param array $returnparams The list of params required to return to this page
@@ -316,6 +322,7 @@ class assign_feedback_status implements renderable {
                                 $grader,
                                 $feedbackplugins,
                                 $grade,
+                                $marks,
                                 $coursemoduleid,
                                 $returnaction,
                                 $returnparams,
@@ -331,6 +338,7 @@ class assign_feedback_status implements renderable {
         $this->returnparams = $returnparams;
         $this->canviewfullnames = $canviewfullnames;
         $this->gradingcontrollergrade = $gradingcontrollergrade;
+        $this->marks = $marks;
     }
 }
 
