@@ -5702,6 +5702,7 @@ class assign {
                 $grader,
                 $this->get_feedback_plugins(),
                 $grade,
+                $this->get_mark_records($grade->id, $grade->userid),
                 $this->get_course_module()->id,
                 $this->get_return_action(),
                 $this->get_return_params(),

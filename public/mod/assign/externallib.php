@@ -197,6 +197,26 @@ class mod_assign_external extends \mod_assign\external\external_api {
     }
 
     /**
+     * Creates a mark single structure.
+     * @return external_single_structure
+     */
+    private static function get_mark_structure(): external_single_structure {
+        return new external_single_structure(
+            [
+                'id'                => new external_value(PARAM_INT, 'mark id'),
+                'assignment'        => new external_value(PARAM_INT, 'assignment id'),
+                'gradeid'           => new external_value(PARAM_INT, 'grade id'),
+                'timecreated'       => new external_value(PARAM_INT, 'mark creation time'),
+                'timemodified'      => new external_value(PARAM_INT, 'mark last modified time'),
+                'marker'            => new external_value(PARAM_INT, 'marker id'),
+                'mark'              => new external_value(PARAM_TEXT, 'grade'),
+                'workflowstate'     => new external_value(PARAM_TEXT, 'workflow state'),
+            ],
+            'mark information',
+        );
+    }
+
+    /**
      * Creates an assign_grades external_single_structure
      * @return external_single_structure
      * @since  Moodle 2.4
@@ -2595,6 +2615,7 @@ class mod_assign_external extends \mod_assign\external\external_api {
                         'gradefordisplay' => new external_value(PARAM_RAW, 'Grade rendered into a format suitable for display.'),
                         'gradeddate' => new external_value(PARAM_INT, 'The date the user was graded.'),
                         'plugins' => new external_multiple_structure(self::get_plugin_structure(), 'Plugins info.', VALUE_OPTIONAL),
+                        'marks' => new external_multiple_structure(self::get_mark_structure(), 'Marks info.', VALUE_OPTIONAL),
                     ), 'Feedback for the last attempt.', VALUE_OPTIONAL
                 ),
                 'previousattempts' => new external_multiple_structure(
