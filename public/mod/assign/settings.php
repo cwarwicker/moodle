@@ -371,6 +371,36 @@ if ($ADMIN->fulltree) {
     );
     $settings->add($setting);
 
+    $name = new lang_string('multimarkmethod', 'mod_assign');
+    $description = new lang_string('multimarkmethod_help', 'mod_assign');
+    $setting = new admin_setting_configselect(
+        'assign/multimarkmethod',
+        $name,
+        $description,
+        null,
+        \mod_assign\markingagreement\method::inject_hook_get_names(),
+    );
+    $setting->set_locked_flag_options(admin_setting_flag::ENABLED, false);
+    $settings->add($setting);
+
+    $name = new lang_string('multimarkrounding', 'mod_assign');
+    $description = new lang_string('multimarkrounding_help', 'mod_assign');
+    $options = [
+        ASSIGN_MULTIMARKING_AVERAGE_ROUND_NONE  => get_string('multimarkrounding:none', 'assign'),
+        ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL  => get_string('multimarkrounding:natural', 'assign'),
+        ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN => get_string('multimarkrounding:down', 'assign'),
+        ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP  => get_string('multimarkrounding:up', 'assign'),
+    ];
+    $setting = new admin_setting_configselect(
+        'assign/multimarkrounding',
+        $name,
+        $description,
+        null,
+        $options,
+    );
+    $setting->set_locked_flag_options(admin_setting_flag::ENABLED, false);
+    $settings->add($setting);
+
     $name = new lang_string('markinganonymous', 'mod_assign');
     $description = new lang_string('markinganonymous_help', 'mod_assign');
     $setting = new admin_setting_configcheckbox('assign/markinganonymous',
