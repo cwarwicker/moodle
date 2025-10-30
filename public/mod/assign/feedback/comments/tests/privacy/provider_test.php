@@ -35,9 +35,17 @@ final class provider_test extends provider_testcase {
      * @param  \stdClass $teacher        user object
      * @param  string   $submissiontext Submission text
      * @param  string   $feedbacktext   Feedback text
+     * @param  bool     $markercomment  True/False is it an allocated marker comment?
      * @return array   Feedback plugin object and the grade object.
      */
-    protected function create_feedback($assign, $student, $teacher, $submissiontext, $feedbacktext) {
+    protected function create_feedback(
+        $assign,
+        $student,
+        $teacher,
+        $submissiontext,
+        $feedbacktext,
+        bool $markercomment = false
+    ) {
         global $CFG;
 
         $submission = new \stdClass();
@@ -54,6 +62,11 @@ final class provider_test extends provider_testcase {
         $grade = $assign->get_user_grade($student->id, true);
 
         $this->setUser($teacher);
+
+        if ($markercomment) {
+            $assign->set_is_marking(true);
+            $grade->grader = $teacher->id;
+        }
 
         $context = \context_user::instance($teacher->id);
 
@@ -111,7 +124,12 @@ final class provider_test extends provider_testcase {
         $user2 = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user1->id, $course->id, 'student');
         $this->getDataGenerator()->enrol_user($user2->id, $course->id, 'editingteacher');
-        $assign = $this->create_instance(['course' => $course]);
+        $assign = $this->create_instance([
+            'course' => $course,
+            'markingworkflow' => 1,
+            'markingallocation' => 1,
+            'markercount' => 2,
+        ]);
 
         $context = $assign->get_context();
 
@@ -142,6 +160,34 @@ final class provider_test extends provider_testcase {
 
         $this->assertInstanceOf('stored_file', $feedbackfile);
         $this->assertEquals('feedback1.txt', $feedbackfile->get_filename());
+
+        // Any allocated marker comments should also be visible in the data export.
+        // Allocate a marker to the student's submission.
+        $assign->update_allocated_markers($user1->id, [
+            $user2->id,
+        ]);
+
+        // Add a comment for that marker.
+        $feedbacktext = '<p>Allocated marker comment one</p>';
+        [$plugin, $grade] = $this->create_feedback(
+            $assign,
+            $user1,
+            $user2,
+            'Submission text',
+            $feedbacktext,
+            true
+        );
+
+        // Get the mark ID so we can look it up in the exported data.
+        $mark = $assign->get_mark($grade->id, $grade->grader);
+        $prop = 'commenttext_mark_' . $mark->id;
+
+        // Check that the student and teacher can see the comment.
+        foreach ([$user1, $user2] as $user) {
+            $exportdata = new \mod_assign\privacy\assign_plugin_request_data($context, $assign, $grade, [], $user);
+            \assignfeedback_comments\privacy\provider::export_feedback_user_data($exportdata);
+            $this->assertStringContainsString($feedbacktext, $writer->get_data(['Feedback comments'])->$prop);
+        }
     }
 
     /**

@@ -128,20 +128,6 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
             ]
         );
 
-        $marks = new backup_nested_element('marks');
-
-        $mark = new backup_nested_element(
-            'mark',
-            ['id'],
-            [
-                'assignment',
-                'gradeid',
-                'timecreated',
-                'timemodified',
-                'marker',
-            ]
-        );
-
         $submissions = new backup_nested_element('submissions');
 
         $submission = new backup_nested_element('submission', array('id'),
@@ -165,6 +151,20 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
                                                  'penalty',
                                                  'attemptnumber'));
 
+        $marks = new backup_nested_element('marks');
+
+        $mark = new backup_nested_element(
+            'mark',
+            ['id'],
+            [
+                'assignment',
+                'gradeid',
+                'timecreated',
+                'timemodified',
+                'marker',
+            ]
+        );
+
         $pluginconfigs = new backup_nested_element('plugin_configs');
 
         $pluginconfig = new backup_nested_element('plugin_config', array('id'),
@@ -182,12 +182,12 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
         $userflags->add_child($userflag);
         $assign->add_child($allocatedmarkers);
         $allocatedmarkers->add_child($allocatedmarker);
-        $assign->add_child($marks);
-        $marks->add_child($mark);
         $assign->add_child($submissions);
         $submissions->add_child($submission);
         $assign->add_child($grades);
         $grades->add_child($grade);
+        $grade->add_child($marks);
+        $marks->add_child($mark);
         $assign->add_child($pluginconfigs);
         $pluginconfigs->add_child($pluginconfig);
         $assign->add_child($overrides);
@@ -209,11 +209,6 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
                 ['assignment' => backup::VAR_PARENTID]
             );
 
-            $mark->set_source_table(
-                'assign_mark',
-                ['assignment' => backup::VAR_PARENTID]
-            );
-
             $submissionparams = array('assignment' => backup::VAR_PARENTID);
             if (!$groupinfo) {
                 // Without group info, skip group submissions.
@@ -223,6 +218,11 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
 
             $grade->set_source_table('assign_grades',
                                      array('assignment' => backup::VAR_PARENTID));
+
+            $mark->set_source_table(
+                'assign_mark',
+                ['gradeid' => backup::VAR_PARENTID]
+            );
 
             // Support 2 types of subplugins.
             $this->add_subplugin_structure('assignsubmission', $submission, true);
@@ -241,11 +241,11 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
         $userflag->annotate_ids('user', 'userid');
         $allocatedmarker->annotate_ids('user', 'student');
         $allocatedmarker->annotate_ids('user', 'marker');
-        $mark->annotate_ids('user', 'marker');
         $submission->annotate_ids('user', 'userid');
         $submission->annotate_ids('group', 'groupid');
         $grade->annotate_ids('user', 'userid');
         $grade->annotate_ids('user', 'grader');
+        $mark->annotate_ids('user', 'marker');
         $assign->annotate_ids('grouping', 'teamsubmissiongroupingid');
         $override->annotate_ids('user', 'userid');
         $override->annotate_ids('group', 'groupid');

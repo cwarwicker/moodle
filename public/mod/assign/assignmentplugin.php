@@ -705,4 +705,34 @@ abstract class assign_plugin {
     public function get_config_for_external() {
         return array();
     }
+
+    /**
+     * To be overridden by plugins.
+     * Are there extra columns to display per marker if there are multiple allocated markers?
+     * @return bool
+     */
+    public function has_marker_columns(): bool {
+        return false;
+    }
+
+    /**
+     * To be overridden by plugins.
+     * Return the array of extra marker columns for things like quick grading.
+     * @param int $markernumber The marker number
+     * @return array [headertitle => columntext]
+     */
+    public function get_marker_columns(int $markernumber): array {
+        return [];
+    }
+
+    /**
+     * To be overridden by plugins.
+     * Return the formatted column text for a given marker column
+     * @param stdClass $grade The grade object
+     * @param string $colname The column name
+     * @return string
+     */
+    public function format_marker_column(stdClass $grade, string $colname): string {
+        return '';
+    }
 }

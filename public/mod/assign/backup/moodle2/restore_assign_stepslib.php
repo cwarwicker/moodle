@@ -55,26 +55,23 @@ class restore_assign_activity_structure_step extends restore_activity_structure_
         // Define each element separated.
         $paths[] = new restore_path_element('assign', '/activity/assign');
         if ($userinfo) {
+            $allocatedmarker = new restore_path_element(
+                'assign_allocatedmarker',
+                '/activity/assign/allocatedmarkers/allocatedmarker'
+            );
+            $paths[] = $allocatedmarker;
             $submission = new restore_path_element('assign_submission',
                                                    '/activity/assign/submissions/submission');
             $paths[] = $submission;
             $this->add_subplugin_structure('assignsubmission', $submission);
             $grade = new restore_path_element('assign_grade', '/activity/assign/grades/grade');
             $paths[] = $grade;
+            $mark = new restore_path_element('assign_mark', '/activity/assign/grades/grade/marks/mark');
+            $paths[] = $mark;
             $this->add_subplugin_structure('assignfeedback', $grade);
             $userflag = new restore_path_element('assign_userflag',
                                                    '/activity/assign/userflags/userflag');
             $paths[] = $userflag;
-            $allocatedmarker = new restore_path_element(
-                'assign_allocatedmarker',
-                '/activity/assign/allocatedmarkers/allocatedmarker'
-            );
-            $paths[] = $allocatedmarker;
-            $mark = new restore_path_element(
-                'assign_mark',
-                '/activity/assign/marks/mark'
-            );
-            $paths[] = $mark;
         }
 
         $paths[] = new restore_path_element('assign_override', '/activity/assign/overrides/override');
@@ -256,11 +253,14 @@ class restore_assign_activity_structure_step extends restore_activity_structure_
         global $DB;
 
         $data = (object)$data;
+        $oldid = $data->id;
 
         $data->assignment = $this->get_new_parentid('assign');
+        $data->gradeid = $this->get_mappingid('grade', $data->gradeid);
         $data->marker = $this->get_mappingid('user', $data->marker);
 
-        $DB->insert_record('assign_mark', $data);
+        $newitemid = $DB->insert_record('assign_mark', $data);
+        $this->set_mapping('mark', $oldid, $newitemid, false, null, $this->task->get_old_contextid());
     }
 
     /**

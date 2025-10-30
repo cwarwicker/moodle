@@ -116,10 +116,11 @@ abstract class assign_feedback_plugin extends assign_plugin {
      * @param int $userid The user id in the table this quickgrading element relates to
      * @param mixed $grade grade or null - The grade data.
      *                     May be null if there are no grades for this user (yet)
+     * @param string $colname - The column name in case we need it to parse marker columns
      * @return mixed - A html string containing the html form elements required for
      *                 quickgrading or false to indicate this plugin does not support quickgrading
      */
-    public function get_quickgrading_html($userid, $grade) {
+    public function get_quickgrading_html($userid, $grade, string $colname) {
         return false;
     }
 
