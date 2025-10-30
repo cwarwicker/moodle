@@ -202,6 +202,141 @@ final class feedback_test extends \advanced_testcase {
         $this->assertFalse($notempty);
     }
 
+    /**
+     * Test the annotations and comments for marker files and that they are successfully retrieved.
+     * @return void
+     */
+    public function test_page_editor_markers(): void {
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $teacher1 = $this->getDataGenerator()->create_and_enrol($course, 'teacher1');
+        $teacher2 = $this->getDataGenerator()->create_and_enrol($course, 'teacher2');
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $assign = $this->create_instance($course, [
+            'assignsubmission_onlinetext_enabled' => 1,
+            'assignsubmission_file_enabled' => 1,
+            'assignsubmission_file_maxfiles' => 1,
+            'assignfeedback_editpdf_enabled' => 1,
+            'assignsubmission_file_maxsizebytes' => 1000000,
+        ]);
+
+        // Add the standard submission.
+        $this->add_file_submission($student, $assign);
+
+        $this->setUser($teacher1);
+
+        $grade = $assign->get_user_grade($student->id, true);
+        $mark = $assign->get_mark($grade->id, $teacher1->id, true);
+
+        $notempty = page_editor::has_annotations_or_comments($grade->id, false);
+        $this->assertFalse($notempty);
+        $notempty = page_editor::has_annotations_or_comments($grade->id, false, $mark->id);
+        $this->assertFalse($notempty);
+
+        // First add two marker comments.
+        $comment = new comment();
+        $comment->rawtext = 'A marker comment';
+        $comment->width = 100;
+        $comment->x = 100;
+        $comment->y = 100;
+        $comment->colour = 'red';
+
+        $comment2 = new comment();
+        $comment2->rawtext = 'Another marker comment';
+        $comment2->width = 100;
+        $comment2->x = 10;
+        $comment2->y = 10;
+        $comment2->colour = 'blue';
+        page_editor::set_comments($grade->id, 0, array($comment, $comment2), $mark->id);
+
+        // Then an overall comment.
+        $comment3 = new comment();
+        $comment3->rawtext = 'Overall comment';
+        $comment3->width = 100;
+        $comment3->x = 200;
+        $comment3->y = 100;
+        $comment3->colour = 'clear';
+        page_editor::set_comments($grade->id, 0, array($comment3));
+
+        // Add one marker annotation.
+        $annotation = new annotation();
+        $annotation->path = '';
+        $annotation->x = 100;
+        $annotation->y = 100;
+        $annotation->endx = 200;
+        $annotation->endy = 200;
+        $annotation->type = 'line';
+        $annotation->colour = 'red';
+        page_editor::set_annotations($grade->id, 0, array($annotation), $mark->id);
+
+        // And two overall annotations.
+        $annotation2 = new annotation();
+        $annotation2->path = '';
+        $annotation2->x = 100;
+        $annotation2->y = 100;
+        $annotation2->endx = 200;
+        $annotation2->endy = 200;
+        $annotation2->type = 'rectangle';
+        $annotation2->colour = 'yellow';
+
+        $annotation3 = new annotation();
+        $annotation3->path = '';
+        $annotation3->x = 10;
+        $annotation3->y = 10;
+        $annotation3->endx = 20;
+        $annotation3->endy = 20;
+        $annotation3->type = 'rectangle';
+        $annotation3->colour = 'red';
+        page_editor::set_annotations($grade->id, 0, array($annotation2, $annotation3));
+
+        // Overall annotation should still be empty as they are drafts.
+        $this->assertFalse(page_editor::has_annotations_or_comments($grade->id, false));
+        // As should the marker annotation.
+        $this->assertFalse(page_editor::has_annotations_or_comments($grade->id, false, $mark->id));
+
+        // Double check comments specifically are empty due to being drafts.
+        $comments = page_editor::get_comments($grade->id, 0, false);
+        $this->assertEmpty($comments);
+        $comments = page_editor::get_comments($grade->id, 0, false, $mark->id);
+        $this->assertEmpty($comments);
+
+        // Then check comments specifically for any status.
+        $comments = page_editor::get_comments($grade->id, 0, true);
+        $this->assertEquals(count($comments), 1);
+        $comments = page_editor::get_comments($grade->id, 0, true, $mark->id);
+        $this->assertEquals(count($comments), 2);
+
+        // Double check annotations specifically are empty due to being drafts.
+        $annotations = page_editor::get_annotations($grade->id, 0, false);
+        $this->assertEmpty($annotations);
+        $annotations = page_editor::get_annotations($grade->id, 0, false, $mark->id);
+        $this->assertEmpty($annotations);
+
+        // Then check annotations specifically for any status.
+        $annotations = page_editor::get_annotations($grade->id, 0, true);
+        $this->assertEquals(count($annotations), 2);
+        $annotations = page_editor::get_annotations($grade->id, 0, true, $mark->id);
+        $this->assertEquals(count($annotations), 1);
+
+        // Release the drafts.
+        page_editor::release_drafts($grade->id);
+        page_editor::release_drafts($grade->id, $mark->id);
+
+        $notempty = page_editor::has_annotations_or_comments($grade->id, false);
+        $this->assertTrue($notempty);
+        $notempty = page_editor::has_annotations_or_comments($grade->id, false, $mark->id);
+        $this->assertTrue($notempty);
+
+        // Unrelease the drafts.
+        page_editor::unrelease_drafts($grade->id);
+        page_editor::unrelease_drafts($grade->id, $mark->id);
+
+        $notempty = page_editor::has_annotations_or_comments($grade->id, false);
+        $this->assertFalse($notempty);
+        $notempty = page_editor::has_annotations_or_comments($grade->id, false, $mark->id);
+        $this->assertFalse($notempty);
+    }
+
     public function test_document_services(): void {
         $this->require_ghostscript();
         $this->resetAfterTest();

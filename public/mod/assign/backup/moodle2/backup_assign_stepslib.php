@@ -215,11 +215,6 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
                 ['assignment' => backup::VAR_PARENTID]
             );
 
-            $mark->set_source_table(
-                'assign_mark',
-                ['assignment' => backup::VAR_PARENTID]
-            );
-
             $submissionparams = array('assignment' => backup::VAR_PARENTID);
             if (!$groupinfo) {
                 // Without group info, skip group submissions.
@@ -229,6 +224,11 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
 
             $grade->set_source_table('assign_grades',
                                      array('assignment' => backup::VAR_PARENTID));
+
+            $mark->set_source_table(
+                'assign_mark',
+                ['gradeid' => backup::VAR_PARENTID]
+            );
 
             // Support 2 types of subplugins.
             $this->add_subplugin_structure('assignsubmission', $submission, true);
@@ -247,11 +247,11 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
         $userflag->annotate_ids('user', 'userid');
         $allocatedmarker->annotate_ids('user', 'student');
         $allocatedmarker->annotate_ids('user', 'marker');
-        $mark->annotate_ids('user', 'marker');
         $submission->annotate_ids('user', 'userid');
         $submission->annotate_ids('group', 'groupid');
         $grade->annotate_ids('user', 'userid');
         $grade->annotate_ids('user', 'grader');
+        $mark->annotate_ids('user', 'marker');
         $assign->annotate_ids('grouping', 'teamsubmissiongroupingid');
         $override->annotate_ids('user', 'userid');
         $override->annotate_ids('group', 'groupid');
