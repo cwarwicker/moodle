@@ -549,7 +549,7 @@ class assign_grading_table extends table_sql implements renderable {
                 $this->assignment->is_using_multiple_marking() &&
                 $plugin->has_marker_columns()
             ) {
-                $index = ('plugin' . count($this->plugincache) - 1);
+                $index = 'plugin' . (count($this->plugincache) - 1);
                 for ($i = 1; $i <= $assignment->get_instance()->markercount; $i++) {
                     foreach ($plugin->get_marker_columns($i) as $col => $header) {
                         $columns[] = $index . '_' . $col;
@@ -1135,7 +1135,7 @@ class assign_grading_table extends table_sql implements renderable {
         $gradingdisabled = $this->assignment->grading_disabled($row->id, true, $this->gradinginfo);
         $displaymark = "";
 
-        if (!$this->is_downloading() && $this->hasgrade) {
+        if ($this->hasgrade) {
             if (
                 $this->assignment->get_instance()->markingworkflow &&
                 $this->assignment->get_instance()->markingallocation
@@ -1153,7 +1153,7 @@ class assign_grading_table extends table_sql implements renderable {
                     $editable = (
                         ($this->quickgrading) &&
                         (!$gradingdisabled) &&
-                            ($USER->id == $markers[$col - 1]->marker)
+                        ($USER->id == $markers[$col - 1]->marker)
                     );
                     $displaymark = $this->display_grade(
                         $mark->mark ?? null,
@@ -1163,67 +1163,71 @@ class assign_grading_table extends table_sql implements renderable {
                         0,
                         $markers[$col - 1]->marker,
                     );
-                    // Display the workflow state for this mark.
-                    if ($markers[$col - 1]->marker > 0) {
-                        $displaymark .= html_writer::div(
-                            get_string('markingworkflowstate' . ($mark->workflowstate ?? 'notmarked'), 'assign'),
-                            'badge bg-info d-block'
-                        );
+                    if (!$this->is_downloading()) {
+                        // Display the workflow state for this mark.
+                        if ($markers[$col - 1]->marker > 0) {
+                            $displaymark .= html_writer::div(
+                                get_string('markingworkflowstate' . ($mark->workflowstate ?? 'notmarked'), 'assign'),
+                                'badge bg-info d-block'
+                            );
+                        }
                     }
                 }
             }
 
-            $urlparams = [
-                'id' => $this->assignment->get_course_module()->id,
-                'rownum' => 0,
-                'action' => 'marker',
-            ];
+            if (!$this->is_downloading() && $this->hasgrade) {
+                $urlparams = [
+                    'id' => $this->assignment->get_course_module()->id,
+                    'rownum' => 0,
+                    'action' => 'marker',
+                ];
 
-            if ($this->assignment->is_blind_marking()) {
-                if (empty($row->recordid)) {
-                    $row->recordid = $this->assignment->get_uniqueid_for_user($row->userid);
+                if ($this->assignment->is_blind_marking()) {
+                    if (empty($row->recordid)) {
+                        $row->recordid = $this->assignment->get_uniqueid_for_user($row->userid);
+                    }
+                    $urlparams['blindid'] = $row->recordid;
+                } else {
+                    $urlparams['userid'] = $row->userid;
                 }
-                $urlparams['blindid'] = $row->recordid;
-            } else {
-                $urlparams['userid'] = $row->userid;
-            }
-            $url = new moodle_url('/mod/assign/view.php', $urlparams);
+                $url = new moodle_url('/mod/assign/view.php', $urlparams);
 
-            // The container with the grade information.
-            $gradecontainer = $this->output->container($displaymark, 'w-100');
+                // The container with the grade information.
+                $gradecontainer = $this->output->container($displaymark, 'w-100');
 
-            // Should this user get the 'Mark' action menu item?
-            $isallocatedmarker = false;
+                // Should this user get the 'Mark' action menu item?
+                $isallocatedmarker = false;
 
-            if (
-                $this->assignment->get_instance()->markingworkflow &&
-                $this->assignment->get_instance()->markingallocation
-            ) {
-                // If allocated marking is enabled is this user the marker for this column?
                 if (
-                    $markers = $DB->get_fieldset('assign_allocated_marker', 'marker', [
-                        'student' => $row->userid,
-                        'assignment' => $this->assignment->get_instance()->id,
-                    ])
+                    $this->assignment->get_instance()->markingworkflow &&
+                    $this->assignment->get_instance()->markingallocation
                 ) {
-                    $isallocatedmarker = (array_key_exists($col - 1, $markers) && $markers[$col - 1] == $USER->id);
+                    // If allocated marking is enabled is this user the marker for this column?
+                    if (
+                        $markers = $DB->get_fieldset('assign_allocated_marker', 'marker', [
+                            'student' => $row->userid,
+                            'assignment' => $this->assignment->get_instance()->id,
+                        ])
+                    ) {
+                        $isallocatedmarker = (array_key_exists($col - 1, $markers) && $markers[$col - 1] == $USER->id);
+                    }
                 }
-            }
 
-            if ($isallocatedmarker) {
-                $menu = new action_menu();
-                $menu->set_owner_selector('.gradingtable-actionmenu');
-                $menu->set_boundary('window');
-                $menu->set_kebab_trigger(get_string('markactions', 'assign'));
-                $menu->set_additional_classes('ps-2 ms-auto');
-                // Prioritise the menu ahead of all other actions.
-                $menu->prioritise = true;
-                // Add the 'Mark' action item to the contextual menu.
-                $menu->add(new action_menu_link_secondary($url, null, get_string('markverb', 'assign')));
-                // The contextual menu container.
-                $contextualmenucontainer = $this->output->container($this->output->render($menu), 'd-flex');
-                return $allocatedmarker .
-                    $this->output->container($gradecontainer . $contextualmenucontainer, ['class' => 'd-flex']);
+                if ($isallocatedmarker) {
+                    $menu = new action_menu();
+                    $menu->set_owner_selector('.gradingtable-actionmenu');
+                    $menu->set_boundary('window');
+                    $menu->set_kebab_trigger(get_string('markactions', 'assign'));
+                    $menu->set_additional_classes('ps-2 ms-auto');
+                    // Prioritise the menu ahead of all other actions.
+                    $menu->prioritise = true;
+                    // Add the 'Mark' action item to the contextual menu.
+                    $menu->add(new action_menu_link_secondary($url, null, get_string('markverb', 'assign')));
+                    // The contextual menu container.
+                    $contextualmenucontainer = $this->output->container($this->output->render($menu), 'd-flex');
+                    return $allocatedmarker .
+                        $this->output->container($gradecontainer . $contextualmenucontainer, ['class' => 'd-flex']);
+                }
             }
         }
         // The table data is being downloaded, or the user cannot grade; therefore, only the formatted grade for display
@@ -1891,9 +1895,11 @@ class assign_grading_table extends table_sql implements renderable {
         // If it's an extra marker column for a plugin, we need to check the correct plugincache.
         // The columnnames will be in the format: plugin1_columnname2 where the 2 is the marker number and the 1 is
         // the index of the plugin in the cache.
+        $ismarkercol = false;
         $fullcolname = $colname;
         if (self::is_plugin_marker_column($colname)) {
             $colname = preg_replace('/_(.*+)/', '', $colname);
+            $ismarkercol = true;
         }
 
         // For extra user fields the result is already in $row.
@@ -1907,7 +1913,9 @@ class assign_grading_table extends table_sql implements renderable {
         $plugin = $plugincache[0];
 
         $field = null;
-        if (isset($plugincache[1])) {
+        // This cached field is the overall field, e.g. "comments" rather than the marker one we want.
+        // So only get it from the cache if we're not looking at a marker column.
+        if (isset($plugincache[1]) && !$ismarkercol) {
             $field = $plugincache[1];
         }
 

@@ -127,7 +127,7 @@ class assign_feedback_comments extends assign_feedback_plugin {
             // There won't be any comments or a mark record, so if we are not the marker, we can just display nothing.
             $marker = assign_grading_table::extract_marker_from_marker_column($this->assignment, $userid, $colname);
             if (!$marker || $marker->id != $USER->id) {
-                return '-';
+                return '';
             }
             $fieldid .= '_marker';
             // Extract the marker number from the end of the column name for the label text.
@@ -251,16 +251,14 @@ class assign_feedback_comments extends assign_feedback_plugin {
      *
      * @param string $name
      * @param int $gradeid
+     * @param int|null $markid The id of the mark record
      * @return string
      */
-    public function get_editor_text($name, $gradeid) {
-        if ($name == 'comments') {
-            $feedbackcomments = $this->get_feedback_comments($gradeid);
-            if ($feedbackcomments) {
-                return $feedbackcomments->commenttext;
-            }
+    public function get_editor_text($name, $gradeid, ?int $markid = null) {
+        $feedbackcomments = $this->get_feedback_comments($gradeid, $markid);
+        if ($feedbackcomments) {
+            return $feedbackcomments->commenttext;
         }
-
         return '';
     }
 
@@ -270,24 +268,24 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @param string $name
      * @param string $value
      * @param int $gradeid
+     * @param int|null $markid The id of the mark record
      * @return string
      */
-    public function set_editor_text($name, $value, $gradeid) {
+    public function set_editor_text($name, $value, $gradeid, ?int $markid = null) {
         global $DB;
 
-        if ($name == 'comments') {
-            $feedbackcomment = $this->get_feedback_comments($gradeid);
-            if ($feedbackcomment) {
-                $feedbackcomment->commenttext = $value;
-                return $DB->update_record('assignfeedback_comments', $feedbackcomment);
-            } else {
-                $feedbackcomment = new stdClass();
-                $feedbackcomment->commenttext = $value;
-                $feedbackcomment->commentformat = FORMAT_HTML;
-                $feedbackcomment->grade = $gradeid;
-                $feedbackcomment->assignment = $this->assignment->get_instance()->id;
-                return $DB->insert_record('assignfeedback_comments', $feedbackcomment) > 0;
-            }
+        $feedbackcomment = $this->get_feedback_comments($gradeid, $markid);
+        if ($feedbackcomment) {
+            $feedbackcomment->commenttext = $value;
+            return $DB->update_record('assignfeedback_comments', $feedbackcomment);
+        } else {
+            $feedbackcomment = new stdClass();
+            $feedbackcomment->commenttext = $value;
+            $feedbackcomment->commentformat = FORMAT_HTML;
+            $feedbackcomment->grade = $gradeid;
+            $feedbackcomment->mark = $markid;
+            $feedbackcomment->assignment = $this->assignment->get_instance()->id;
+            return $DB->insert_record('assignfeedback_comments', $feedbackcomment) > 0;
         }
 
         return false;
@@ -596,7 +594,7 @@ class assign_feedback_comments extends assign_feedback_plugin {
             $showviewlink = $short != $text;
             return $short;
         }
-        return '-';
+        return '';
     }
 
     /**
