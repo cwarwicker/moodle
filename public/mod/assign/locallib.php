@@ -3295,6 +3295,10 @@ class assign {
             $workflowstate = null;
         }
 
+        if ($mark === '') {
+            $mark = null;
+        }
+
         // Validate the mark, using the same logic as from update_grade().
         $gradevalue = $this->get_instance()->grade;
         $scale = $DB->get_record('scale', ['id' => -$gradevalue]);
@@ -4278,6 +4282,7 @@ class assign {
                 'timecreated' => time(),
                 'timemodified' => time(),
                 'marker' => $markerid,
+                'mark' => null,
             ]);
             $record = $DB->get_record('assign_mark', ['id' => $id]);
         }
@@ -10499,6 +10504,18 @@ class assign {
             && $this->get_instance()->markingallocation
             && $this->get_instance()->markercount > 1
         );
+    }
+
+    /**
+     * Check if a given mark record belongs to the current user
+     * @param int $markid ID of the mark record
+     * @return bool
+     */
+    public function is_our_mark(int $markid): bool {
+        global $DB, $USER;
+        return $DB->record_exists('assign_mark', [
+            'id' => $markid, 'marker' => $USER->id,
+        ]);
     }
 
     /**

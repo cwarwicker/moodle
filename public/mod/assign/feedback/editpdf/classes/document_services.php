@@ -24,6 +24,7 @@
 
 namespace assignfeedback_editpdf;
 
+use assign;
 use DOMDocument;
 
 /**
@@ -42,12 +43,20 @@ class document_services {
     const COMPONENT = "assignfeedback_editpdf";
     /** File area for generated pdf */
     const FINAL_PDF_FILEAREA = 'download';
+    /** File area for marker version of generated pdf */
+    const FINAL_PDF_FILEAREA_MARKER = 'download_marker';
     /** File area for combined pdf */
     const COMBINED_PDF_FILEAREA = 'combined';
+    /** File area for marker version of combined pdf */
+    const COMBINED_PDF_FILEAREA_MARKER = 'combined_marker';
     /** File area for partial combined pdf */
     const PARTIAL_PDF_FILEAREA = 'partial';
+    /** File area for marker version of partial combined pdf */
+    const PARTIAL_PDF_FILEAREA_MARKER = 'partial_marker';
     /** File area for importing html */
     const IMPORT_HTML_FILEAREA = 'importhtml';
+    /** File area for marker version of importing html */
+    const IMPORT_HTML_FILEAREA_MARKER = 'importhtml_marker';
     /** File area for page images */
     const PAGE_IMAGE_FILEAREA = 'pages';
     /** File area for readonly page images */
@@ -58,8 +67,12 @@ class document_services {
     const COMBINED_PDF_FILENAME = 'combined.pdf';
     /**  Temporary place to save JPG Image to PDF file */
     const TMP_JPG_TO_PDF_FILEAREA = 'tmp_jpg_to_pdf';
+    /**  Temporary place to save marker version of JPG Image to PDF file */
+    const TMP_JPG_TO_PDF_FILEAREA_MARKER = 'tmp_jpg_to_pdf_marker';
     /**  Temporary place to save (Automatically) Rotated JPG FILE */
     const TMP_ROTATED_JPG_FILEAREA = 'tmp_rotated_jpg';
+    /**  Temporary place to save marker version of (Automatically) Rotated JPG FILE */
+    const TMP_ROTATED_JPG_FILEAREA_MARKER = 'tmp_rotated_jpg_marker';
     /** Hash of blank pdf */
     const BLANK_PDF_HASH = '4c803c92c71f21b423d13de570c8a09e0a31c718';
 
@@ -269,9 +282,10 @@ EOD;
      * @param int|\assign $assignment
      * @param int $userid
      * @param int $attemptnumber (-1 means latest attempt)
+     * @param ?int $markid
      * @return combined_document
      */
-    public static function get_combined_document_for_attempt($assignment, $userid, $attemptnumber) {
+    public static function get_combined_document_for_attempt($assignment, $userid, $attemptnumber, ?int $markid = null) {
         global $USER, $DB;
 
         $assignment = self::get_assignment_from_param($assignment);
@@ -292,16 +306,21 @@ EOD;
         $component = 'assignfeedback_editpdf';
         $filearea = self::COMBINED_PDF_FILEAREA;
         $partialfilearea = self::PARTIAL_PDF_FILEAREA;
-        $itemid = $grade->id;
+        $fileitemid = $grade->id;
+        if (!is_null($markid)) {
+            $filearea = self::COMBINED_PDF_FILEAREA_MARKER;
+            $partialfilearea = self::PARTIAL_PDF_FILEAREA_MARKER;
+            $fileitemid = $markid;
+        }
         $filepath = '/';
         $filename = self::COMBINED_PDF_FILENAME;
         $fs = get_file_storage();
 
-        $partialpdf = $fs->get_file($contextid, $component, $partialfilearea, $itemid, $filepath, $filename);
+        $partialpdf = $fs->get_file($contextid, $component, $partialfilearea, $fileitemid, $filepath, $filename);
         if (!empty($partialpdf)) {
             $combinedpdf = $partialpdf;
         } else {
-            $combinedpdf = $fs->get_file($contextid, $component, $filearea, $itemid, $filepath, $filename);
+            $combinedpdf = $fs->get_file($contextid, $component, $filearea, $fileitemid, $filepath, $filename);
         }
 
         if ($combinedpdf && $submission) {
@@ -341,7 +360,7 @@ EOD;
         } else {
             // Attempt to combined the files in the document.
             $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
-            $document->combine_files($assignment->get_context()->id, $grade->id);
+            $document->combine_files($assignment->get_context()->id, $grade->id, $assignment->is_marking());
             return $document;
         }
     }
@@ -370,9 +389,15 @@ EOD;
         // if for some reason they do not, then we proceed as for the normal version.
         if ($readonly) {
             $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
+            [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::PAGE_IMAGE_READONLY_FILEAREA);
             $fs = get_file_storage();
-            $files = $fs->get_directory_files($assignment->get_context()->id, 'assignfeedback_editpdf',
-                self::PAGE_IMAGE_READONLY_FILEAREA, $grade->id, '/');
+            $files = $fs->get_directory_files(
+                $assignment->get_context()->id,
+                'assignfeedback_editpdf',
+                $filearea,
+                $fileitemid,
+                '/',
+            );
             $pagecount = count($files);
             if ($pagecount > 0) {
                 return $pagecount;
@@ -425,12 +450,13 @@ EOD;
         $pagecount = $pdf->set_pdf($combined);
 
         $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::PAGE_IMAGE_FILEAREA);
 
         $record = new \stdClass();
         $record->contextid = $assignment->get_context()->id;
         $record->component = 'assignfeedback_editpdf';
-        $record->filearea = self::PAGE_IMAGE_FILEAREA;
-        $record->itemid = $grade->id;
+        $record->filearea = $filearea;
+        $record->itemid = $fileitemid;
         $record->filepath = '/';
         $fs = get_file_storage();
 
@@ -495,9 +521,10 @@ EOD;
      * @param int $userid
      * @param int $attemptnumber (-1 means latest attempt)
      * @param bool $readonly If true, then we are requesting the readonly version.
+     * @param int|null $markid ID of mark record
      * @return array(stored_file)
      */
-    public static function get_page_images_for_attempt($assignment, $userid, $attemptnumber, $readonly = false) {
+    public static function get_page_images_for_attempt($assignment, $userid, $attemptnumber, $readonly = false, ?int $markid = null) {
         global $DB;
 
         $assignment = self::get_assignment_from_param($assignment);
@@ -515,24 +542,23 @@ EOD;
 
         $contextid = $assignment->get_context()->id;
         $component = 'assignfeedback_editpdf';
-        $itemid = $grade->id;
         $filepath = '/';
-        $filearea = self::PAGE_IMAGE_FILEAREA;
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::PAGE_IMAGE_FILEAREA, false, $markid);
 
         $fs = get_file_storage();
 
         // If we are after the readonly pages...
         if ($readonly) {
-            $filearea = self::PAGE_IMAGE_READONLY_FILEAREA;
-            if ($fs->is_area_empty($contextid, $component, $filearea, $itemid)) {
+            [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::PAGE_IMAGE_READONLY_FILEAREA, false, $markid);
+            if ($fs->is_area_empty($contextid, $component, $filearea, $fileitemid)) {
                 // We have a problem here, we were supposed to find the files.
                 // Attempt to re-generate the pages from the combined images.
-                self::generate_page_images_for_attempt($assignment, $userid, $attemptnumber);
-                self::copy_pages_to_readonly_area($assignment, $grade);
+                self::generate_page_images_for_attempt($assignment, $userid, $attemptnumber); // todo - marks?
+                self::copy_pages_to_readonly_area($assignment, $grade); // todo - marks?
             }
         }
 
-        $files = $fs->get_directory_files($contextid, $component, $filearea, $itemid, $filepath);
+        $files = $fs->get_directory_files($contextid, $component, $filearea, $fileitemid, $filepath);
 
         $pages = array();
         $resetrotation = false;
@@ -543,9 +569,9 @@ EOD;
             // the version of ghostscript used, so we need to examine the combined pdf it was generated from.
             $blankpage = false;
             if (!$readonly && count($files) == 1) {
-                $pdfarea = self::COMBINED_PDF_FILEAREA;
+                [$pdfarea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::COMBINED_PDF_FILEAREA, false, $markid);
                 $pdfname = self::COMBINED_PDF_FILENAME;
-                if ($pdf = $fs->get_file($contextid, $component, $pdfarea, $itemid, $filepath, $pdfname)) {
+                if ($pdf = $fs->get_file($contextid, $component, $pdfarea, $fileitemid, $filepath, $pdfname)) {
                     // The combined pdf may have a different hash if it has been regenerated since the page
                     // image was created. However if this is the case the page image will be stale anyway.
                     if ($pdf->get_contenthash() == self::BLANK_PDF_HASH || $pagemodified < $pdf->get_timemodified()) {
@@ -556,8 +582,8 @@ EOD;
             if (!$readonly && ($pagemodified < $submission->timemodified || $blankpage)) {
                 // Image files are stale, we need to regenerate them, except in readonly mode.
                 // We also need to remove the draft annotations and comments associated with this attempt.
-                $fs->delete_area_files($contextid, $component, $filearea, $itemid);
-                page_editor::delete_draft_content($itemid);
+                $fs->delete_area_files($contextid, $component, $filearea, $fileitemid);
+                page_editor::delete_draft_content($fileitemid, $markid);
                 $files = array();
                 $resetrotation = true;
             } else {
@@ -654,9 +680,10 @@ EOD;
      * @param int|\assign $assignment
      * @param int $userid
      * @param int $attemptnumber (-1 means latest attempt)
+     * @param int|null $markid ID of mark record
      * @return \stored_file
      */
-    public static function generate_feedback_document($assignment, $userid, $attemptnumber) {
+    public static function generate_feedback_document($assignment, $userid, $attemptnumber, ?int $markid = null) {
         global $CFG;
 
         $assignment = self::get_assignment_from_param($assignment);
@@ -704,13 +731,18 @@ EOD;
         $fs = get_file_storage();
         $stamptmpdir = make_request_directory();
         $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::STAMPS_FILEAREA);
+
         // Copy any new stamps to this instance.
-        if ($files = $fs->get_area_files($assignment->get_context()->id,
-                                         'assignfeedback_editpdf',
-                                         'stamps',
-                                         $grade->id,
-                                         "filename",
-                                         false)) {
+        $files = $fs->get_area_files(
+            $assignment->get_context()->id,
+            'assignfeedback_editpdf',
+            $filearea,
+            $fileitemid,
+            'filename',
+            false,
+        );
+        if ($files) {
             foreach ($files as $file) {
                 $filename = $stamptmpdir . '/' . $file->get_filename();
                 $file->copy_content_to($filename); // Copy the file.
@@ -719,7 +751,7 @@ EOD;
 
         $pagecount = $pdf->set_pdf($combined);
         $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
-        page_editor::release_drafts($grade->id);
+        page_editor::release_drafts($grade->id, $markid);
 
         $allcomments = array();
 
@@ -738,8 +770,8 @@ EOD;
                 }
             }
 
-            $comments = page_editor::get_comments($grade->id, $i, false);
-            $annotations = page_editor::get_annotations($grade->id, $i, false);
+            $comments = page_editor::get_comments($grade->id, $i, false, $markid);
+            $annotations = page_editor::get_annotations($grade->id, $i, false, $markid);
 
             if (!empty($comments)) {
                 $allcomments[$i] = $comments;
@@ -778,13 +810,14 @@ EOD;
 
         $generatedpdf = $tmpdir . '/' . $filename;
         $pdf->save_pdf($generatedpdf);
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, createmarkifmissing: true);
 
         $record = new \stdClass();
 
         $record->contextid = $assignment->get_context()->id;
         $record->component = 'assignfeedback_editpdf';
-        $record->filearea = self::FINAL_PDF_FILEAREA;
-        $record->itemid = $grade->id;
+        $record->filearea = $filearea;
+        $record->itemid = $fileitemid;
         $record->filepath = '/';
         $record->filename = $filename;
 
@@ -815,21 +848,22 @@ EOD;
         $assignment = self::get_assignment_from_param($assignment);
         $contextid = $assignment->get_context()->id;
         $component = 'assignfeedback_editpdf';
-        $itemid = $grade->id;
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::PAGE_IMAGE_FILEAREA, true);
 
         // Get all the pages.
-        $originalfiles = $fs->get_area_files($contextid, $component, self::PAGE_IMAGE_FILEAREA, $itemid);
+        $originalfiles = $fs->get_area_files($contextid, $component, $filearea, $fileitemid);
         if (empty($originalfiles)) {
             // Nothing to do here...
             return;
         }
 
         // Delete the old readonly files.
-        $fs->delete_area_files($contextid, $component, self::PAGE_IMAGE_READONLY_FILEAREA, $itemid);
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::PAGE_IMAGE_READONLY_FILEAREA);
+        $fs->delete_area_files($contextid, $component, $filearea, $fileitemid);
 
         // Do the copying.
         foreach ($originalfiles as $originalfile) {
-            $fs->create_file_from_storedfile(array('filearea' => self::PAGE_IMAGE_READONLY_FILEAREA), $originalfile);
+            $fs->create_file_from_storedfile(['filearea' => $filearea], $originalfile);
         }
     }
 
@@ -838,11 +872,13 @@ EOD;
      * @param int|\assign $assignment
      * @param int $userid
      * @param int $attemptnumber (-1 means latest attempt)
+     * @param bool $ismarking
      * @return \stored_file
      */
-    public static function get_feedback_document($assignment, $userid, $attemptnumber) {
+    public static function get_feedback_document($assignment, $userid, $attemptnumber, bool $ismarking = false) {
 
         $assignment = self::get_assignment_from_param($assignment);
+        $assignment->set_is_marking($ismarking);
 
         if (!$assignment->can_view_submission($userid)) {
             throw new \moodle_exception('nopermission');
@@ -852,17 +888,18 @@ EOD;
 
         $contextid = $assignment->get_context()->id;
         $component = 'assignfeedback_editpdf';
-        $filearea = self::FINAL_PDF_FILEAREA;
-        $itemid = $grade->id;
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::FINAL_PDF_FILEAREA, true);
         $filepath = '/';
 
         $fs = get_file_storage();
-        $files = $fs->get_area_files($contextid,
-                                     $component,
-                                     $filearea,
-                                     $itemid,
-                                     "itemid, filepath, filename",
-                                     false);
+        $files = $fs->get_area_files(
+            $contextid,
+            $component,
+            $filearea,
+            $fileitemid,
+            'itemid, filepath, filename',
+            false,
+        );
         if ($files) {
             return reset($files);
         }
@@ -876,9 +913,9 @@ EOD;
      * @param int $attemptnumber (-1 means latest attempt)
      * @return bool
      */
-    public static function delete_feedback_document($assignment, $userid, $attemptnumber) {
-
+    public static function delete_feedback_document($assignment, $userid, $attemptnumber, bool $ismarking = false) {
         $assignment = self::get_assignment_from_param($assignment);
+        $assignment->set_is_marking($ismarking);
 
         if (!$assignment->can_view_submission($userid)) {
             throw new \moodle_exception('nopermission');
@@ -891,11 +928,10 @@ EOD;
 
         $contextid = $assignment->get_context()->id;
         $component = 'assignfeedback_editpdf';
-        $filearea = self::FINAL_PDF_FILEAREA;
-        $itemid = $grade->id;
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::FINAL_PDF_FILEAREA);
 
         $fs = get_file_storage();
-        return $fs->delete_area_files($contextid, $component, $filearea, $itemid);
+        return $fs->delete_area_files($contextid, $component, $filearea, $fileitemid);
     }
 
     /**
@@ -904,16 +940,15 @@ EOD;
      * @param int $userid User ID
      * @param int $attemptnumber Attempt Number
      * @param string $filearea File Area
+     * @param int $fileitemid File item id
      * @param string $filepath File Path
      * @return array
      */
-    private static function get_files($assignment, $userid, $attemptnumber, $filearea, $filepath = '/') {
-        $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
-        $itemid = $grade->id;
+    private static function get_files($assignment, $userid, $attemptnumber, $filearea, $fileitemid, $filepath = '/') {
         $contextid = $assignment->get_context()->id;
         $component = self::COMPONENT;
         $fs = get_file_storage();
-        $files = $fs->get_directory_files($contextid, $component, $filearea, $itemid, $filepath);
+        $files = $fs->get_directory_files($contextid, $component, $filearea, $fileitemid, $filepath);
         return $files;
     }
 
@@ -933,12 +968,13 @@ EOD;
         $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
         $itemid = $grade->id;
         $contextid = $assignment->get_context()->id;
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, $filearea);
 
         $record = new \stdClass();
         $record->contextid = $contextid;
         $record->component = self::COMPONENT;
         $record->filearea = $filearea;
-        $record->itemid = $itemid;
+        $record->itemid = $fileitemid;
         $record->filepath = $storedfilepath;
         $record->filename = basename($newfilepath);
 
@@ -962,27 +998,27 @@ EOD;
 
     /**
      * This function rotate a page, and mark the page as rotated.
-     * @param int|\assign $assignment Assignment
+     * @param assign $assignment Assignment
      * @param int $userid User ID
      * @param int $attemptnumber Attempt Number
      * @param int $index Index of Current Page
      * @param bool $rotateleft To determine whether the page is rotated left or right.
+     * @param int|null $markid ID of the mark record
      * @return null|\stored_file return rotated File
      * @throws \coding_exception
      * @throws \file_exception
      * @throws \moodle_exception
      * @throws \stored_file_creation_exception
      */
-    public static function rotate_page($assignment, $userid, $attemptnumber, $index, $rotateleft) {
-        $assignment = self::get_assignment_from_param($assignment);
+    public static function rotate_page(assign $assignment, int $userid, int $attemptnumber, int $index, bool $rotateleft, ?int $markid = null) {
         $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
         // Check permission.
         if (!$assignment->can_view_submission($userid)) {
             throw new \moodle_exception('nopermission');
         }
 
-        $filearea = self::PAGE_IMAGE_FILEAREA;
-        $files = self::get_files($assignment, $userid, $attemptnumber, $filearea);
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::PAGE_IMAGE_FILEAREA);
+        $files = self::get_files($assignment, $userid, $attemptnumber, $filearea, $fileitemid);
         if (!empty($files)) {
             foreach ($files as $file) {
                 preg_match('/' . pdf::IMAGE_PAGE . '([\d]+)\./', $file->get_filename(), $matches);
@@ -1008,7 +1044,6 @@ EOD;
                     $tempfile = $tmpdir . '/' . \core\di::get(\core\clock::class)->time() . '_' . $filename;
                     imagepng($content, $tempfile);
 
-                    $filearea = self::PAGE_IMAGE_FILEAREA;
                     $newfile = self::save_file($assignment, $userid, $attemptnumber, $filearea, $tempfile);
 
                     unlink($tempfile);
@@ -1017,7 +1052,7 @@ EOD;
                     imagedestroy($content);
                     $file->delete();
                     if (!empty($newfile)) {
-                        page_editor::set_page_rotation($grade->id, $pagenumber, true, $newfile->get_pathnamehash(), $degree);
+                        page_editor::set_page_rotation($grade->id, $pagenumber, true, $newfile->get_pathnamehash(), $degree, $markid);
                     }
                     return $newfile;
                 }
@@ -1074,7 +1109,8 @@ EOD;
             debugging("Could not convert {$file->get_contenthash()} jpg to pdf: {$exceptionmsg}", DEBUG_ALL);
             return null;
         }
-        $filearea = self::TMP_JPG_TO_PDF_FILEAREA;
+        $grade = $assignment->get_grade_item();
+        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade->id, $filearea); // todo - this is broken
         $pdffile = self::save_file($assignment, $userid, $attemptnumber, $filearea, $tempfile);
         if (file_exists($tempfile)) {
             unlink($tempfile);
@@ -1106,4 +1142,32 @@ EOD;
         }
         return $newfile;
     }
+
+    /**
+     * Get file area and id.
+     *
+     * @param \assign $assignment
+     * @param \stdClass $grade
+     * @return array
+     */
+    public static function get_file_area_and_id(
+        \assign $assignment,
+        \stdClass $grade,
+        string $basearea = self::FINAL_PDF_FILEAREA,
+        bool $createmarkifmissing = false,
+        ?int $markid = null,
+    ): array {
+        global $USER;
+        if ($assignment->is_marking() || !is_null($markid)) {
+            if (strpos($basearea, '_marker') === false) {
+                $basearea .= '_marker';
+            }
+            $mark = $assignment->get_mark($grade->id, $USER->id, $createmarkifmissing);
+            $markid = ($mark) ? $mark->id : null;
+            return [$basearea, $markid];
+        } else {
+            return [$basearea, $grade->id];
+        }
+    }
 }
+
