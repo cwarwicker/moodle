@@ -97,13 +97,29 @@ class provider implements
         $currentpath[] = get_string('privacy:path', 'assignfeedback_file');
         $assign = $exportdata->get_assign();
         $plugin = $assign->get_plugin_by_type('assignfeedback', 'file');
-        $gradeid = $exportdata->get_pluginobject()->id;
-        $filefeedback = $plugin->get_file_feedback($gradeid);
+        $grade = $exportdata->get_pluginobject();
+        $filefeedback = $plugin->get_file_feedback($grade->id);
         if ($filefeedback) {
-            $fileareas = $plugin->get_file_areas();
-            foreach ($fileareas as $filearea => $notused) {
+            \core_privacy\local\request\writer::with_context($exportdata->get_context())
+                ->export_area_files
+                (
+                    $currentpath,
+                    'assignfeedback_file',
+                    ASSIGNFEEDBACK_FILE_FILEAREA,
+                    $grade->id
+                );
+        }
+        $marks = $assign->get_mark_records($grade->id, $grade->userid);
+        if ($marks) {
+            foreach ($marks as $mark) {
                 \core_privacy\local\request\writer::with_context($exportdata->get_context())
-                        ->export_area_files($currentpath, 'assignfeedback_file', $filearea, $gradeid);
+                    ->export_area_files
+                    (
+                        $currentpath,
+                        'assignfeedback_file',
+                        ASSIGNFEEDBACK_FILE_FILEAREA_MARKER,
+                        $mark->id
+                    );
             }
         }
     }
@@ -155,14 +171,26 @@ class provider implements
         }
 
         $assign = $deletedata->get_assign();
-        $plugin = $assign->get_plugin_by_type('assignfeedback', 'file');
-        $fileareas = $plugin->get_file_areas();
         $fs = get_file_storage();
         list($sql, $params) = $DB->get_in_or_equal($deletedata->get_gradeids(), SQL_PARAMS_NAMED);
         $params['assignment'] = $deletedata->get_assignid();
-        foreach ($fileareas as $filearea => $notused) {
-            // Delete feedback files.
-            $fs->delete_area_files_select($deletedata->get_context()->id, 'assignfeedback_file', $filearea, $sql, $params);
+
+        // Delete overall feedback files.
+        $fs->delete_area_files_select($deletedata->get_context()->id, 'assignfeedback_file', ASSIGNFEEDBACK_FILE_FILEAREA, $sql, $params);
+
+        // Delete marker feedback files.
+        foreach ($deletedata->get_gradeids() as $gradeid) {
+            $marks = $assign->get_mark_records($gradeid, $deletedata->get_pluginobject()->userid);
+            if ($marks) {
+                foreach ($marks as $mark) {
+                    $fs->delete_area_files(
+                        $deletedata->get_context()->id,
+                        'assignfeedback_file',
+                        ASSIGNFEEDBACK_FILE_FILEAREA_MARKER,
+                        $mark->id,
+                    );
+                }
+            }
         }
 
         // Delete table entries.

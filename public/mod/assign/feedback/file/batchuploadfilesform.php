@@ -48,6 +48,29 @@ class assignfeedback_file_batch_upload_files_form extends moodleform {
             count($params['users'])));
         $mform->addElement('static', 'userslist', get_string('selectedusers', 'assignfeedback_file'), $params['usershtml']);
 
+        // If the assignment is using multi marking, are we uploading feedback as a marker or overall?
+        if ($params['assignment'] && $params['assignment']->is_using_multiple_marking()) {
+            $options = new core\output\choicelist();
+            $options->add_option(
+                'mark',
+                get_string('markverb', 'assign'),
+                [
+                    'description' => get_string('uploadcontext:mark', 'assignfeedback_file'),
+                    'icon' => new pix_icon('i/marked', 'mark'),
+                ]
+            );
+            $options->add_option(
+                'grade',
+                get_string('gradenoun'),
+                [
+                    'description' => get_string('uploadcontext:grade', 'assignfeedback_file'),
+                    'icon' => new pix_icon('i/grades', 'grade'),
+                ]
+            );
+
+            $mform->addElement('choicedropdown', 'uploadcontext', get_string('uploadcontext', 'assignfeedback_file'), $options);
+        }
+
         $data = new stdClass();
         $fileoptions = array('subdirs'=>1,
                                 'maxbytes'=>$COURSE->maxbytes,

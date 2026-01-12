@@ -162,6 +162,8 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
                 'timecreated',
                 'timemodified',
                 'marker',
+                'mark',
+                'workflowstate',
             ]
         );
 

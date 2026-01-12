@@ -37,7 +37,7 @@ abstract class assign_plugin {
     /** @var assign $assignment the assignment record that contains the global
      *              settings for this assign instance
      */
-    protected $assignment;
+    public $assignment; // temp change
     /** @var string $type assignment plugin type */
     private $type = '';
     /** @var string $error error message */
@@ -734,5 +734,14 @@ abstract class assign_plugin {
      */
     public function format_marker_column(stdClass $grade, string $colname): string {
         return '';
+    }
+
+    /**
+     * Reset the assignment object within the plugin to not marking
+     * as this can persist as the plugins are looped through.
+     * @return void
+     */
+    public function reset_marking(): void {
+        $this->assignment->set_is_marking(false);
     }
 }

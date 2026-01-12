@@ -530,10 +530,20 @@ class assign_grading_table extends table_sql implements renderable {
             if ($this->is_downloading()) {
                 if ($plugin->is_visible() && $plugin->is_enabled()) {
                     foreach ($plugin->get_editor_fields() as $field => $description) {
+
+                        // Overall field (e.g. comments from feedback_comments).
                         $index = 'plugin' . count($this->plugincache);
                         $this->plugincache[$index] = array($plugin, $field);
                         $columns[] = $index;
                         $headers[] = $description;
+
+                        // Marker versions of the field.
+                        for ($i = 1; $i <= $assignment->get_instance()->markercount; $i++) {
+                            foreach ($plugin->get_marker_columns($i) as $col => $header) {
+                                $columns[] = $index . '_' . $col;
+                                $headers[] = $header;
+                            }
+                        }
                     }
                 }
             } else if ($plugin->is_visible() && $plugin->is_enabled() && $plugin->has_user_summary()) {
@@ -541,21 +551,15 @@ class assign_grading_table extends table_sql implements renderable {
                 $this->plugincache[$index] = array($plugin);
                 $columns[] = $index;
                 $headers[] = $plugin->get_name();
-            }
-            // Does the feedback plugin have extra columns which are required per marker?
-            if (
-                $plugin->is_visible() &&
-                $plugin->is_enabled() &&
-                $this->assignment->is_using_multiple_marking() &&
-                $plugin->has_marker_columns()
-            ) {
-                $index = 'plugin' . (count($this->plugincache) - 1);
+
+                // Does the feedback plugin have extra columns which are required per marker?
                 for ($i = 1; $i <= $assignment->get_instance()->markercount; $i++) {
                     foreach ($plugin->get_marker_columns($i) as $col => $header) {
                         $columns[] = $index . '_' . $col;
                         $headers[] = $header;
                     }
                 }
+
             }
         }
 
@@ -643,7 +647,6 @@ class assign_grading_table extends table_sql implements renderable {
         } else {
             $this->rownum += 1;
         }
-
         return parent::format_row($row);
     }
 
@@ -1807,19 +1810,23 @@ class assign_grading_table extends table_sql implements renderable {
             $markid = ($mark) ? $mark->id : -1;
         }
 
+        $plugin->reset_marking();
         $summary = $plugin->view_summary($item, $showviewlink, true, $markid);
 
         $separator = '';
         if ($showviewlink) {
             $viewstr = get_string('view' . substr($plugin->get_subtype(), strlen('assign')), 'assign');
             $icon = $this->output->pix_icon('t/viewdetails', $viewstr);
-            $urlparams = array('id' => $this->assignment->get_course_module()->id,
-                                                     'sid' => $item->id,
-                                                     'gid' => $item->id,
-                                                     'plugin' => $plugin->get_type(),
-                                                     'action' => 'viewplugin' . $plugin->get_subtype(),
-                                                     'returnaction' => $returnaction,
-                                                     'returnparams' => http_build_query($returnparams));
+            $urlparams = [
+                'id' => $this->assignment->get_course_module()->id,
+                'sid' => $item->id,
+                'gid' => $item->id,
+                'mid' => $markid,
+                'plugin' => $plugin->get_type(),
+                'action' => 'viewplugin' . $plugin->get_subtype(),
+                'returnaction' => $returnaction,
+                'returnparams' => http_build_query($returnparams)
+            ];
             if (self::is_plugin_marker_column($colname)) {
                 $urlparams['markid'] = $markid;
             }
@@ -1888,6 +1895,7 @@ class assign_grading_table extends table_sql implements renderable {
      * @return mixed string or NULL
      */
     public function other_cols($colname, $row) {
+        global $DB;
         if (str_starts_with($colname, 'marker') && ($col = substr($colname, 6))) {
             return $this->col_marker($row, $col);
         }

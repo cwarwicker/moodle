@@ -43,7 +43,7 @@ class backup_assignfeedback_file_subplugin extends backup_subplugin {
         // Create XML elements.
         $subplugin = $this->get_subplugin_element();
         $subpluginwrapper = new backup_nested_element($this->get_recommended_name());
-        $subpluginelement = new backup_nested_element('feedback_file', null, array('numfiles', 'grade'));
+        $subpluginelement = new backup_nested_element('feedback_file', null, array('numfiles', 'grade', 'mark'));
 
         // Connect XML elements into the tree.
         $subplugin->add_child($subpluginwrapper);
@@ -53,6 +53,7 @@ class backup_assignfeedback_file_subplugin extends backup_subplugin {
         $subpluginelement->set_source_table('assignfeedback_file', array('grade' => backup::VAR_PARENTID));
         // The parent is the grade.
         $subpluginelement->annotate_files('assignfeedback_file', 'feedback_files', 'grade');
+        $subpluginelement->annotate_files('assignfeedback_file', 'feedback_marker', 'mark');
         return $subplugin;
     }
 

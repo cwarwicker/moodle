@@ -1156,6 +1156,7 @@ class renderer extends \plugin_renderer_base {
 
         if ($feedbackplugin->view == \assign_feedback_plugin_feedback::SUMMARY) {
             $showviewlink = false;
+            $feedbackplugin->plugin->reset_marking();
             $summary = $feedbackplugin->plugin->view_summary($feedbackplugin->grade, $showviewlink);
 
             $classsuffix = $feedbackplugin->plugin->get_subtype() .

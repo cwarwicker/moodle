@@ -61,13 +61,17 @@ class restore_assignfeedback_file_subplugin extends restore_subplugin {
         $data = (object)$data;
         $data->assignment = $this->get_new_parentid('assign');
         $oldgradeid = $data->grade;
+        $oldmarkid = $data->mark;
+
         // The mapping is set in the restore for the core assign activity
         // when a grade node is processed.
         $data->grade = $this->get_mappingid('grade', $data->grade);
+        $data->markid = $this->get_mappingid('mark', $data->mark, null);
 
         $DB->insert_record('assignfeedback_file', $data);
 
         $this->add_related_files('assignfeedback_file', 'feedback_files', 'grade', null, $oldgradeid);
+        $this->add_related_files('assignfeedback_file', 'feedback_marker', 'mark', null, $oldmarkid);
     }
 
 }

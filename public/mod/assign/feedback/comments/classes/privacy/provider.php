@@ -109,13 +109,13 @@ class provider implements
         $comments = $plugin->get_all_feedback_comments($gradeid);
         $markids = [];
         $data = new stdClass();
+        $currentpath = array_merge(
+            $exportdata->get_subcontext(),
+            [get_string('privacy:commentpath', 'assignfeedback_comments')]
+        );
+
         foreach ($comments as $comment) {
             if (!empty($comment->commenttext)) {
-                $currentpath = array_merge(
-                    $exportdata->get_subcontext(),
-                    [get_string('privacy:commentpath', 'assignfeedback_comments')]
-                );
-
                 if (is_null($comment->mark)) {
                     $filearea = ASSIGNFEEDBACK_COMMENTS_FILEAREA;
                     $itemid = $comment->grade;
