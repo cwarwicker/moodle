@@ -810,6 +810,19 @@ class assign {
         // Grade penalties.
         $update->gradepenalty = $formdata->gradepenalty ?? 0;
 
+        // If we are using simple grading and we specify a markercount, update the multi marking values.
+        if (property_exists($formdata, 'markercount') && property_exists($formdata, 'multimarkmethod')) {
+            $update->markercount = $formdata->markercount;
+            if ($formdata->markercount > 1) {
+                $update->multimarkmethod = $formdata->multimarkmethod;
+                if (property_exists($formdata, 'multimarkrounding')) {
+                    $update->multimarkrounding = $formdata->multimarkrounding;
+                }
+            }
+        } else {
+            $update->markercount = 1;
+        }
+
         $returnid = $DB->insert_record('assign', $update);
         $this->instance = $DB->get_record('assign', array('id'=>$returnid), '*', MUST_EXIST);
         // Cache the course record.
@@ -907,6 +920,8 @@ class assign {
         $DB->delete_records('assign_plugin_config', array('assignment' => $this->get_instance()->id));
         $DB->delete_records('assign_user_flags', array('assignment' => $this->get_instance()->id));
         $DB->delete_records('assign_user_mapping', array('assignment' => $this->get_instance()->id));
+        $DB->delete_records('assign_allocated_marker', ['assignment' => $this->get_instance()->id]);
+        $DB->delete_records('assign_mark', ['assignment' => $this->get_instance()->id]);
 
         // Delete items from the gradebook.
         if (! $this->delete_grades()) {
@@ -1602,6 +1617,24 @@ class assign {
 
         // Grade penalties.
         $update->gradepenalty = $formdata->gradepenalty ?? 0;
+
+        // If we are using simple grading and we specify a markercount, update the multi marking values.
+        if (
+            property_exists($formdata, 'markercount')
+            && property_exists($formdata, 'advancedgradingmethod_submissions')
+            && $formdata->advancedgradingmethod_submissions === ''
+        ) {
+            $update->markercount = $formdata->markercount;
+            if ($formdata->markercount > 1) {
+                $update->multimarkmethod = $formdata->multimarkmethod;
+                $update->multimarkrounding = $formdata->multimarkrounding ?? null;
+            }
+        } else {
+            // If we don't specify a markercount, or we switched the grading type, return to defaults.
+            $update->markercount = 1;
+            $update->multimarkmethod = null;
+            $update->multimarkrounding = null;
+        }
 
         $result = $DB->update_record('assign', $update);
         $this->instance = $DB->get_record('assign', array('id'=>$update->id), '*', MUST_EXIST);
