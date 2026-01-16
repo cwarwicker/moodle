@@ -84,6 +84,18 @@ define('ASSIGN_EVENT_TYPE_OPEN', 'open');
 define('ASSIGN_EVENT_TYPE_CLOSE', 'close');
 define('ASSIGN_EVENT_TYPE_EXTENSION', 'extension');
 
+define('ASSIGN_MULTIMARKING_METHOD_MANUAL', 'manual');
+define('ASSIGN_MULTIMARKING_METHOD_MAX', 'maximum');
+define('ASSIGN_MULTIMARKING_METHOD_AVERAGE', 'average');
+define('ASSIGN_MULTIMARKING_METHOD_FIRST', 'first');
+
+define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN', -1);
+define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_NATURAL', 0);
+define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP', 1);
+define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_NONE', -2);
+
+define('ASSIGN_MULTIMARKING_MAX_MARKERS', 10);
+define('ASSIGN_MULTIMARKING_DEFAULT_MARKERS', 3);
 require_once($CFG->libdir . '/accesslib.php');
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/repository/lib.php');
