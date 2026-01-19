@@ -95,7 +95,7 @@ define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_DOWN', 2);
 define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP', 3);
 
 define('ASSIGN_MULTIMARKING_MAX_MARKERS', 10);
-define('ASSIGN_MULTIMARKING_DEFAULT_MARKERS', 1);
+define('ASSIGN_MULTIMARKING_DEFAULT_MARKERS', 2);
 require_once($CFG->libdir . '/accesslib.php');
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/repository/lib.php');
@@ -4396,7 +4396,7 @@ class assign {
             // If we are viewing the marker page, overwrite the value for the workflowstate select menu
             // to be from the mark, not the overall grade.
             if (!empty($args['marker'])) {
-                $data->workflowstate = $record->workflowstate;
+                $data->workflowstate = ($record) ? $record->workflowstate : null;
             }
         } else {
             $data = new stdClass();
