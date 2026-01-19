@@ -43,6 +43,12 @@ class behat_mod_assign_generator extends behat_generator_base {
                 'required' => ['assign', 'user', 'extensionduedate'],
                 'switchids' => ['assign' => 'cmid', 'user' => 'userid'],
             ],
+            'marker_allocations' => [
+                'singular' => 'marker_allocation',
+                'datagenerator' => 'marker_allocation',
+                'required' => ['assign', 'user', 'marker'],
+                'switchids' => ['assign' => 'cmid', 'user' => 'userid', 'marker' => 'markerid'],
+            ],
         ];
     }
 
@@ -55,4 +61,14 @@ class behat_mod_assign_generator extends behat_generator_base {
     protected function get_assign_id(string $identifier): int {
         return $this->get_cm_by_activity_name('assign', $identifier)->id;
     }
+
+    /**
+     * Get the user id for the marker based on their username
+     * @param string $username
+     * @return int
+     */
+    protected function get_marker_id(string $username): int {
+        return $this->get_user_id($username);
+    }
+
 }
