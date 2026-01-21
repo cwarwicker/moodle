@@ -45,6 +45,6 @@ $string['offlinegradingworksheet'] = 'Grades';
 $string['pluginname'] = 'Offline grading worksheet';
 $string['processgrades'] = 'Import grades';
 $string['skiprecord'] = 'Skip record';
-$string['updaterecord'] = 'Update record';
 $string['updatedgrades'] = 'Updated <strong>{$a->gradeupdatescount}</strong> grades, <strong>{$a->markupdatescount}</strong> marks, and <strong>{$a->feedbackupdatescount}</strong> feedback instances.';
+$string['updaterecord'] = 'Update record';
 $string['uploadgrades'] = 'Upload grading worksheet';
