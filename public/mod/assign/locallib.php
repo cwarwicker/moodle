@@ -10611,11 +10611,9 @@ class assign {
 
     /**
      * Check if user is a marker.
-     *
-     * @param int $userid
      * @return bool
      */
-    public function is_user_marker() {
+    public function is_user_marker(): bool {
         global $DB, $USER;
         return $DB->record_exists(
             'assign_allocated_marker',
@@ -10630,9 +10628,7 @@ class assign {
      * @throws dml_exception
      */
     public function get_allocated_markers(int $studentid): array {
-
         global $DB;
-
         return $DB->get_records('assign_allocated_marker', [
             'student' => $studentid,
             'assignment' => $this->get_instance()->id,
