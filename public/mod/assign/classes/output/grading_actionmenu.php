@@ -188,6 +188,14 @@ class grading_actionmenu implements templatable, renderable {
             $data['graderurl'] = $url->out(false);
         }
 
+        if ($this->assign->is_user_marker()) {
+            $url = new moodle_url('/mod/assign/view.php', [
+                'id' => $this->assign->get_course_module()->id,
+                'action' => 'marker',
+            ]);
+            $data['markerurl'] = $url->out(false);
+        }
+
         $gradingmanager = get_grading_manager($this->assign->get_context(), 'mod_assign', 'submissions');
         $controller = $gradingmanager->get_active_controller();
         $showquickgrading = empty($controller) && $this->assign->can_grade();
