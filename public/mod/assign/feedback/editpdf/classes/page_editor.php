@@ -168,7 +168,12 @@ class page_editor {
     public static function set_annotations($gradeid, $pageno, $annotations, ?int $markid = null) {
         global $DB;
 
-        $DB->delete_records('assignfeedback_editpdf_annot', ['gradeid' => $gradeid, 'markid' => $markid, 'pageno' => $pageno, 'draft' => 1]);
+        $DB->delete_records('assignfeedback_editpdf_annot', [
+            'gradeid' => $gradeid,
+            'markid' => $markid,
+            'pageno' => $pageno,
+            'draft' => 1
+        ]);
         $added = 0;
         foreach ($annotations as $record) {
             // Force these.
@@ -215,10 +220,10 @@ class page_editor {
 
         // Delete the non-draft annotations and comments.
         $result = $DB->delete_records('assignfeedback_editpdf_cmnt', [
-            'gradeid' => $gradeid, 'draft' => 0, 'markid' => $markid
+            'gradeid' => $gradeid, 'draft' => 0, 'markid' => $markid,
         ]);
         $result = $DB->delete_records('assignfeedback_editpdf_annot', [
-            'gradeid' => $gradeid, 'draft' => 0, 'markid' => $markid
+            'gradeid' => $gradeid, 'draft' => 0, 'markid' => $markid,
         ]) && $result;
         return $result;
     }
@@ -234,15 +239,15 @@ class page_editor {
 
         // Delete the previous non-draft annotations and comments.
         $DB->delete_records('assignfeedback_editpdf_cmnt', [
-            'gradeid' => $gradeid, 'draft' => 0, 'markid' => $markid
+            'gradeid' => $gradeid, 'draft' => 0, 'markid' => $markid,
         ]);
         $DB->delete_records('assignfeedback_editpdf_annot', [
-            'gradeid' => $gradeid, 'draft' => 0, 'markid' => $markid
+            'gradeid' => $gradeid, 'draft' => 0, 'markid' => $markid,
         ]);
 
         // Copy all the draft annotations and comments to non-drafts.
         $records = $DB->get_records('assignfeedback_editpdf_annot', [
-            'gradeid' => $gradeid, 'draft' => 1, 'markid' => $markid
+            'gradeid' => $gradeid, 'draft' => 1, 'markid' => $markid,
         ]);
         foreach ($records as $record) {
             unset($record->id);
@@ -250,7 +255,7 @@ class page_editor {
             $DB->insert_record('assignfeedback_editpdf_annot', $record);
         }
         $records = $DB->get_records('assignfeedback_editpdf_cmnt', [
-            'gradeid' => $gradeid, 'draft' => 1, 'markid' => $markid
+            'gradeid' => $gradeid, 'draft' => 1, 'markid' => $markid,
         ]);
         foreach ($records as $record) {
             unset($record->id);
@@ -290,16 +295,10 @@ class page_editor {
      */
     public static function has_any_active_annotations_or_comments(int $gradeid): bool {
         global $DB;
-        if ($DB->count_records('assignfeedback_editpdf_cmnt', [
-            'gradeid' => $gradeid,
-            'draft' => 0,
-        ])) {
+        if ($DB->count_records('assignfeedback_editpdf_cmnt', ['gradeid' => $gradeid, 'draft' => 0])) {
             return true;
         }
-        if ($DB->count_records('assignfeedback_editpdf_annot', [
-            'gradeid' => $gradeid,
-            'draft' => 0,
-        ])) {
+        if ($DB->count_records('assignfeedback_editpdf_annot', ['gradeid' => $gradeid, 'draft' => 0])) {
             return true;
         }
     }
@@ -312,7 +311,6 @@ class page_editor {
     public static function revert_drafts($gradeid) {
         global $DB;
 
-        // TODO - marks.
         // Delete the previous non-draft annotations and comments.
         $DB->delete_records('assignfeedback_editpdf_cmnt', array('gradeid'=>$gradeid, 'draft'=>1));
         $DB->delete_records('assignfeedback_editpdf_annot', array('gradeid'=>$gradeid, 'draft'=>1));
@@ -402,7 +400,11 @@ class page_editor {
         self::replace_files_from_to($fs, $contextid, $sourceitemid, $fileitemid, $filearea, true);
 
         // Copy the PAGE_IMAGE_FILEAREA files.
-        [$filearea, $fileitemid] = document_services::get_file_area_and_id($assignment, $grade, document_services::PAGE_IMAGE_FILEAREA);
+        [$filearea, $fileitemid] = document_services::get_file_area_and_id(
+            $assignment,
+            $grade,
+            document_services::PAGE_IMAGE_FILEAREA
+        );
         self::replace_files_from_to($fs, $contextid, $sourceitemid, $fileitemid, $filearea);
 
         return true;

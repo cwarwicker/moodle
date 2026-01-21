@@ -122,11 +122,13 @@ if ($action === 'pollconversions') {
         }
 
         if (in_array($response->status, $completestatuslist)) {
-            $pages = document_services::get_page_images_for_attempt($assignment,
-                                                                    $userid,
-                                                                    $attemptnumber,
-                                                                    $readonly,
-                                                                    $markid);
+            $pages = document_services::get_page_images_for_attempt(
+                $assignment,
+                $userid,
+                $attemptnumber,
+                $readonly,
+                $markid
+            );
 
             $response->pagecount = $combineddocument->get_page_count();
 
@@ -250,7 +252,6 @@ if ($action === 'pollconversions') {
     echo json_encode($result);
     die();
 } else if ($action == 'revertchanges') {
-    // TODO - test with marks.
     require_capability('mod/assign:grade', $context);
 
     $result = page_editor::revert_drafts($grade->id);
@@ -267,7 +268,6 @@ if ($action === 'pollconversions') {
     echo json_encode($result);
     die();
 } else if ($action == 'deletefeedbackdocument') {
-    // TODO - test with marks.
     require_capability('mod/assign:grade', $context);
 
     $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
@@ -276,7 +276,6 @@ if ($action === 'pollconversions') {
     echo json_encode($result);
     die();
 } else if ($action == 'rotatepage') {
-    // TODO - test with marks.
     require_capability('mod/assign:grade', $context);
     $response = new stdClass();
     $index = required_param('index', PARAM_INT);

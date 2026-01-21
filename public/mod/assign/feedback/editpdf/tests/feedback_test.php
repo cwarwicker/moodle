@@ -30,6 +30,7 @@ require_once($CFG->dirroot . '/mod/assign/tests/generator.php');
  * @category   test
  * @copyright  2013 Damyon Wiese
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @coversDefaultClass \assignfeedback_editpdf\page_editor
  */
 final class feedback_test extends \advanced_testcase {
 
@@ -205,6 +206,7 @@ final class feedback_test extends \advanced_testcase {
     /**
      * Test the annotations and comments for marker files and that they are successfully retrieved.
      * @return void
+     * @covers ::set_annotations, ::set_comments, ::get_annotations, ::get_comments, ::has_annotations_or_comments
      */
     public function test_page_editor_markers(): void {
         $this->resetAfterTest();
@@ -247,7 +249,7 @@ final class feedback_test extends \advanced_testcase {
         $comment2->x = 10;
         $comment2->y = 10;
         $comment2->colour = 'blue';
-        page_editor::set_comments($grade->id, 0, array($comment, $comment2), $mark->id);
+        page_editor::set_comments($grade->id, 0, [$comment, $comment2], $mark->id);
 
         // Then an overall comment.
         $comment3 = new comment();
@@ -256,7 +258,7 @@ final class feedback_test extends \advanced_testcase {
         $comment3->x = 200;
         $comment3->y = 100;
         $comment3->colour = 'clear';
-        page_editor::set_comments($grade->id, 0, array($comment3));
+        page_editor::set_comments($grade->id, 0, [$comment3]);
 
         // Add one marker annotation.
         $annotation = new annotation();
@@ -267,7 +269,7 @@ final class feedback_test extends \advanced_testcase {
         $annotation->endy = 200;
         $annotation->type = 'line';
         $annotation->colour = 'red';
-        page_editor::set_annotations($grade->id, 0, array($annotation), $mark->id);
+        page_editor::set_annotations($grade->id, 0, [$annotation], $mark->id);
 
         // And two overall annotations.
         $annotation2 = new annotation();
@@ -287,7 +289,7 @@ final class feedback_test extends \advanced_testcase {
         $annotation3->endy = 20;
         $annotation3->type = 'rectangle';
         $annotation3->colour = 'red';
-        page_editor::set_annotations($grade->id, 0, array($annotation2, $annotation3));
+        page_editor::set_annotations($grade->id, 0, [$annotation2, $annotation3]);
 
         // Overall annotation should still be empty as they are drafts.
         $this->assertFalse(page_editor::has_annotations_or_comments($grade->id, false));

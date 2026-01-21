@@ -398,6 +398,8 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
 
     /**
      * Display all the editpdf feedback files, overall and marker.
+     * @param stdClass $grade Grade object
+     * @return string
      */
     public function view_all(stdClass $grade): string {
         global $PAGE, $USER;
@@ -408,10 +410,8 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
         $this->assignment->set_is_marking(false);
 
         if (page_editor::has_any_active_annotations_or_comments($grade->id)) {
-
             // First the overall one.
             if (page_editor::has_annotations_or_comments($grade->id, false)) {
-
                 $area = document_services::FINAL_PDF_FILEAREA;
                 $item = $grade->id;
 
@@ -427,7 +427,6 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
                 $widget = $this->get_widget($grade->userid, $grade, true, $USER->id);
                 $html .= $renderer->render($widget);
                 $html .= html_writer::empty_tag('hr');
-
             }
 
             // Then the marker feedback.
@@ -471,7 +470,6 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
 
         // Show a link to download the pdf.
         if (page_editor::has_annotations_or_comments($grade->id, false, $markid)) {
-
             $area = document_services::FINAL_PDF_FILEAREA;
             $item = $grade->id;
 

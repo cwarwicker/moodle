@@ -524,7 +524,14 @@ EOD;
      * @param int|null $markid ID of mark record
      * @return array(stored_file)
      */
-    public static function get_page_images_for_attempt($assignment, $userid, $attemptnumber, $readonly = false, ?int $markid = null) {
+    public static function get_page_images_for_attempt
+    (
+        $assignment,
+        $userid,
+        $attemptnumber,
+        $readonly = false,
+        ?int $markid = null
+    ) {
         global $DB;
 
         $assignment = self::get_assignment_from_param($assignment);
@@ -549,12 +556,18 @@ EOD;
 
         // If we are after the readonly pages...
         if ($readonly) {
-            [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::PAGE_IMAGE_READONLY_FILEAREA, false, $markid);
+            [$filearea, $fileitemid] = self::get_file_area_and_id(
+                $assignment,
+                $grade,
+                self::PAGE_IMAGE_READONLY_FILEAREA,
+                false,
+                $markid
+            );
             if ($fs->is_area_empty($contextid, $component, $filearea, $fileitemid)) {
                 // We have a problem here, we were supposed to find the files.
                 // Attempt to re-generate the pages from the combined images.
-                self::generate_page_images_for_attempt($assignment, $userid, $attemptnumber); // todo - marks?
-                self::copy_pages_to_readonly_area($assignment, $grade); // todo - marks?
+                self::generate_page_images_for_attempt($assignment, $userid, $attemptnumber);
+                self::copy_pages_to_readonly_area($assignment, $grade);
             }
         }
 
@@ -569,7 +582,13 @@ EOD;
             // the version of ghostscript used, so we need to examine the combined pdf it was generated from.
             $blankpage = false;
             if (!$readonly && count($files) == 1) {
-                [$pdfarea, $fileitemid] = self::get_file_area_and_id($assignment, $grade, self::COMBINED_PDF_FILEAREA, false, $markid);
+                [$pdfarea, $fileitemid] = self::get_file_area_and_id(
+                    $assignment,
+                    $grade,
+                    self::COMBINED_PDF_FILEAREA,
+                    false,
+                    $markid
+                );
                 $pdfname = self::COMBINED_PDF_FILENAME;
                 if ($pdf = $fs->get_file($contextid, $component, $pdfarea, $fileitemid, $filepath, $pdfname)) {
                     // The combined pdf may have a different hash if it has been regenerated since the page
@@ -1010,7 +1029,15 @@ EOD;
      * @throws \moodle_exception
      * @throws \stored_file_creation_exception
      */
-    public static function rotate_page(assign $assignment, int $userid, int $attemptnumber, int $index, bool $rotateleft, ?int $markid = null) {
+    public static function rotate_page
+    (
+        assign $assignment,
+        int $userid,
+        int $attemptnumber,
+        int $index,
+        bool $rotateleft,
+        ?int $markid = null
+    ) {
         $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
         // Check permission.
         if (!$assignment->can_view_submission($userid)) {
@@ -1052,7 +1079,14 @@ EOD;
                     imagedestroy($content);
                     $file->delete();
                     if (!empty($newfile)) {
-                        page_editor::set_page_rotation($grade->id, $pagenumber, true, $newfile->get_pathnamehash(), $degree, $markid);
+                        page_editor::set_page_rotation(
+                            $grade->id,
+                            $pagenumber,
+                            true,
+                            $newfile->get_pathnamehash(),
+                            $degree,
+                            $markid
+                        );
                     }
                     return $newfile;
                 }
@@ -1109,8 +1143,7 @@ EOD;
             debugging("Could not convert {$file->get_contenthash()} jpg to pdf: {$exceptionmsg}", DEBUG_ALL);
             return null;
         }
-        $grade = $assignment->get_grade_item();
-        [$filearea, $fileitemid] = self::get_file_area_and_id($assignment, $grade->id, $filearea); // todo - this is broken
+        $filearea = self::TMP_JPG_TO_PDF_FILEAREA;
         $pdffile = self::save_file($assignment, $userid, $attemptnumber, $filearea, $tempfile);
         if (file_exists($tempfile)) {
             unlink($tempfile);
@@ -1146,9 +1179,12 @@ EOD;
     /**
      * Get file area and id.
      *
-     * @param \assign $assignment
-     * @param \stdClass $grade
-     * @return array
+     * @param \assign $assignment Assignment object
+     * @param \stdClass $grade Grade object
+     * @param string $basearea File area we might change to marker version
+     * @param bool $createmarkifmissing Do we need to create a mark if it doesn't exist during this check?
+     * @param int|null $markid Mark ID
+     * @return array [filearea, fileitemid]
      */
     public static function get_file_area_and_id(
         \assign $assignment,
