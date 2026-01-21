@@ -156,7 +156,7 @@ class combined_document {
             return false;
         }
         $filearea = $combinedfile->get_filearea();
-        return $filearea == document_services::PARTIAL_PDF_FILEAREA;
+        return in_array($filearea, [document_services::PARTIAL_PDF_FILEAREA, document_services::PARTIAL_PDF_FILEAREA_MARKER]);
     }
 
     /**
@@ -232,6 +232,7 @@ class combined_document {
      *
      * @param   int $contextid The contextid for the file to be stored under
      * @param   int $itemid The itemid for the file to be stored under
+     *
      * @return  $this
      */
     public function combine_files($contextid, $itemid) {
@@ -328,11 +329,13 @@ class combined_document {
      * @param   int $contextid The contextid for the file to be stored under
      * @param   int $itemid The itemid for the file to be stored under
      * @param   boolean $partial The combined pdf contains only some of the source files.
+     * @param   bool $ismarking Are we in marking mode?
+     *
      * @return  $this
      */
-    protected function store_combined_file($tmpfile, $contextid, $itemid, $partial = false) {
+    protected function store_combined_file($tmpfile, $contextid, $itemid, $partial = false, bool $ismarking = false) {
         // Store the file.
-        $record = $this->get_stored_file_record($contextid, $itemid, $partial);
+        $record = $this->get_stored_file_record($contextid, $itemid, $partial, $ismarking);
         $fs = get_file_storage();
 
         // Delete existing files first.
@@ -351,6 +354,7 @@ class combined_document {
      *
      * @param   int $contextid The contextid for the file to be stored under
      * @param   int $itemid The itemid for the file to be stored under
+     *
      * @return  $this
      */
     protected function store_empty_document($contextid, $itemid) {
@@ -427,12 +431,17 @@ class combined_document {
      * @param   int $contextid The contextid for the file to be stored under
      * @param   int $itemid The itemid for the file to be stored under
      * @param   boolean $partial The combined file contains only some of the source files.
+     * @param   bool $ismarking Are we in marking mode?
+     *
      * @return  stdClass
      */
-    protected function get_stored_file_record($contextid, $itemid, $partial = false) {
+    protected function get_stored_file_record($contextid, $itemid, $partial = false, $ismarking = false) {
         $filearea = document_services::COMBINED_PDF_FILEAREA;
         if ($partial) {
             $filearea = document_services::PARTIAL_PDF_FILEAREA;
+        }
+        if ($ismarking) {
+            $filearea .= '_marker';
         }
         return (object) [
             'contextid' => $contextid,
