@@ -265,6 +265,15 @@ class assign {
     }
 
     /**
+     * Check if we are in marking mode.
+     *
+     * @return bool
+     */
+    public function is_marking(): bool {
+        return $this->ismarking;
+    }
+
+    /**
      * Set the action and parameters that can be used to return to the current page.
      *
      * @param string $action The action for the current page
@@ -3295,6 +3304,10 @@ class assign {
             $workflowstate = null;
         }
 
+        if ($mark === '') {
+            $mark = null;
+        }
+
         // Validate the mark, using the same logic as from update_grade().
         $gradevalue = $this->get_instance()->grade;
 
@@ -4261,13 +4274,30 @@ class assign {
     /**
      * Get the mark object (if it exists) that corresponds to the specified marker and grade.
      *
-     * @param int $gradeid The assignment grade ID
-     * @param int $markerid The marker's user ID
-     * @return stdClass|false The assign_mark object or false if it doesn't exist
+     * @param int $gradeid The assignment grade ID.
+     * @param int $markerid The marker's user ID.
+     * @param bool $createifmissing Create the mark record if it doesn't exist.
+     *
+     * @return ?stdClass The assign_mark object or null if it doesn't exist.
      */
-    public function get_mark(int $gradeid, int $markerid): stdClass|false {
+    public function get_mark(int $gradeid, int $markerid, bool $createifmissing = false): ?stdClass {
         global $DB;
-        return $DB->get_record('assign_mark', ['gradeid' => $gradeid, 'marker' => $markerid]);
+        $record = $DB->get_record('assign_mark', ['gradeid' => $gradeid, 'marker' => $markerid]);
+        // If there's no mark record for this marker yet, and we want to create it if missing, then insert it.
+        // This can be when a comment is added before there is a mark added, for example.
+        if (!$record && $createifmissing) {
+            $grade = $this->get_grade($gradeid);
+            $id = $DB->insert_record('assign_mark', [
+                'assignment' => $grade->assignment,
+                'gradeid' => $grade->id,
+                'timecreated' => time(),
+                'timemodified' => time(),
+                'marker' => $markerid,
+                'mark' => null,
+            ]);
+            $record = $DB->get_record('assign_mark', ['id' => $id]);
+        }
+        return ($record) ? $record : null;
     }
 
     /**
@@ -10570,6 +10600,20 @@ class assign {
     }
 
     /**
+     * Check if a given mark record belongs to the current user.
+     *
+     * @param int $markid ID of the mark record.
+     *
+     * @return bool
+     */
+    public function is_our_mark(int $markid): bool {
+        global $DB, $USER;
+        return $DB->record_exists('assign_mark', [
+            'id' => $markid, 'marker' => $USER->id,
+        ]);
+    }
+
+    /**
      * Check if a user is an allocated marker on this assignment.
      *
      * Providing a student ID will check the user is allocated to that student too.
@@ -10596,6 +10640,19 @@ class assign {
     }
 
     /**
+     * Check if user is a marker for any student on the given assignment.
+     *
+     * @return bool
+     */
+    public function is_user_marker(): bool {
+        global $DB, $USER;
+        return $DB->record_exists(
+            'assign_allocated_marker',
+            ['assignment' => $this->get_instance()->id, 'marker' => $USER->id],
+        );
+    }
+
+    /**
      * Get the markers allocated to the specified student on this assignment.
      *
      * @param int $studentid ID of the student.
@@ -10607,6 +10664,26 @@ class assign {
             'student' => $studentid,
             'assignment' => $this->get_instance()->id,
         ], 'id');
+    }
+
+    /**
+     * Get the user object for the marker of a given student and marker number.
+     *
+     * @param int $studentid The student ID.
+     * @param int $number The marker number, e.g. 1, 2, etc...
+     *
+     * @return stdClass|null
+     */
+    public function get_marker_number(int $studentid, int $number): ?stdClass {
+        global $DB;
+        $markers = $DB->get_fieldset('assign_allocated_marker', 'marker', [
+            'student' => $studentid, 'assignment' => $this->get_instance()->id,
+        ]);
+        if (!empty($markers) && count($markers) >= ($number + 1)) {
+            // Then get the name of the one at the column position requested, e.g. marker1, marker2, etc...
+            return \core_user::get_user($markers[$number]);
+        }
+        return null;
     }
 }
 
