@@ -359,7 +359,13 @@ class assign_feedback_file extends assign_feedback_plugin {
         $data = ['filefeedback' => []];
         foreach ($filefeedbackitems as $filefeedbackitem) {
             $feedback = [];
-            $feedback['context'] = $overall = is_null($filefeedbackitem->mark) ? get_string('overallfiles', 'assignfeedback_file') : get_string('markerfile', 'assignfeedback_file');
+            if (is_null($filefeedbackitem->mark)) {
+                $feedback['context'] = get_string('overallfiles', 'assignfeedback_file');
+                $overall = true;
+            } else {
+                $feedback['context'] = get_string('markerfile', 'assignfeedback_file');
+                $overall = false;
+            }
 
             [$filearea, $fileitemid] = $this->get_fileitem_area_id($grade, $filefeedbackitem->mark);
             $count = $this->count_files($grade->id, $filearea);
