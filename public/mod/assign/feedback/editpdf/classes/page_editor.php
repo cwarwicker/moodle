@@ -172,7 +172,7 @@ class page_editor {
             'gradeid' => $gradeid,
             'markid' => $markid,
             'pageno' => $pageno,
-            'draft' => 1
+            'draft' => 1,
         ]);
         $added = 0;
         foreach ($annotations as $record) {

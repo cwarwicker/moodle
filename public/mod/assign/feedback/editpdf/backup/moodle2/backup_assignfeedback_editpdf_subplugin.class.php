@@ -55,7 +55,7 @@ class backup_assignfeedback_editpdf_subplugin extends backup_subplugin {
         ]);
         $subpluginelementrotation = new backup_nested_element('feedback_editpdf_rotation');
         $subpluginelementpagerotation = new backup_nested_element('pagerotation', null, [
-            'gradeid', 'markid', 'pageno', 'pathnamehash', 'isrotated', 'degree'
+            'gradeid', 'markid', 'pageno', 'pathnamehash', 'isrotated', 'degree',
         ]);
 
         // Connect XML elements into the tree.

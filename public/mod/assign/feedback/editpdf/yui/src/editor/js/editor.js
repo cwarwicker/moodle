@@ -457,8 +457,6 @@ EDITOR.prototype = {
     poll_document_conversion_status: function() {
         var requestUserId = this.get('userid');
 
-        console.log('michaelcity [editor.js:460]');
-
         Y.io(AJAXBASE, {
             method: 'get',
             context: this,
@@ -550,8 +548,6 @@ EDITOR.prototype = {
      * @method get_images_for_documents
      */
     start_document_to_image_conversion: function() {
-
-        console.log('michaelcity [editor.js:551]');
 
         Y.io(AJAXBASE, {
             method: 'get',

@@ -524,8 +524,7 @@ EOD;
      * @param int|null $markid ID of mark record
      * @return array(stored_file)
      */
-    public static function get_page_images_for_attempt
-    (
+    public static function get_page_images_for_attempt(
         $assignment,
         $userid,
         $attemptnumber,
@@ -1029,8 +1028,7 @@ EOD;
      * @throws \moodle_exception
      * @throws \stored_file_creation_exception
      */
-    public static function rotate_page
-    (
+    public static function rotate_page(
         assign $assignment,
         int $userid,
         int $attemptnumber,
