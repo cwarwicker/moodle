@@ -239,7 +239,8 @@ class manager {
      * @param \core\task\adhoc_task $task - The new adhoc task information to store.
      * @param bool $checkforexisting - If set to true and the task with the same user, classname, component and customdata
      *     is already scheduled then it will not schedule a new task. Can be used only for ASAP tasks.
-     * @return boolean - True if the config was saved.
+     * @return int|false - Task ID of the newly inserted task or existing task (depending on the $checkforexisting)
+     *     or false if the task component is deprecated or the task could not be queued due to DML error.
      */
     public static function queue_adhoc_task(adhoc_task $task, $checkforexisting = false) {
         global $DB;
@@ -267,9 +268,11 @@ class manager {
         // Set the time the task was created.
         $record->timecreated = $clock->time();
 
-        // Check if the same task is already scheduled.
-        if ($checkforexisting && self::task_is_scheduled($task)) {
-            return false;
+        if ($checkforexisting) {
+            $existing = self::get_queued_adhoc_task_record($task);
+            if ($existing) {
+                return $existing->id;
+            }
         }
 
         // Queue the task.
