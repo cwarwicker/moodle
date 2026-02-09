@@ -20,7 +20,10 @@ use core\task\adhoc_task;
 use mod_quiz\quiz_attempt;
 
 /**
- * Ad-hoc task to grade a submitted attempt
+ * Ad-hoc task to grade a submitted attempt.
+ *
+ * This is used (currently) for fixing quiz attempts which are stuck in "submitted" state, and
+ * in the future will also support the asynchronous grading of quiz attempts.
  *
  * @package   mod_quiz
  * @copyright 2024 onwards Catalyst IT EU {@link https://catalyst-eu.net}
@@ -41,24 +44,22 @@ class grade_submission extends adhoc_task {
     }
 
     /**
-     * Perform grading for the referenced attempt.
+     * Perform grading for the referenced submitted attempt.
      */
     public function execute(): void {
+        global $DB;
         $data = $this->get_custom_data();
-        try {
+        if ($DB->record_exists('quiz_attempts', ['id' => $data->attemptid, 'state' => quiz_attempt::SUBMITTED])) {
             $attempt = quiz_attempt::create($data->attemptid);
-        } catch (\dml_missing_record_exception $e) {
-            // Handle deletion of the attempt between submission and processing, so we don't mark the task as failed and re-try.
-            mtrace('Attempt with ID ' . $data->attemptid . ' not found, skipping.');
-            mtrace($e->getMessage());
-            return;
+            mtrace(
+                'Grading attempt for user ID ' .
+                $attempt->get_userid() . ' for quiz ' .
+                $attempt->get_quiz_name() . ' on course ' .
+                $attempt->get_course()->shortname
+            );
+            $attempt->process_grade_submission(time());
+        } else {
+            mtrace('Attempt ID ' . $data->attemptid . ' not found, or not in submitted state.');
         }
-        mtrace(
-            'Grading attempt for user ID ' .
-            $attempt->get_userid() . ' for quiz ' .
-            $attempt->get_quiz_name() . ' on course ' .
-            $attempt->get_course()->shortname
-        );
-        $attempt->process_grade_submission(time());
     }
 }
