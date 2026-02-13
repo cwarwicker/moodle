@@ -41,6 +41,9 @@ list($options, $unrecognized) = cli_get_params(
         'showdebugging' => false,
         'showsql' => false,
         'taskslimit' => null,
+        'queue' => false,
+        'data' => null,
+        'userid' => null,
     ], [
         'c' => 'classname',
         'e' => 'execute',
@@ -49,6 +52,9 @@ list($options, $unrecognized) = cli_get_params(
         'i' => 'ignorelimits',
         'k' => 'keep-alive',
         'l' => 'taskslimit',
+        'q' => 'queue',
+        'd' => 'data',
+        'u' => 'userid',
     ]
 );
 
@@ -72,6 +78,9 @@ Options:
      --showdebugging    Show developer level debugging information
      --showsql          Show sql queries before they are executed
  -l, --taskslimit=N     Run at most N tasks
+ -q, --queue               Queue a new adhoc task of the given --classname
+ -d, --data                Custom data to be added to the newly queued task in JSON format (Only usable in conjunction with --queue)
+ -u, --userid              User ID to be assigned to the newly queued task (Only usable in conjunction with --queue)
 
 Examples:
 
@@ -89,6 +98,18 @@ sudo -u www-data /usr/bin/php admin/cli/adhoc_task.php --id=123456 --showsql --s
 
 To profile a long running task:
 sudo -u www-data /usr/bin/php admin/cli/adhoc_task.php --taskslimit=1 --classname='\\some\\class\\name' --ignorelimits
+
+
+Queue a new task of a specific class.
+\$sudo -u www-data /usr/bin/php admin/cli/adhoc_task.php  --classname='\\core\\task\\calendar_fix_orphaned_events' --queue
+
+Queue a new task of a specific class, and set the user id.
+\$sudo -u www-data /usr/bin/php admin/cli/adhoc_task.php  --classname='\\core\\task\\calendar_fix_orphaned_events' --queue \
+    --userid=123
+
+Queue a new task of a specific class, and set the user id and supply custom data to the task.
+\$sudo -u www-data /usr/bin/php admin/cli/adhoc_task.php -c='\\core\\task\\send_login_notifications' \
+    -q -u=2 -d='{"useragent":"My Browser", "ismoodleapp": false, "loginip": "123.124.125.126", "logintime": 1772861153}' -e
 
 
 EOT;
@@ -154,6 +175,49 @@ if (!empty($options['id'])) {
 // Run all failed tasks.
 if (!empty($options['failed'])) {
     \core\cron::run_failed_adhoc_tasks($classname);
+    exit(0);
+}
+
+// Queue a new task.
+if (!empty($options['queue'])) {
+    // Classname must be specified to queue a new task.
+    if (is_null($classname)) {
+        cli_error('Classname (--classname) must be specified with --queue option.');
+    }
+
+    // Get the custom data and userid if they are specified.
+    $data = (!empty($options['data']) ? json_decode($options['data'], true) : null);
+    $userid = (!empty($options['userid']) ? $options['userid'] : null);
+
+    // Try to find the class and queue an instance if it exists.
+    try {
+        $task = new $classname();
+    } catch (\Error $e) {
+        cli_error("Adhoc task ({$classname}) not found.");
+    }
+
+    if ($data) {
+        $task->set_custom_data($data);
+    }
+    if ($userid) {
+        $task->set_userid($userid);
+    }
+
+    // Queue the task and get it's ID back. Or false if it's already queued.
+    $id = \core\task\manager::queue_adhoc_task($task, true);
+
+    // If an exact match already exists, it won't actually be queued again, but will return the existing ID.
+    mtrace("Adhoc task queued: {$classname} [{$id}]" .
+        (!empty($options['data']) ? " (Data: {$task->get_custom_data_as_string()})" : "") .
+        (!empty($options['userid']) ? " (User: {$options['userid']})" : ""));
+
+    // Do we want to execute it straight away?
+    if ($options['execute']) {
+        \core\cron::run_adhoc_task($id);
+        exit(0);
+    }
+
+    // If not, we can stop here and nothing else will be relevant alongside the queue option.
     exit(0);
 }
 
