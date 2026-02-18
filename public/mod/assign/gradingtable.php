@@ -467,7 +467,7 @@ class assign_grading_table extends table_sql implements renderable {
         ) {
             for ($i = 1; $i <= $assignment->get_instance()->markercount; $i++) {
                 $columns[] = "marker$i";
-                $headers[] = get_string('marker1', 'assign', $i);
+                $headers[] = get_string('markernumber', 'assign', $i);
             }
         }
 
@@ -698,20 +698,20 @@ class assign_grading_table extends table_sql implements renderable {
     }
 
     /**
-     * Get the user object for the marker of a given student and marker number
-     * @param int $studentid
-     * @param int $number
-     * @return stdClass|bool
-     * @throws dml_exception
+     * Get the user object for the marker of a given student and marker number.
+     * @param int $studentid ID of the student.
+     * @param int $number Marker index number.
+     * @return stdClass|false User object or false if not found.
      */
-    protected function get_marker_number(int $studentid, int $number): stdClass|bool {
+    protected function get_marker_number(int $studentid, int $number): stdClass|false {
         global $DB;
         $multimarkers = $DB->get_fieldset('assign_allocated_marker', 'marker', [
             'student' => $studentid, 'assignment' => $this->assignment->get_instance()->id,
         ]);
-        if (!empty($multimarkers) && count($multimarkers) >= ($number + 1)) {
+        if (!empty($multimarkers) && count($multimarkers) >= $number) {
             // Then get the name of the one at the column position requested, e.g. marker1, marker2, etc...
-            return \core_user::get_user($multimarkers[$number]);
+            $index = $number - 1;
+            return \core_user::get_user($multimarkers[$index]);
         }
         return false;
     }
@@ -728,7 +728,7 @@ class assign_grading_table extends table_sql implements renderable {
         static $markerlist = array();
 
         // Get the allocated markers that have been assigned to this student, if we are using multi-marking.
-        $allocatedmarker = $this->get_marker_number($row->userid, $markerpos - 1);
+        $allocatedmarker = $this->get_marker_number($row->userid, $markerpos);
 
         if ($this->is_downloading()) {
             if ($allocatedmarker) {
@@ -764,9 +764,16 @@ class assign_grading_table extends table_sql implements renderable {
             if (empty($markerlist)) {
                 return '';
             }
+
+            if (count($markers) > 1) {
+                $label = get_string('allocatedmarker', 'assign') . ' ' . $markerpos;
+            } else {
+                $label = get_string('allocatedmarker', 'assign');
+            }
+
             $name = 'quickgrade_' . $row->id . '_allocatedmarker_' . $markerpos;
             return html_writer::label(
-                get_string('allocatedmarker', 'assign') . ' ' . $markerpos,
+                $label,
                 'menu' . $name
             ) . html_writer::select($markerlist, $name, ($allocatedmarker) ? $allocatedmarker->id : '', false);
         }
@@ -1105,15 +1112,16 @@ class assign_grading_table extends table_sql implements renderable {
     }
 
     /**
-     * Format a column of data for display.
+     * Format the marker column's data for display.
      *
-     * @param stdClass $row
-     * @param int $col Marker number column (1-5)
+     * @param stdClass $row Row object.
+     * @param int $col Marker number column.
      * @return string
      */
     public function col_marker(stdClass $row, int $col): string {
         global $USER, $DB;
         $allocatedmarker = "";
+        $index = $col - 1;
 
         if (
             $this->assignment->get_instance()->markingworkflow &&
@@ -1136,14 +1144,14 @@ class assign_grading_table extends table_sql implements renderable {
                     'student' => $row->userid,
                     'assignment' => $this->assignment->get_instance()->id,
                 ], 'id'));
-                if (count($markers) > $col - 1) {
-                    $mark = $DB->get_record('assign_mark', ['gradeid' => $row->gradeid, 'marker' => $markers[$col - 1]->marker]);
+                if (count($markers) > $index) {
+                    $mark = $DB->get_record('assign_mark', ['gradeid' => $row->gradeid, 'marker' => $markers[$index]->marker]);
                     // Mark is only editable if we are quick grading, grading is not disabled, and if we are either
                     // the marker for this column, or we have manageallocations permissions.
                     $editable = (
                         ($this->quickgrading) &&
                         (!$gradingdisabled) &&
-                            ($USER->id == $markers[$col - 1]->marker)
+                            ($USER->id == $markers[$index]->marker)
                     );
                     $displaymark = $this->display_grade(
                         $mark->mark ?? null,
@@ -1151,10 +1159,10 @@ class assign_grading_table extends table_sql implements renderable {
                         $row->userid,
                         $row->timemarked,
                         0,
-                        $markers[$col - 1]->marker,
+                        $markers[$index]->marker,
                     );
                     // Display the workflow state for this mark.
-                    if ($markers[$col - 1]->marker > 0) {
+                    if ($markers[$index]->marker > 0) {
                         $displaymark .= html_writer::div(
                             get_string('markingworkflowstate' . ($mark->workflowstate ?? 'notmarked'), 'assign'),
                             'badge bg-info d-block'
@@ -1196,7 +1204,7 @@ class assign_grading_table extends table_sql implements renderable {
                         'assignment' => $this->assignment->get_instance()->id,
                     ])
                 ) {
-                    $isallocatedmarker = (array_key_exists($col - 1, $markers) && $markers[$col - 1] == $USER->id);
+                    $isallocatedmarker = (array_key_exists($index, $markers) && $markers[$index] == $USER->id);
                 }
             }
 
@@ -1821,7 +1829,9 @@ class assign_grading_table extends table_sql implements renderable {
      * @return mixed string or NULL
      */
     public function other_cols($colname, $row) {
-        if (str_starts_with($colname, 'marker') && ($col = substr($colname, 6))) {
+        // If the column name is formatted as "marker" and a number, e.g. "marker1", this is a Marker column
+        // and so we need to call col_marker() instead with the marker number provided in the name. In this case "1".
+        if (str_starts_with($colname, 'marker') && ($col = substr($colname, 6)) && ctype_digit($col)) {
             return $this->col_marker($row, $col);
         }
 
