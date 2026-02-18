@@ -7800,7 +7800,6 @@ class assign {
      * @return void
      */
     public function update_allocated_markers(int $studentid, array $markerids): void {
-
         global $DB;
 
         // First, remove all markers allocated to this student and assignment.
@@ -10571,14 +10570,12 @@ class assign {
 
     /**
      * Get the markers allocated to the specified student on this assignment.
-     * @param int $studentid
-     * @return array
-     * @throws dml_exception
+     *
+     * @param int $studentid ID of the student.
+     * @return array Array of allocated_marker records for this student.
      */
     public function get_allocated_markers(int $studentid): array {
-
         global $DB;
-
         return $DB->get_records('assign_allocated_marker', [
             'student' => $studentid,
             'assignment' => $this->get_instance()->id,

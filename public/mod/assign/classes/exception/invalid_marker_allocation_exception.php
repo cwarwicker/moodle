@@ -28,12 +28,13 @@ use core\exception\moodle_exception;
  */
 class invalid_marker_allocation_exception extends moodle_exception {
     /**
-     * Constructor
-     * @param string $errorcode The name of the string from error.php to print
-     * @param string $module name of module
+     * Construct the exception object for invalid marker allocations.
+     *
+     * @param string $errorcode The string key to indicate the marker allocation problem.
+     * @param string $module Name of module.
      * @param string $link The url where the user will be prompted to continue.
-     * @param mixed $a Extra words and phrases that might be required in the error string
-     * @param string $debuginfo optional debugging information
+     * @param mixed $a Extra words and phrases that might be required in the error string.
+     * @param string $debuginfo Optional debugging information.
      */
     public function __construct($errorcode, $module = '', $link = '', $a = null, $debuginfo = null) {
         parent::__construct('invalidmarkerallocation:' . $errorcode, 'assign', $link, $a, $debuginfo);
