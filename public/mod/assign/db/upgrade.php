@@ -78,6 +78,9 @@ function xmldb_assign_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2024042201, 'assign');
     }
 
+    // Automatically generated Moodle v4.5.0 release upgrade line.
+    // Put any upgrade step following this.
+
     if ($oldversion < 2024121801) {
 
         // Define field gradepenalty to be added to assign.
@@ -132,7 +135,7 @@ function xmldb_assign_upgrade($oldversion) {
     if ($oldversion < 2025100600.01) {
         // Define field markercount to be added to assign.
         $table = new xmldb_table('assign');
-        $field = new xmldb_field('markercount', XMLDB_TYPE_INTEGER, '6', null, XMLDB_NOTNULL, null, '1', 'markingallocation');
+        $field = new xmldb_field('markercount', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '1', 'markingallocation');
         // Conditionally launch add field markercount.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
@@ -192,8 +195,8 @@ function xmldb_assign_upgrade($oldversion) {
         // Populate assign_allocated_marker.
         $DB->execute(
             "INSERT INTO {assign_allocated_marker} (assignment, student, marker)
-                      SELECT assignment, userid, allocatedmarker
-                        FROM {assign_user_flags}"
+                  SELECT assignment, userid, allocatedmarker
+                    FROM {assign_user_flags}"
         );
 
         // Define field allocatedmarker to be dropped from assign_user_flags.

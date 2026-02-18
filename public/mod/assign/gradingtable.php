@@ -346,8 +346,8 @@ class assign_grading_table extends table_sql implements renderable {
                 $markerfilter = (int)get_user_preferences('assign_markerfilter', '');
                 if (!empty($markerfilter)) {
                     $from .= 'LEFT JOIN {assign_allocated_marker} am
-                                 ON u.id = am.student
-                                AND am.assignment = :assignmentid4 ';
+                                     ON u.id = am.student
+                                    AND am.assignment = :assignmentid4 ';
                     $params['assignmentid4'] = (int)$this->assignment->get_instance()->id;
                     if ($markerfilter == ASSIGN_MARKER_FILTER_NO_MARKER) {
                         $where .= ' AND am.marker IS NULL';

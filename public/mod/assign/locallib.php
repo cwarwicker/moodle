@@ -2445,8 +2445,8 @@ class assign {
                 )
             ) {
                 $additionaljoins .= ' LEFT JOIN {assign_allocated_marker} am
-                                     ON u.id = am.student
-                                     AND am.assignment = :assignmentid3';
+                                             ON u.id = am.student
+                                            AND am.assignment = :assignmentid3';
                 $additionalfilters .= " AND am.marker = :markerid";
                 $params['assignmentid3'] = $instance->id;
                 $params['markerid'] = $USER->id;

@@ -34,7 +34,7 @@
         <FIELD NAME="maxattempts" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="What is the maximum number of student attempts allowed for this assignment? -1 means unlimited."/>
         <FIELD NAME="markingworkflow" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If enabled, marking workflow features will be used in this assignment."/>
         <FIELD NAME="markingallocation" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If enabled, marking allocation features will be used in this assignment"/>
-        <FIELD NAME="markercount" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Number of markers for this assignment, for example, 2 for double marking"/>
+        <FIELD NAME="markercount" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Number of markers for this assignment, for example, 2 for double marking"/>
         <FIELD NAME="multimarkmethod" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="How to calculate grade when markercount greater than 1"/>
         <FIELD NAME="multimarkrounding" TYPE="int" LENGTH="2" NOTNULL="false" SEQUENCE="false" COMMENT="How to round the grade calculation if using an average of marks"/>
         <FIELD NAME="markinganonymous" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If enabled, marking anonymous features will be used in this assignment"/>
@@ -178,7 +178,7 @@
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The time this mark was created"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The time this mark was modified"/>
         <FIELD NAME="marker" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The user ID of the marker"/>
-        <FIELD NAME="mark" TYPE="number" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" DECIMALS="5" COMMENT="Mark given by marker"/>
+        <FIELD NAME="mark" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5" COMMENT="Mark given by marker"/>
         <FIELD NAME="workflowstate" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="The current workflow state of the mark"/>
       </FIELDS>
       <KEYS>
