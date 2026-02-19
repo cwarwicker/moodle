@@ -95,7 +95,7 @@ define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_UP', 2);
 define('ASSIGN_MULTIMARKING_AVERAGE_ROUND_NONE', 3);
 
 define('ASSIGN_MULTIMARKING_MAX_MARKERS', 10);
-define('ASSIGN_MULTIMARKING_DEFAULT_MARKERS', 1);
+define('ASSIGN_MULTIMARKING_DEFAULT_MARKERS', 2);
 require_once($CFG->libdir . '/accesslib.php');
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/repository/lib.php');

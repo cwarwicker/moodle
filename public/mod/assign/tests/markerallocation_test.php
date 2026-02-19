@@ -50,12 +50,12 @@ final class markerallocation_test extends \advanced_testcase {
     private array $groups = [];
 
     /**
-     * Create the assignment object for testing
-     * @param array $args Array of options that can be overwritten
+     * Create the assignment object for testing.
+     *
+     * @param array $args Array of options that can be overwritten.
      * @return assign
      */
     private function create_assignment(array $args = []): assign {
-
         $modulesettings = [
             'course'                            => $this->course->id,
             'alwaysshowdescription'             => 1,
@@ -75,7 +75,7 @@ final class markerallocation_test extends \advanced_testcase {
             'maxattempts'                       => 1,
             'markingworkflow'                   => 1,
             'markingallocation'                 => 1,
-            'markercount'                       => 2,
+            'markercount'                       => ($args['markercount']) ?? ASSIGN_MULTIMARKING_DEFAULT_MARKERS,
             'multimarkmethod'                   => ($args['multimarkmethod']) ?? ASSIGN_MULTIMARKING_METHOD_MANUAL,
             'multimarkrounding'                 => ($args['multimarkrounding']) ?? null,
         ];
@@ -95,11 +95,9 @@ final class markerallocation_test extends \advanced_testcase {
     }
 
     /**
-     * Setup all required test data
-     * @return void
+     * Setup all required test data.
      */
     private function setup_data(): void {
-
         global $DB;
 
         $this->resetAfterTest();
@@ -139,11 +137,9 @@ final class markerallocation_test extends \advanced_testcase {
     }
 
     /**
-     * Setup group data for teamsubmission tests
-     * @return void
+     * Setup group data for teamsubmission tests.
      */
     private function setup_group_data(): void {
-
         $this->resetAfterTest(false);
 
         // Create a course, by default it is created with 5 sections.
@@ -187,11 +183,10 @@ final class markerallocation_test extends \advanced_testcase {
 
     /**
      * Test marker allocation and marking with group submissions.
-     * @return void
+     *
      * @covers ::update_allocated_markers, ::save_grade
      */
     public function test_allocated_markers_with_group_submissions(): void {
-
         $this->setup_group_data();
         $assignment = $this->create_assignment([
             'teamsubmission' => 1,
@@ -211,6 +206,8 @@ final class markerallocation_test extends \advanced_testcase {
         $this->setUser($this->users['teachers'][1]);
 
         // Before we save it, we need to create the submission record, which won't happen from just saving it.
+        // We are passing -1 as userid because it's a required argument, but if the groupid is present, then
+        // the `get_group_submission` function ignores it, so it just needs any value really.
         $assignment->get_group_submission(-1, $this->groups['A']->id, true);
 
         // Then save it.
@@ -261,7 +258,7 @@ final class markerallocation_test extends \advanced_testcase {
 
     /**
      * Create all the needed elements to test the difference between both functions.
-     * @return void
+     *
      * @coversNothing
      */
     public function test_markerusers(): void {
@@ -294,12 +291,11 @@ final class markerallocation_test extends \advanced_testcase {
         }
 
         $this->assertEquals(count($oldmarkers), 0);
-
     }
 
     /**
-     * Test functionality around having multiple allocated markers
-     * @return void
+     * Test functionality around having multiple allocated markers.
+     *
      * @covers ::update_allocated_markers, ::update_mark
      */
     public function test_multiple_marker_allocation(): void {
@@ -343,12 +339,11 @@ final class markerallocation_test extends \advanced_testcase {
     }
 
     /**
-     * Test manual calculation of final grade
-     * @return void
+     * Test manual calculation of final grade.
+     *
      * @covers ::update_mark
      */
     public function test_calculated_marker_grade_manual(): void {
-
         $this->setup_data();
         $assignment = $this->create_assignment();
 
@@ -375,11 +370,10 @@ final class markerallocation_test extends \advanced_testcase {
 
     /**
      * Test "maximum" calculation of final grade when using scale grading.
-     * @return void
+     *
      * @covers ::update_mark
      */
     public function test_calculated_marker_grade_maximum(): void {
-
         $this->setup_data();
         $assignment = $this->create_assignment([
             'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_MAX,
@@ -408,11 +402,10 @@ final class markerallocation_test extends \advanced_testcase {
 
     /**
      * Test "average" calculation of final grade when using rounding of "none".
-     * @return void
+     *
      * @covers ::update_mark
      */
     public function test_calculated_marker_grade_average_round_none(): void {
-
         $this->setup_data();
         $assignment = $this->create_assignment([
             'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_AVERAGE,
@@ -442,11 +435,10 @@ final class markerallocation_test extends \advanced_testcase {
 
     /**
      * Test "average" calculation of final grade when using rounding of "down".
-     * @return void
+     *
      * @covers ::update_mark
      */
     public function test_calculated_marker_grade_average_rounding_down(): void {
-
         $this->setup_data();
         $assignment = $this->create_assignment([
             'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_AVERAGE,
@@ -476,11 +468,10 @@ final class markerallocation_test extends \advanced_testcase {
 
     /**
      * Test that the grade calculation from marks using method "average" with up rounding, sets the correct grade.
-     * @return void
+     *
      * @covers ::update_mark
      */
     public function test_calculated_marker_grade_average_round_up(): void {
-
         $this->setup_data();
         $assignment = $this->create_assignment([
             'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_AVERAGE,
@@ -510,11 +501,10 @@ final class markerallocation_test extends \advanced_testcase {
 
     /**
      * Test that the grade calculation from marks using method "average" with natural rounding, sets the correct grade.
-     * @return void
+     *
      * @covers ::update_mark
      */
     public function test_calculated_marker_grade_average_round_natural(): void {
-
         $this->setup_data();
         $assignment = $this->create_assignment([
             'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_AVERAGE,
@@ -544,11 +534,10 @@ final class markerallocation_test extends \advanced_testcase {
 
     /**
      * Test that the workflow state changes on the overall grade based on marker states.
-     * @return void
+     *
      * @covers ::update_mark, ::calculate_and_save_overall_workflow_state
      */
     public function test_calculated_marker_workflow(): void {
-
         $this->setup_data();
         $assignment = $this->create_assignment();
 
@@ -593,11 +582,10 @@ final class markerallocation_test extends \advanced_testcase {
 
     /**
      * Test that when we remove a marker their marks are not counted towards anything.
-     * @return void
+     *
      * @covers ::update_mark
      */
     public function test_unallocated_marker_not_included_in_mark_calculations(): void {
-
         $this->setup_data();
         $assignment = $this->create_assignment([
             'multimarkmethod' => ASSIGN_MULTIMARKING_METHOD_AVERAGE,
@@ -628,5 +616,4 @@ final class markerallocation_test extends \advanced_testcase {
         $gradeobject = $assignment->get_user_grade($this->users[2]->id, false);
         $this->assertEquals(-1, $gradeobject->grade);
     }
-
 }

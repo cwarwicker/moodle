@@ -208,12 +208,11 @@ class mod_assign_generator extends testing_module_generator {
     }
 
     /**
-     * Create a marker allocation record
+     * Create a marker allocation record.
+     *
      * @param array $data Array containing: ['assignid', 'userid', 'markerid']
-     * @return void
      */
     public function create_marker_allocation(array $data): void {
-
         global $DB;
 
         if (!isset($data['cmid'])) {

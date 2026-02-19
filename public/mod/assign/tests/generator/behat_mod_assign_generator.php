@@ -63,9 +63,10 @@ class behat_mod_assign_generator extends behat_generator_base {
     }
 
     /**
-     * Get the user id for the marker based on their username
-     * @param string $username
-     * @return int
+     * Get the user id for the marker based on their username.
+     *
+     * @param string $username The user's username
+     * @return int The user's ID
      */
     protected function get_marker_id(string $username): int {
         return $this->get_user_id($username);

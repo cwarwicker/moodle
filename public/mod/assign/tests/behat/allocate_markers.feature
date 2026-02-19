@@ -17,7 +17,7 @@ Feature: Allocate markers to student submissions
     And the following "course enrolments" exist:
       | user     | course | role           |
       | student1 | C1     | student        |
-      | student2 | C1     | student |
+      | student2 | C1     | student        |
       | teacher1 | C1     | editingteacher |
       | teacher2 | C1     | editingteacher |
     And the following "activity" exists:
