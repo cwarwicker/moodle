@@ -238,8 +238,8 @@ class restore_assign_activity_structure_step extends restore_activity_structure_
 
     /**
      * Process an allocated_marker restore.
+     *
      * @param object $data The data in object form.
-     * @return void
      */
     protected function process_assign_allocatedmarker($data): void {
         global $DB;
@@ -255,8 +255,8 @@ class restore_assign_activity_structure_step extends restore_activity_structure_
 
     /**
      * Process mark restore.
+     *
      * @param object $data The data in object form.
-     * @return void
      */
     protected function process_assign_mark($data): void {
         global $DB;
