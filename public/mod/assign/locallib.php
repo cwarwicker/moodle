@@ -3354,8 +3354,9 @@ class assign {
 
     /**
      * Calculate and update the assignment grade to be the average of the marks received, taking into account rounding.
-     * @param stdClass $grade
-     * @param array $marks
+     *
+     * @param stdClass $grade Grade object used by the assignment.
+     * @param array $marks Array of marker marks to average.
      * @return bool
      */
     protected function calculate_and_update_grade_from_average_mark(stdClass $grade, array $marks): bool {
@@ -3376,12 +3377,13 @@ class assign {
     }
 
     /**
-     * Calculate and update the assignment grade to be the maximum mark received
-     * @param stdClass $grade
-     * @param array $marks
+     * Calculate and update the assignment grade to be the maximum mark received.
+     *
+     * @param stdClass $grade Grade object used by the assignment.
+     * @param array $marks Array of marker marks.
      * @return bool
      */
-    protected function calculate_and_update_grade_from_maximum_mark(stdClass $grade, array $marks) {
+    protected function calculate_and_update_grade_from_maximum_mark(stdClass $grade, array $marks): bool {
         $grade->grade = grade_floatval(max($marks));
         return $this->update_grade($grade);
     }

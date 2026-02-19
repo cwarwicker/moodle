@@ -1058,7 +1058,7 @@ class assign_grading_table extends table_sql implements renderable {
         // If assignment uses multiple markers with the manual (aka agreement)
         // method then the grader must be an existing marker so only show the
         // action menu if they are.
-        $multimarkcannotgrade = false;
+        $multimarkcangrade = true;
         if (
             property_exists($this->assignment->get_instance(), 'multimarkmethod') &&
             ($this->assignment->get_instance()->multimarkmethod === 'manual') &&
@@ -1069,10 +1069,10 @@ class assign_grading_table extends table_sql implements renderable {
                 'student' => $row->userid,
             ])
         ) {
-            $multimarkcannotgrade = true;
+            $multimarkcangrade = false;
         }
 
-        if (!$this->is_downloading() && $this->hasgrade && !$multimarkcannotgrade) {
+        if (!$this->is_downloading() && $this->hasgrade && $multimarkcangrade) {
             $urlparams = [
                 'id' => $this->assignment->get_course_module()->id,
                 'rownum' => 0,
