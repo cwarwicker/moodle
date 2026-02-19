@@ -1060,8 +1060,8 @@ class assign_grading_table extends table_sql implements renderable {
         // action menu if they are.
         $multimarkcangrade = true;
         if (
-            property_exists($this->assignment->get_instance(), 'multimarkmethod') &&
-            ($this->assignment->get_instance()->multimarkmethod === 'manual') &&
+            $this->assignment->is_using_multiple_marking() &&
+            $this->assignment->get_instance()->multimarkmethod === 'manual' &&
             !$DB->get_record('assign_mark', ['gradeid' => $row->gradeid, 'marker' => $USER->id]) &&
             !$DB->get_record('assign_allocated_marker', [
                 'assignment' => $this->assignment->get_instance()->id,
