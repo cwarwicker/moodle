@@ -4393,7 +4393,7 @@ class assign {
 
             // If we are viewing the marker page, overwrite the value for the workflowstate select menu
             // to be from the mark, not the overall grade.
-            if ($args['marker']) {
+            if (!empty($args['marker'])) {
                 $data->workflowstate = $record->workflowstate;
             }
         } else {
@@ -10546,10 +10546,10 @@ class assign {
 
     /**
      * Is the assignment using multiple marker allocation?
+     *
      * @return bool
      */
     public function is_using_multiple_marking(): bool {
-
         return ($this->get_instance()->markingworkflow
             && $this->get_instance()->markingallocation
             && $this->get_instance()->markercount > 1
@@ -10557,13 +10557,13 @@ class assign {
     }
 
     /**
-     * Check if a given user is allocated as a marker for a given student on this assignment
-     * @param int $userid
-     * @param int $studentid
+     * Check if a given user is allocated as a marker for a given student on this assignment.
+     *
+     * @param int $userid The ID of the user we are checking to see if they are a marker.
+     * @param int $studentid The ID of the student.
      * @return bool
      */
     public function is_user_allocated_marker(int $userid, int $studentid): bool {
-
         global $DB;
 
         $record = $DB->count_records('assign_allocated_marker', [

@@ -24,6 +24,7 @@
 
 /**
  * Filter which options are enabled in the select menu.
+ *
  * @param {object} context
  * @param {array} args
  */
@@ -40,7 +41,8 @@ const filterOptions = (context, args) => {
 };
 
 /**
- * Initialise scripts
+ * Initialise scripts.
+ *
  * @param {array} args
  */
 export const init = (args) => {
