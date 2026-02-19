@@ -750,10 +750,10 @@ class provider implements
     }
 
     /**
-     * Delete all allocated markers for an array of users, for the given assignment
+     * Delete all allocated markers for an array of users, for the given assignment.
+     *
      * @param \assign $assign The assignment object.
      * @param array $userids If empty, delete all marks for the assignment.
-     * @return void
      */
     protected static function delete_allocated_markers_for_users(\assign $assign, array $userids = []): void {
         global $DB;
@@ -777,10 +777,10 @@ class provider implements
     }
 
     /**
-     * Delete all assignment marks for an array of users, for the given assignment
+     * Delete all assignment marks for an array of users, for the given assignment.
+     *
      * @param \assign $assign The assignment object.
      * @param array $userids If empty, delete all marks for the assignment.
-     * @return void
      */
     protected static function delete_marks_for_users(\assign $assign, array $userids = []): void {
         global $DB;
@@ -805,10 +805,10 @@ class provider implements
 
     /**
      * Export the user's marks for the given assignment.
+     *
      * @param \assign $assign The assignment object
      * @param \stdClass $user The user object
      * @param \context $context The context
-     * @return void
      */
     protected static function export_marks(\assign $assign, \stdClass $user, \context $context): void {
         global $DB;
@@ -840,10 +840,10 @@ class provider implements
 
     /**
      * Export the user's marker allocations for the given assignment.
+     *
      * @param \assign $assign The assignment object
      * @param \stdClass $user The user object
      * @param \context $context The context
-     * @return void
      */
     protected static function export_allocations(\assign $assign, \stdClass $user, \context $context): void {
         global $DB;
