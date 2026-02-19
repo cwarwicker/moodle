@@ -254,6 +254,7 @@ class mod_assign_mod_form extends moodleform_mod {
             ASSIGN_MULTIMARKING_METHOD_AVERAGE => get_string('markgrade' . ASSIGN_MULTIMARKING_METHOD_AVERAGE, 'assign'),
         ];
         $mform->disabledIf('markercount', 'advancedgradingmethod_submissions', 'neq', '');
+        $mform->hideIf('markercount', 'advancedgradingmethod_submissions', 'neq', '');
         $mform->hideIf('markercount', 'markingallocation', 'neq', '1');
         $mform->hideIf('markercount', 'markingworkflow', 'neq', '1');
 
@@ -263,6 +264,7 @@ class mod_assign_mod_form extends moodleform_mod {
         $mform->hideIf('multimarkmethod', 'markingallocation', 'eq', '0');
         $mform->hideIf('multimarkmethod', 'markercount', 'eq', '1');
         $mform->disabledIf('multimarkmethod', 'advancedgradingmethod_submissions', 'neq', '');
+        $mform->hideIf('multimarkmethod', 'advancedgradingmethod_submissions', 'neq', '');
 
         $name = get_string('multimarkrounding', 'assign');
         $options = [
@@ -273,8 +275,12 @@ class mod_assign_mod_form extends moodleform_mod {
         ];
         $mform->addElement('select', 'multimarkrounding', $name, $options);
         $mform->addHelpButton('multimarkrounding', 'multimarkrounding', 'assign');
+        $mform->hideIf('multimarkrounding', 'markingallocation', 'eq', '0');
+        $mform->hideIf('multimarkrounding', 'markercount', 'eq', '1');
         $mform->hideIf('multimarkrounding', 'multimarkmethod', 'neq', 'average');
         $mform->disabledIf('multimarkrounding', 'multimarkmethod', 'neq', 'average');
+        $mform->disabledIf('multimarkrounding', 'advancedgradingmethod_submissions', 'neq', '');
+        $mform->hideIf('multimarkrounding', 'advancedgradingmethod_submissions', 'neq', '');
 
         $name = get_string('markinganonymous', 'assign');
         $mform->addElement('selectyesno', 'markinganonymous', $name);
