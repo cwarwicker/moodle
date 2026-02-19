@@ -3248,13 +3248,15 @@ class assign {
     }
 
     /**
-     * Validate that the given mark is valid for the point grading of the assignment
-     * @param float $mark
-     * @param string $gradevalue
+     * Validate that the given mark is valid for the point grading of the assignment.
+     * This basically checks that the mark given is not greater than the max grade, or less than zero.
+     *
+     * @param float $mark The mark to validate.
+     * @param int $maxgradevalue The assignment's max grade value to compare against.
      * @return bool
      */
-    protected function validate_point_mark(float $mark, string $gradevalue): bool {
-        if ($mark > $gradevalue) {
+    protected function validate_point_mark(float $mark, int $maxgradevalue): bool {
+        if ($mark > $maxgradevalue) {
             return false;
         } else if ($mark < 0) {
             return false;
@@ -3263,11 +3265,11 @@ class assign {
     }
 
     /**
-     * Validate that a given mark is valid for the assignment's grading scale
-     * @param float $mark
-     * @param stdClass $scale
+     * Validate that a given mark is valid for the assignment's grading scale.
+     *
+     * @param float $mark The mark to validate.
+     * @param stdClass $scale The scale object used by the assignment.
      * @return bool
-     * @throws dml_exception
      */
     protected function validate_scale_mark(float $mark, stdClass $scale): bool {
         $scaleoptions = make_menu_from_list($scale->scale);
@@ -3279,12 +3281,13 @@ class assign {
 
     /**
      * Add or update an assign_mark record.
+     *
      * @param stdClass $grade a grade record.
      * @param mixed $mark The mark awarded by this marker, for example, 55.2.
-     * @param string|null $workflowstate The workflow state
+     * @param string|null $workflowstate The workflow state.
      * @return bool
      */
-    public function update_mark(stdClass $grade, $mark, ?string $workflowstate = null): bool {
+    public function update_mark(stdClass $grade, mixed $mark, ?string $workflowstate = null): bool {
         global $DB;
 
         if ($workflowstate === '') {
@@ -3293,6 +3296,11 @@ class assign {
 
         // Validate the mark, using the same logic as from update_grade().
         $gradevalue = $this->get_instance()->grade;
+
+        // This uses a negative value here because when an assignment uses a grading scale instead of a point max
+        // it stores this as the negative version of the scale's ID, in the assignment's `grade` column.
+        // So, for example, if the assignment is using grading scale of ID 3, the assignment's `grade` column
+        // would be -3. So to look up the scale here, we reverse it again to the positive.
         $scale = $DB->get_record('scale', ['id' => -$gradevalue]);
         if ($mark) {
             if ($gradevalue > 0 && !$this->validate_point_mark($mark, $gradevalue)) {
@@ -3303,13 +3311,13 @@ class assign {
         }
 
         if ($record = $this->get_mark($grade->id, $grade->grader)) {
-            $updategrade = ($record->mark != $mark);
+            $updatedmark = ($record->mark != $mark);
             $record->mark = $mark;
             $record->workflowstate = $workflowstate;
             $record->timemodified = time();
             $DB->update_record('assign_mark', $record);
         } else {
-            $updategrade = true;
+            $updatedmark = true;
             $record = new stdClass();
             $record->assignment = $grade->assignment;
             $record->gradeid = $grade->id;
@@ -3320,7 +3328,7 @@ class assign {
             $DB->insert_record('assign_mark', $record);
         }
 
-        if (!$updategrade) {
+        if (!$updatedmark) {
             return false;
         }
 
@@ -4248,11 +4256,11 @@ class assign {
     }
 
     /**
-     * Get the mark object -- if it exists -- that corresponds to the specified
-     * marker and grade.
-     * @param int $gradeid
-     * @param int $markerid
-     * @return stdClass|false
+     * Get the mark object (if it exists) that corresponds to the specified marker and grade.
+     *
+     * @param int $gradeid The assignment grade ID
+     * @param int $markerid The marker's user ID
+     * @return stdClass|false The assign_mark object or false if it doesn't exist
      */
     public function get_mark(int $gradeid, int $markerid): stdClass|false {
         global $DB;
