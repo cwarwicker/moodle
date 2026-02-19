@@ -8512,7 +8512,12 @@ class assign {
             $markers = array_values($this->get_allocated_markers($userid));
 
             for ($i = 0; $i < $markercount; $i++) {
-                $mform->addElement('select', 'allocatedmarker[' . $i . ']', get_string('markernumber', 'assign', $i + 1), $markerlist);
+                $mform->addElement(
+                    'select',
+                    'allocatedmarker[' . $i . ']',
+                    get_string('markernumber', 'assign', $i + 1),
+                    $markerlist
+                );
                 if (array_key_exists($i, $markers)) {
                     $mform->setDefault('allocatedmarker[' . $i . ']', $markers[$i]->marker);
                 }
