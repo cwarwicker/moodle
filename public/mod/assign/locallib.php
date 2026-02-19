@@ -255,9 +255,9 @@ class assign {
     }
 
     /**
-     * Set if we are marking instead of grading
-     * @param bool $value
-     * @return void
+     * Set if we are marking instead of grading.
+     *
+     * @param bool $value True/False - are we marking?
      */
     public function set_is_marking(bool $value): void {
         $this->ismarking = $value;
@@ -9252,7 +9252,6 @@ class assign {
      * @return void
      */
     public function calculate_and_save_overall_workflow_state(stdClass $grade, stdClass $flags, ?string $oldworkflowstate): void {
-
         global $DB;
 
         $expected = $this->get_instance()->markercount;
