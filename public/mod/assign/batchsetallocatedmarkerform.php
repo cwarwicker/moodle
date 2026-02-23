@@ -22,8 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use mod_assign\exception\invalid_marker_allocation_exception;
-
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
@@ -38,7 +36,7 @@ require_once($CFG->dirroot . '/mod/assign/feedback/file/locallib.php');
 class mod_assign_batch_set_allocatedmarker_form extends moodleform {
     /**
      * Define this form - called by the parent constructor
-     * @throws invalid_marker_allocation_exception
+     * @throws moodle_exception
      */
     public function definition() {
         $mform = $this->_form;
@@ -54,7 +52,7 @@ class mod_assign_batch_set_allocatedmarker_form extends moodleform {
 
         // If we do not have enough markers to meet the requested number, throw an exception with a meaningful message.
         if (count($markerids) < $markercount) {
-            throw new invalid_marker_allocation_exception('notenoughmarkers', '', '', [
+            throw new \core\exception\moodle_exception('invalidmarkerallocation:notenoughmarkers', 'assign', '', [
                 'markers' => count($markerids),
                 'requested' => $markercount,
             ]);
