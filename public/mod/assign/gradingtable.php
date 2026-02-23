@@ -699,6 +699,7 @@ class assign_grading_table extends table_sql implements renderable {
 
     /**
      * Get the user object for the marker of a given student and marker number.
+     *
      * @param int $studentid ID of the student.
      * @param int $number Marker index number.
      * @return stdClass|false User object or false if not found.
