@@ -132,7 +132,7 @@ function xmldb_assign_upgrade($oldversion) {
     // Automatically generated Moodle v5.1.0 release upgrade line.
     // Put any upgrade step following this.
 
-    if ($oldversion < 2025100600.01) {
+    if ($oldversion < 2025100601) {
         // Define field markercount to be added to assign.
         $table = new xmldb_table('assign');
         $field = new xmldb_field('markercount', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '1', 'markingallocation');
@@ -192,19 +192,17 @@ function xmldb_assign_upgrade($oldversion) {
             $dbman->create_table($table);
         }
 
-        // Populate assign_allocated_marker.
-        $DB->execute(
-            "INSERT INTO {assign_allocated_marker} (assignment, student, marker)
-                  SELECT assignment, userid, allocatedmarker
-                    FROM {assign_user_flags}"
-        );
-
         // Define field allocatedmarker to be dropped from assign_user_flags.
         $table = new xmldb_table('assign_user_flags');
         $field = new xmldb_field('allocatedmarker');
 
-        // Conditionally launch drop field allocatedmarker.
+        // Populate assign_allocated_marker before the allocatedmarker field is dropped.
         if ($dbman->field_exists($table, $field)) {
+            $DB->execute(
+                "INSERT INTO {assign_allocated_marker} (assignment, student, marker)
+                  SELECT assignment, userid, allocatedmarker
+                    FROM {assign_user_flags}"
+            );
             $dbman->drop_field($table, $field);
         }
 
@@ -217,7 +215,7 @@ function xmldb_assign_upgrade($oldversion) {
         }
 
         // Assign savepoint reached.
-        upgrade_mod_savepoint(true, 2025100600.01, 'assign');
+        upgrade_mod_savepoint(true, 2025100601, 'assign');
     }
 
     return true;
