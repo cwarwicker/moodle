@@ -8,12 +8,12 @@ Feature: Allocate markers to student submissions
     Given the following "users" exist:
       | username | firstname  | lastname | email                |
       | student1 | Student    | One      | student1@example.com |
-      | student2 | Student    | Two      | student1@example.com |
+      | student2 | Student    | Two      | student2@example.com |
       | teacher1 | Teacher    | One      | teacher1@example.com |
-      | teacher2 | Teacher    | Two      | teacher1@example.com |
+      | teacher2 | Teacher    | Two      | teacher2@example.com |
     And the following "courses" exist:
-      | fullname | shortname | enablecompletion | showcompletionconditions |
-      | Course 1 | C1        | 1                | 1                        |
+      | fullname | shortname |
+      | Course 1 | C1        |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | student1 | C1     | student        |
@@ -35,7 +35,7 @@ Feature: Allocate markers to student submissions
 
   Scenario: Allocating markers to students via the Allocate Markers page
     Given I am on the "A1" "assign activity" page logged in as teacher1
-    And I navigate to "Submissions" in current page administration
+    When I navigate to "Submissions" in current page administration
     And I set the field "selectall" to "1"
     And I click on "Allocate marker" "button" in the "sticky-footer" "region"
     And I click on "Allocate marker" "button" in the ".modal-footer" "css_element"
@@ -49,7 +49,7 @@ Feature: Allocate markers to student submissions
 
   Scenario: Allocating markers to students via the Quick Grading page
     Given I am on the "A1" "assign activity" page logged in as teacher1
-    And I navigate to "Submissions" in current page administration
+    When I navigate to "Submissions" in current page administration
     And I click on "Quick grading" "checkbox"
     And I set the field "Allocated marker 1" in the "Student One" "table_row" to "Teacher One"
     And I set the field "Allocated marker 1" in the "Student Two" "table_row" to "Teacher One"
@@ -65,7 +65,7 @@ Feature: Allocate markers to student submissions
 
   Scenario: Allocating markers to students via the grader page
     Given I am on the "A1" "assign activity" page logged in as teacher1
-    And I go to "Student One" "Assignment 1" activity advanced grading page
+    When I go to "Student One" "Assignment 1" activity advanced grading page
     And I set the field "Marker 1" to "Teacher One"
     And I set the field "Marker 2" to "Teacher Two"
     And I press "Save changes"

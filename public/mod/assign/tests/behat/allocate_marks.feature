@@ -8,12 +8,12 @@ Feature: Allocate marks to student submissions
     Given the following "users" exist:
       | username | firstname  | lastname | email                |
       | student1 | Student    | One      | student1@example.com |
-      | student2 | Student    | Two      | student1@example.com |
+      | student2 | Student    | Two      | student2@example.com |
       | teacher1 | Teacher    | One      | teacher1@example.com |
-      | teacher2 | Teacher    | Two      | teacher1@example.com |
+      | teacher2 | Teacher    | Two      | teacher2@example.com |
     And the following "courses" exist:
-      | fullname | shortname | enablecompletion | showcompletionconditions |
-      | Course 1 | C1        | 1                | 1                        |
+      | fullname | shortname |
+      | Course 1 | C1        |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | student1 | C1     | student        |
@@ -39,7 +39,7 @@ Feature: Allocate marks to student submissions
 
   Scenario: Allocating marks to students via the Quick Grading page
     Given I am on the "A1" "assign activity" page logged in as teacher1
-    And I navigate to "Submissions" in current page administration
+    When I navigate to "Submissions" in current page administration
     And I click on "Quick grading" "checkbox"
     And I set the field "User mark" in the "Student One" "table_row" to "99"
     And I click on "Save" "button" in the "sticky-footer" "region"
@@ -49,7 +49,7 @@ Feature: Allocate marks to student submissions
 
   Scenario: Allocating marks to students via the Advanced Marker window
     Given I am on the "A1" "assign activity" page logged in as teacher1
-    And I go to "Student One" "Assignment 1" activity advanced marking page
+    When I go to "Student One" "Assignment 1" activity advanced marking page
     And I set the field "Mark out of 100" to "50"
     And I press "Save changes"
     And I am on the "A1" "assign activity" page
@@ -58,7 +58,7 @@ Feature: Allocate marks to student submissions
 
   Scenario: Setting workflow state for an allocated mark via Advanced Marker window
     Given I am on the "A1" "assign activity" page logged in as teacher1
-    And I go to "Student One" "Assignment 1" activity advanced marking page
+    When I go to "Student One" "Assignment 1" activity advanced marking page
     And I set the field "Mark out of 100" to "42"
     And I set the field "Marking workflow state" to "Marking completed"
     And I press "Save changes"
@@ -69,7 +69,7 @@ Feature: Allocate marks to student submissions
 
   Scenario: Bulk setting workflow state as allocated marker
     Given I am on the "A1" "assign activity" page logged in as teacher1
-    And I navigate to "Submissions" in current page administration
+    When I navigate to "Submissions" in current page administration
     And I set the field "selectall" to "1"
     And I click on "Change marking state" "button" in the "sticky-footer" "region"
     And I click on "Change marking state" "button" in the ".modal-footer" "css_element"

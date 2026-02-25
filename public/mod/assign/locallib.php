@@ -4396,7 +4396,7 @@ class assign {
             // If we are viewing the marker page, overwrite the value for the workflowstate select menu
             // to be from the mark, not the overall grade.
             if (!empty($args['marker'])) {
-                $data->workflowstate = $record->workflowstate;
+                $data->workflowstate = ($record) ? $record->workflowstate : null;
             }
         } else {
             $data = new stdClass();
