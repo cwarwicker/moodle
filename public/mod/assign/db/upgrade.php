@@ -200,8 +200,8 @@ function xmldb_assign_upgrade($oldversion) {
         if ($dbman->field_exists($table, $field)) {
             $DB->execute(
                 "INSERT INTO {assign_allocated_marker} (assignment, student, marker)
-                  SELECT assignment, userid, allocatedmarker
-                    FROM {assign_user_flags}"
+                      SELECT assignment, userid, allocatedmarker
+                        FROM {assign_user_flags}"
             );
             $dbman->drop_field($table, $field);
         }
