@@ -360,6 +360,20 @@ if ($ADMIN->fulltree) {
     $setting->set_locked_flag_options(admin_setting_flag::ENABLED, false);
     $settings->add($setting);
 
+    $name = new lang_string('markercount', 'mod_assign');
+    $description = new lang_string('markercount_help', 'mod_assign');
+    $setting = new admin_setting_configselect(
+        'assign/markercount',
+        $name,
+        $description,
+        ASSIGN_MULTIMARKING_DEFAULT_MARKERS,
+        array_combine(
+            range(1, ASSIGN_MULTIMARKING_MAX_MARKERS),
+            range(1, ASSIGN_MULTIMARKING_MAX_MARKERS)
+        ),
+    );
+    $settings->add($setting);
+
     $name = new lang_string('markinganonymous', 'mod_assign');
     $description = new lang_string('markinganonymous_help', 'mod_assign');
     $setting = new admin_setting_configcheckbox('assign/markinganonymous',
