@@ -547,6 +547,7 @@ class assign_grading_table extends table_sql implements renderable {
                 $plugin->is_visible() &&
                 $plugin->is_enabled() &&
                 $this->assignment->is_using_multiple_marking() &&
+                $plugin->has_downloadable_marker_columns() &&
                 $plugin->has_marker_columns()
             ) {
                 $index = 'plugin' . (count($this->plugincache) - 1);
