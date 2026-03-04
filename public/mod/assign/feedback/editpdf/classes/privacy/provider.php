@@ -195,17 +195,19 @@ class provider implements
 
         // Now delete the pdf files for the marker areas.
         foreach ($deletedata->get_gradeids() as $gradeid) {
-            $marks = $assign->get_mark_records($gradeid, $deletedata->get_pluginobject()->userid);
-            if ($marks) {
-                foreach ($marks as $mark) {
-                    $fileareas = $plugin->get_marker_file_areas();
-                    foreach ($fileareas as $filearea => $notused) {
-                        $fs->delete_area_files(
-                            $deletedata->get_context()->id,
-                            'assignfeedback_editpdf',
-                            $filearea,
-                            $mark->id,
-                        );
+            foreach ($deletedata->get_userids() as $userid) {
+                $marks = $assign->get_mark_records($gradeid, $userid);
+                if ($marks) {
+                    foreach ($marks as $mark) {
+                        $fileareas = $plugin->get_marker_file_areas();
+                        foreach ($fileareas as $filearea => $notused) {
+                            $fs->delete_area_files(
+                                $deletedata->get_context()->id,
+                                'assignfeedback_editpdf',
+                                $filearea,
+                                $mark->id,
+                            );
+                        }
                     }
                 }
             }
