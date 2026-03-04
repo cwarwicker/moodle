@@ -428,6 +428,7 @@ $string['markverb'] = 'Mark';
 $string['multimarkmethod'] = 'Calculate grade';
 $string['multimarkmethod_help'] = 'How the grade will be calculated when there are multiple markers';
 $string['multimarkrounding'] = 'Rounding';
+$string['multimarkrounding_help'] = 'Whether to round up, down, naturally, or not at all when calculating an average mark';
 $string['multimarkrounding:down'] = 'Round down';
 $string['multimarkrounding:down_help'] = 'Average mark will be rounded down to the nearest whole number.';
 $string['multimarkrounding:natural'] = 'Natural rounding';
