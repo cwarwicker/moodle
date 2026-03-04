@@ -85,7 +85,7 @@ Feature: Complete double marking workflow
     And "Student Two" row "Marker 1" column of "generaltable" table should contain "Teacher One"
     And "Student Two" row "Marker 2" column of "generaltable" table should contain "Teacher Two"
     # Then allocate marks to the student submissions as teacher1.
-    When I go to "Student One" "Assignment 1" activity advanced marking page
+    And I go to "Student One" "Assignment 1" activity advanced marking page
     And I set the field "Mark out of 100" to "99"
     And I set the field "Marking workflow state" to "Marking completed"
     And I press "Save changes"
@@ -95,12 +95,12 @@ Feature: Complete double marking workflow
     And I press "Save changes"
     And I am on the "A1" "assign activity" page
     And I navigate to "Submissions" in current page administration
-    Then "Student One" row "Marker 1" column of "generaltable" table should contain "99"
+    And "Student One" row "Marker 1" column of "generaltable" table should contain "99"
     And "Student Two" row "Marker 1" column of "generaltable" table should contain "11"
     And "Student One" row "Status" column of "generaltable" table should contain "In marking"
     And "Student Two" row "Status" column of "generaltable" table should contain "In marking"
     # Then allocate marks to the student submissions as teacher2.
-    When I am on the "A1" "assign activity" page logged in as teacher2
+    And I am on the "A1" "assign activity" page logged in as teacher2
     And I go to "Student One" "Assignment 1" activity advanced marking page
     And I set the field "Mark out of 100" to "88"
     And I set the field "Marking workflow state" to "Marking completed"
@@ -111,14 +111,14 @@ Feature: Complete double marking workflow
     And I press "Save changes"
     And I am on the "A1" "assign activity" page
     And I navigate to "Submissions" in current page administration
-    Then "Student One" row "Marker 2" column of "generaltable" table should contain "88"
+    And "Student One" row "Marker 2" column of "generaltable" table should contain "88"
     And "Student Two" row "Marker 2" column of "generaltable" table should contain "22"
     And "Student One" row "Status" column of "generaltable" table should contain "Marking completed"
     And "Student Two" row "Status" column of "generaltable" table should contain "Marking completed"
     And "Student One" row "Grade" column of "generaltable" table should contain "94"
     And "Student Two" row "Grade" column of "generaltable" table should contain "17"
     # Then we check the calculated final grade and release them to the students.
-    When I am on the "A1" "assign activity" page logged in as teacher1
+    And I am on the "A1" "assign activity" page logged in as teacher1
     And I navigate to "Submissions" in current page administration
     And I set the field "selectall" to "1"
     And I click on "Change marking state" "button" in the "sticky-footer" "region"
@@ -126,7 +126,7 @@ Feature: Complete double marking workflow
     And I set the field "Workflow context" to "Grade"
     And I set the field "Marking workflow state" to "Released"
     And I press "Save changes"
-    Then "Student One" row "Status" column of "generaltable" table should contain "Released"
+    And "Student One" row "Status" column of "generaltable" table should contain "Released"
     And "Student Two" row "Status" column of "generaltable" table should contain "Released"
     And "Student One" row "Final grade" column of "generaltable" table should contain "94"
     And "Student Two" row "Final grade" column of "generaltable" table should contain "17"
@@ -158,7 +158,7 @@ Feature: Complete double marking workflow
     And "Student Four" row "Marker 2" column of "generaltable" table should contain "Teacher Three"
     # Next we test adding a mark as Marker 1 (teacher1) to a student in Group 1. This should populate to the other
     # student in Group 1, but not the student with this same marker, who is not in Group 1.
-    When I go to "Student One" "Assignment 2" activity advanced marking page
+    And I go to "Student One" "Assignment 2" activity advanced marking page
     And I set the field "Mark out of 100" to "50"
     And I set the field "Marking workflow state" to "Marking completed"
     And I press "Save changes"
@@ -168,14 +168,14 @@ Feature: Complete double marking workflow
     And I press "Save changes"
     And I am on the "A2" "assign activity" page
     And I navigate to "Submissions" in current page administration
-    Then "Student One" row "Marker 1" column of "generaltable" table should contain "50"
+    And "Student One" row "Marker 1" column of "generaltable" table should contain "50"
     And "Student Two" row "Marker 1" column of "generaltable" table should contain "50"
     And "Student Three" row "Marker 1" column of "generaltable" table should contain "60"
     And "Student Four" row "Marker 1" column of "generaltable" table should contain "60"
     # Next we add a mark as teacher2 to a student in both groups. The mark given to the student in Group 1 should
     # populate to the other student in Group 1. The mark given to the student in Group 2 should not, as they are not
     # an allocated marker for that final student.
-    When I am on the "A2" "assign activity" page logged in as teacher2
+    And I am on the "A2" "assign activity" page logged in as teacher2
     And I go to "Student One" "Assignment 2" activity advanced marking page
     And I set the field "Mark out of 100" to "30"
     And I set the field "Marking workflow state" to "Marking completed"
@@ -187,31 +187,31 @@ Feature: Complete double marking workflow
     And I press "Save changes"
     And I am on the "A2" "assign activity" page
     And I navigate to "Submissions" in current page administration
-    Then "Student One" row "Marker 2" column of "generaltable" table should contain "30"
+    And "Student One" row "Marker 2" column of "generaltable" table should contain "30"
     And "Student Two" row "Marker 2" column of "generaltable" table should contain "30"
     And "Student Three" row "Marker 2" column of "generaltable" table should contain "15"
     And "Student Four" row "Marker 2" column of "generaltable" table should contain ""
     # Then we login as teacher3 and add that last mark to the final student.
-    When I am on the "A2" "assign activity" page logged in as teacher3
+    And I am on the "A2" "assign activity" page logged in as teacher3
     And I go to "Student Four" "Assignment 2" activity advanced marking page
     And I set the field "Mark out of 100" to "99"
     And I set the field "Marking workflow state" to "Marking completed"
     And I press "Save changes"
     And I am on the "A2" "assign activity" page
     And I navigate to "Submissions" in current page administration
-    Then "Student One" row "Marker 2" column of "generaltable" table should contain "30"
+    And "Student One" row "Marker 2" column of "generaltable" table should contain "30"
     And "Student Two" row "Marker 2" column of "generaltable" table should contain "30"
     And "Student Three" row "Marker 2" column of "generaltable" table should contain "15"
     And "Student Four" row "Marker 2" column of "generaltable" table should contain "100"
     # Then we check that the grades have been calculated correctly.
-    When I am on the "A2" "assign activity" page logged in as teacher1
+    And I am on the "A2" "assign activity" page logged in as teacher1
     And I navigate to "Submissions" in current page administration
-    Then "Student One" row "Grade" column of "generaltable" table should contain "50"
-    Then "Student Two" row "Grade" column of "generaltable" table should contain "50"
-    Then "Student Three" row "Grade" column of "generaltable" table should contain "60"
-    Then "Student Four" row "Grade" column of "generaltable" table should contain "99"
+    And "Student One" row "Grade" column of "generaltable" table should contain "50"
+    And "Student Two" row "Grade" column of "generaltable" table should contain "50"
+    And "Student Three" row "Grade" column of "generaltable" table should contain "60"
+    And "Student Four" row "Grade" column of "generaltable" table should contain "99"
     # Then we release them all and check the final grade column.
-    When I am on the "A2" "assign activity" page logged in as teacher1
+    And I am on the "A2" "assign activity" page logged in as teacher1
     And I navigate to "Submissions" in current page administration
     And I set the field "selectall" to "1"
     And I click on "Change marking state" "button" in the "sticky-footer" "region"
@@ -219,7 +219,7 @@ Feature: Complete double marking workflow
     And I set the field "Workflow context" to "Grade"
     And I set the field "Marking workflow state" to "Released"
     And I press "Save changes"
-    Then "Student One" row "Status" column of "generaltable" table should contain "Released"
+    And "Student One" row "Status" column of "generaltable" table should contain "Released"
     And "Student Two" row "Status" column of "generaltable" table should contain "Released"
     And "Student Three" row "Status" column of "generaltable" table should contain "Released"
     And "Student Four" row "Status" column of "generaltable" table should contain "Released"
