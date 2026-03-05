@@ -57,7 +57,8 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * Get the feedback comment from the database.
      *
      * @param int $gradeid
-     * @param int|null $markid (Optional) assign_mark record ID
+     * @param int|null $markid (Optional) assign_mark record ID.
+     *
      * @return stdClass|false The feedback comments for the given grade if it exists.
      *                        False if it doesn't.
      */
@@ -71,8 +72,10 @@ class assign_feedback_comments extends assign_feedback_plugin {
 
     /**
      * Get all the feedback comments for a grade, including all marker ones, in one array.
-     * @param int $gradeid Assign grade ID
-     * @return array
+     *
+     * @param int $gradeid Assign grade ID.
+     *
+     * @return array Array of assignfeedback_comments records.
      */
     public function get_all_feedback_comments(int $gradeid): array {
         global $DB;
@@ -86,7 +89,8 @@ class assign_feedback_comments extends assign_feedback_plugin {
      *
      * @param int $userid The user id in the table this quickgrading element relates to
      * @param mixed $grade - The grade data - may be null if there are no grades for this user (yet)
-     * @param string $colname - The column name so we can parse marker columns
+     * @param string $colname - The column name so we can parse marker columns.
+     *
      * @return mixed - A html string containing the html form elements required for quickgrading
      */
     public function get_quickgrading_html($userid, $grade, string $colname) {
@@ -154,6 +158,7 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @param int $userid The user id in the table this quickgrading element relates to
      * @param stdClass $grade The grade
      * @param bool $checkmarker (Optional) (Default: false) Are we checking for the marker field modification?
+     *
      * @return boolean - true if the quickgrading form element has been modified
      */
     public function is_quickgrading_modified($userid, $grade, bool $checkmarker = false) {
@@ -251,7 +256,8 @@ class assign_feedback_comments extends assign_feedback_plugin {
      *
      * @param string $name
      * @param int $gradeid
-     * @param int|null $markid The id of the mark record
+     * @param int|null $markid The id of the mark record.
+     *
      * @return string
      */
     public function get_editor_text($name, $gradeid, ?int $markid = null) {
@@ -268,7 +274,8 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @param string $name
      * @param string $value
      * @param int $gradeid
-     * @param int|null $markid The id of the mark record
+     * @param int|null $markid The id of the mark record.
+     *
      * @return string
      */
     public function set_editor_text($name, $value, $gradeid, ?int $markid = null) {
@@ -324,8 +331,10 @@ class assign_feedback_comments extends assign_feedback_plugin {
 
     /**
      * Save the marker comment from the quickgrading window.
-     * @param int $userid User ID of the student
-     * @param stdClass $grade Grade object
+     *
+     * @param int $userid User ID of the student.
+     * @param stdClass $grade Grade object.
+     *
      * @return bool
      */
     private function save_quickgrading_changes_marker(int $userid, stdClass $grade): bool {
@@ -572,9 +581,11 @@ class assign_feedback_comments extends assign_feedback_plugin {
 
     /**
      * View the comment as text for rendering in quickgrading if we're not the marker, and on submission page.
-     * @param stdClass $grade The grade object
-     * @param bool $showviewlink Set to true to show a link to view the full feedback
-     * @param int|null $markid Mark record id
+     *
+     * @param stdClass $grade The grade object.
+     * @param bool $showviewlink Set to true to show a link to view the full feedback.
+     * @param int|null $markid Mark record id.
+     *
      * @return string
      */
     public function view_text(stdClass $grade, bool &$showviewlink, ?int $markid = null): string {
@@ -601,10 +612,11 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * Display all the comments on the student's submission page, once the grade has been released.
      * Or from the quickgrading table, in which case this will divert to view_text().
      *
-     * @param stdClass $grade
-     * @param bool $showviewlink Set to true to show a link to view the full feedback
+     * @param stdClass $grade The grade object.
+     * @param bool $showviewlink Set to true to show a link to view the full feedback.
      * @param bool $fromgradingtable (Optional) Are we viewing the summary from the grading table?
-     * @param int|null $markid (Optional) assign_mark record id
+     * @param int|null $markid (Optional) assign_mark record id.
+     *
      * @return string
      */
     public function view_summary(stdClass $grade, &$showviewlink, bool $fromgradingtable = false, ?int $markid = null) {
@@ -864,8 +876,9 @@ class assign_feedback_comments extends assign_feedback_plugin {
     }
 
     /**
-     * Yes, this plugin has the comments column which is required per marker
-     * @return bool
+     * Yes, this plugin has the comments column which is required per marker.
+     *
+     * @return true
      */
     public function has_marker_columns(): bool {
         return true;
@@ -873,7 +886,9 @@ class assign_feedback_comments extends assign_feedback_plugin {
 
     /**
      * Return the array of extra comment columns per marker.
-     * @param int $markernumber The marker number
+     *
+     * @param int $markernumber The marker number.
+     *
      * @return array [headertitle => columntext]
      */
     public function get_marker_columns(int $markernumber): array {

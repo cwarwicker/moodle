@@ -64,7 +64,6 @@ class backup_assignfeedback_comments_subplugin extends backup_subplugin {
             'grade'
         );
 
-        // I don't know what this does but assume it's needed?
         $subpluginelement->annotate_files(
             'assignfeedback_comments',
             'feedback_marker',
