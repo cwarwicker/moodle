@@ -1212,6 +1212,8 @@ class assign_grading_table extends table_sql implements renderable {
                     $this->assignment->get_instance()->markingallocation
                 ) {
                     // If allocated marking is enabled is this user the marker for this column?
+                    // The student ID is the same for each marker column, so we specifically need to check
+                    // against the column index, not just if they exist for this student.
                     if (
                         $markers = $DB->get_fieldset('assign_allocated_marker', 'marker', [
                             'student' => $row->userid,
@@ -1806,7 +1808,7 @@ class assign_grading_table extends table_sql implements renderable {
      *                             view_submission page (the current page)
      * @param string $returnparams The return params to pass to the view_submission
      *                             page (the current page)
-     * @param string|null $colname Column name
+     * @param string|null $colname Column name.
      * @return string The summary with an optional link
      */
     private function format_plugin_summary_with_link(
@@ -1823,6 +1825,7 @@ class assign_grading_table extends table_sql implements renderable {
         // Is it a plugin marker column?
         if (self::is_plugin_marker_column($colname)) {
             $mark = self::extract_mark_from_marker_column($this->assignment, $item, $colname);
+            // Minus 1 means it's a marker column, but no mark exists. As null would be used for the non-marker column.
             $markid = ($mark) ? $mark->id : -1;
         }
 
@@ -1852,7 +1855,9 @@ class assign_grading_table extends table_sql implements renderable {
 
     /**
      * Check if a given column name is formatted like a marker column.
-     * @param string $colname
+     *
+     * @param string $colname The column name.
+     *
      * @return bool
      */
     public static function is_plugin_marker_column(string $colname): bool {
@@ -1860,11 +1865,13 @@ class assign_grading_table extends table_sql implements renderable {
     }
 
     /**
-     * Given a marker column name, extract the mark record for the assignment and that marker number
-     * @param assign $assignment
-     * @param stdClass $grade
-     * @param string $colname
-     * @return stdClass|bool
+     * Given a marker column name, extract the mark record for the assignment and that marker number.
+     *
+     * @param assign $assignment The assignment object
+     * @param stdClass $grade The grade object
+     * @param string $colname The column name
+     *
+     * @return stdClass|bool The assign_mark record if it exists, or false if not.
      */
     public static function extract_mark_from_marker_column(
         assign $assignment,
@@ -1882,11 +1889,13 @@ class assign_grading_table extends table_sql implements renderable {
     }
 
     /**
-     * Given a marker column name, extract the marker's user record based on the assignment and marker number
-     * @param assign $assignment
-     * @param int $userid
-     * @param string $colname
-     * @return stdClass|bool
+     * Given a marker column name, extract the marker's user record based on the assignment and marker number.
+     *
+     * @param assign $assignment The assignment object.
+     * @param int $userid The user ID of the student.
+     * @param string $colname The column name.
+     *
+     * @return stdClass|bool The user record if it exists, or false if not.
      */
     public static function extract_marker_from_marker_column(
         assign $assignment,

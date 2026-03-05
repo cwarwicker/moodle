@@ -115,7 +115,7 @@ trait mod_assign_test_generator {
      * @param   \stdClass   $teacher The user to mark as
      * @param   \assign     $assign The assignment to mark
      * @param   \stdClass   $student The user to grade
-     * @param   float       $grade The grade score to set
+     * @param   float       $grade The grade score to set.
      * @param   array       $data Additional data to set
      * @param   bool        $changeuser Whether to switch user to the user being submitted as.
      */

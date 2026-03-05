@@ -264,7 +264,8 @@ class assign {
     }
 
     /**
-     * Check if we are in marking mode
+     * Check if we are in marking mode.
+     *
      * @return bool
      */
     public function is_marking(): bool {
@@ -4276,7 +4277,7 @@ class assign {
      * @param int $markerid The marker's user ID.
      * @param bool $createifmissing Create the mark record if it doesn't exist.
      *
-     * @return stdClass|false The assign_mark object or false if it doesn't exist
+     * @return stdClass|false The assign_mark object or false if it doesn't exist.
      */
     public function get_mark(int $gradeid, int $markerid, bool $createifmissing = false): stdClass|false {
         global $DB;
@@ -10593,8 +10594,10 @@ class assign {
     }
 
     /**
-     * Check if a given mark record belongs to the current user
-     * @param int $markid ID of the mark record
+     * Check if a given mark record belongs to the current user.
+     *
+     * @param int $markid ID of the mark record.
+     *
      * @return bool
      */
     public function is_our_mark(int $markid): bool {
@@ -10605,25 +10608,26 @@ class assign {
     }
 
     /**
-     * Check if a given user is allocated as a marker for a given student on this assignment
-     * @param int $userid
-     * @param int $studentid
+     * Check if a given user is allocated as a marker for a given student on this assignment.
+     *
+     * @param int $userid The user ID
+     * @param int $studentid The student ID
+     *
      * @return bool
      */
     public function is_user_allocated_marker(int $userid, int $studentid): bool {
         global $DB;
-
         $record = $DB->count_records('assign_allocated_marker', [
             'assignment' => $this->get_instance()->id,
             'student' => $studentid,
             'marker' => $userid,
         ]);
-
         return ($record > 0);
     }
 
     /**
-     * Check if user is a marker.
+     * Check if user is a marker for any student on the given assignment.
+     *
      * @return bool
      */
     public function is_user_marker(): bool {
@@ -10649,9 +10653,11 @@ class assign {
     }
 
     /**
-     * Get the user object for the marker of a given student and marker number
-     * @param int $studentid
-     * @param int $number
+     * Get the user object for the marker of a given student and marker number.
+     *
+     * @param int $studentid The student ID.
+     * @param int $number The marker number, e.g. 1, 2, etc...
+     *
      * @return stdClass|bool
      */
     public function get_marker_number(int $studentid, int $number): stdClass|bool {

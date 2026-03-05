@@ -116,7 +116,7 @@ abstract class assign_feedback_plugin extends assign_plugin {
      * @param int $userid The user id in the table this quickgrading element relates to
      * @param mixed $grade grade or null - The grade data.
      *                     May be null if there are no grades for this user (yet)
-     * @param string $colname - The column name in case we need it to parse marker columns
+     * @param string $colname The column name in case we need it to parse marker columns.
      * @return mixed - A html string containing the html form elements required for
      *                 quickgrading or false to indicate this plugin does not support quickgrading
      */
@@ -236,9 +236,10 @@ abstract class assign_feedback_plugin extends assign_plugin {
      * This is an overridden method from assignmentplugin to add the $markid param.
      *
      * @param string $name Name of the field.
-     * @param int $submissionorgradeid The id of the submission or grade
-     * @param int|null $markid The id of the mark record
-     * @return string - The text for the editor field
+     * @param int $submissionorgradeid The id of the submission or grade.
+     * @param int|null $markid The id of the mark record.
+     *
+     * @return string The text for the editor field.
      */
     public function get_editor_text($name, $submissionorgradeid, ?int $markid = null) {
         return '';
@@ -250,10 +251,11 @@ abstract class assign_feedback_plugin extends assign_plugin {
      * This is an overridden method from assignmentplugin to add the $markid param.
      *
      * @param string $name Name of the field.
-     * @param string $value Updated text
-     * @param int $submissionorgradeid The id of the submission or grade
-     * @param int|null $markid The id of the mark record
-     * @return bool - true if the value was updated
+     * @param string $value Updated text.
+     * @param int $submissionorgradeid The id of the submission or grade.
+     * @param int|null $markid The id of the mark record.
+     *
+     * @return bool true if the value was updated
      */
     public function set_editor_text($name, $value, $submissionorgradeid, ?int $markid = null) {
         return false;
