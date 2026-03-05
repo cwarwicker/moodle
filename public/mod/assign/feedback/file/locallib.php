@@ -107,7 +107,7 @@ class assign_feedback_file extends assign_feedback_plugin {
         }
         if (isset($filekey)) {
             $draftareainfo = file_get_draft_area_info($data->$filekey);
-            $filecount = $this->count_files($grade->id, $filearea);
+            $filecount = $this->count_files($fileitemid, $filearea);
             if ($filecount != $draftareainfo['filecount']) {
                 return true;
             } else {
