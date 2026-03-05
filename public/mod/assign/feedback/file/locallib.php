@@ -50,12 +50,12 @@ class assign_feedback_file extends assign_feedback_plugin {
     /**
      * Get file feedback information from the database.
      *
-     * @param int $gradeid
-     * @param ?int $markid
+     * @param int $gradeid The grade ID.
+     * @param ?int $markid The mark ID or null if we want the overall feedback file.
      *
-     * @return object|false
+     * @return \stdClass|false
      */
-    public function get_file_feedback(int $gradeid, ?int $markid = null): object|false {
+    public function get_file_feedback(int $gradeid, ?int $markid = null): \stdClass|false {
         global $DB;
         return $DB->get_record('assignfeedback_file', ['grade' => $gradeid, 'mark' => $markid]);
     }
@@ -63,9 +63,9 @@ class assign_feedback_file extends assign_feedback_plugin {
     /**
      * Get all file feedback information from the database, including marking feedback.
      *
-     * @param int $gradeid
+     * @param int $gradeid The Grade ID.
      *
-     * @return ?array
+     * @return ?array Array of assignfeedback_file records, or null if none found.
      */
     public function get_all_file_feedback(int $gradeid): ?array {
         global $DB;
@@ -245,8 +245,8 @@ class assign_feedback_file extends assign_feedback_plugin {
     /**
      * Count the number of files.
      *
-     * @param int $gradeid
-     * @param string $area
+     * @param int $fileitemid The itemid of the file
+     * @param string $area The filearea of the file
      * @return int
      */
     private function count_files(int $fileitemid, string $area): int {
@@ -266,7 +266,7 @@ class assign_feedback_file extends assign_feedback_plugin {
      * Update the number of files in the file area.
      *
      * @param stdClass $grade The grade record
-     * @param ?int $markid The mark id
+     * @param ?int $markid The mark ID.
      *
      * @return bool - true if the value was saved
      */
@@ -331,6 +331,8 @@ class assign_feedback_file extends assign_feedback_plugin {
      *
      * @param stdClass $grade
      * @param bool $showviewlink - Set to true to show a link to see the full list of files
+     * @param bool $fromgradingtable Is the summary being loaded from the grading table?
+     * @param int|null $markid The mark ID.
      * @return string
      */
     public function view_summary(stdClass $grade, &$showviewlink, bool $fromgradingtable = false, ?int $markid = null) {
@@ -803,7 +805,7 @@ class assign_feedback_file extends assign_feedback_plugin {
     /**
      * Yes, this plugin has the files column which is required per marker.
      *
-     * @return bool
+     * @return true
      */
     public function has_marker_columns(): bool {
         return true;
@@ -812,7 +814,8 @@ class assign_feedback_file extends assign_feedback_plugin {
     /**
      * Return the array of extra file columns per marker.
      *
-     * @param int $markernumber The marker number
+     * @param int $markernumber The marker number.
+     *
      * @return array [headertitle => columntext]
      */
     public function get_marker_columns(int $markernumber): array {
@@ -825,9 +828,10 @@ class assign_feedback_file extends assign_feedback_plugin {
     /**
      * Get fileitem area and id.
      *
-     * @param \stdClass $grade
-     * @param ?int $markid
-     * @param ?int $graderid
+     * @param \stdClass $grade The grade object.
+     * @param ?int $markid The mark ID.
+     * @param ?int $graderid The user ID of the grader.
+     *
      * @return array
      */
     protected function get_fileitem_area_id(\stdClass $grade, ?int $markid = null, ?int $graderid = null): array {
