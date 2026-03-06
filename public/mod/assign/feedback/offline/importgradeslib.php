@@ -58,7 +58,7 @@ class assignfeedback_offline_grade_importer {
     private $feedbackcolumnindexes = array();
 
     /**
-     * @var array $markindexes Array of indexes of the marker mark columns to process
+     * @var array $markindexes Array of indexes of the marker mark columns to process.
      */
     private $markindexes = [];
 
