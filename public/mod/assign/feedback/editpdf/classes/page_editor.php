@@ -40,7 +40,7 @@ class page_editor {
      * @param int $gradeid
      * @param int $pageno
      * @param bool $draft
-     * @param int|null $markid ID of the mark record
+     * @param int|null $markid ID of the mark record.
      * @return comment[]
      */
     public static function get_comments($gradeid, $pageno, $draft, ?int $markid = null) {
@@ -67,7 +67,7 @@ class page_editor {
      * @param int $gradeid
      * @param int $pageno
      * @param comment[] $comments
-     * @param int|null $markid ID of the mark record
+     * @param int|null $markid ID of the mark record.
      * @return int - the number of comments.
      */
     public static function set_comments($gradeid, $pageno, $comments, ?int $markid = null) {
@@ -139,6 +139,7 @@ class page_editor {
      * @param int $gradeid
      * @param int $pageno
      * @param bool $draft
+     * @param int|null $markid ID of the mark record.
      * @return annotation[]
      */
     public static function get_annotations($gradeid, $pageno, $draft, ?int $markid = null) {
@@ -162,7 +163,7 @@ class page_editor {
      * @param int $gradeid
      * @param int $pageno
      * @param annotation[] $annotations
-     * @param ?int $markid
+     * @param int|null $markid ID of the mark record.
      * @return int - the number of annotations.
      */
     public static function set_annotations($gradeid, $pageno, $annotations, ?int $markid = null) {
@@ -212,7 +213,7 @@ class page_editor {
     /**
      * Unrelease drafts
      * @param int $gradeid
-     * @param int|null $markid ID of the mark record
+     * @param int|null $markid ID of the mark record.
      * @return bool
      */
     public static function unrelease_drafts($gradeid, ?int $markid = null) {
@@ -231,7 +232,7 @@ class page_editor {
     /**
      * Release the draft comments and annotations to students.
      * @param int $gradeid
-     * @param int|null $markid ID of the mark record
+     * @param int|null $markid ID of the mark record.
      * @return bool
      */
     public static function release_drafts($gradeid, ?int $markid = null) {
@@ -270,7 +271,7 @@ class page_editor {
      * Has annotations or comments.
      * @param int $gradeid
      * @param $includedraft
-     * @param int|null $markid ID of the mark record
+     * @param int|null $markid ID of the mark record.
      * @return bool
      */
     public static function has_annotations_or_comments($gradeid, $includedraft, ?int $markid = null): bool {
@@ -290,7 +291,9 @@ class page_editor {
 
     /**
      * Check if there are any active annotations or comments for overall or any markers.
-     * @param int $gradeid Grade record id
+     *
+     * @param int $gradeid Grade record id.
+     *
      * @return bool
      */
     public static function has_any_active_annotations_or_comments(int $gradeid): bool {
@@ -362,6 +365,7 @@ class page_editor {
      * @param int|\assign $assignment
      * @param \stdClass $grade
      * @param int $sourceuserid
+     * @param int|null $markid ID of the mark record.
      * @return bool
      */
     public static function copy_drafts_from_to($assignment, $grade, $sourceuserid, ?int $markid = null) {
@@ -444,7 +448,7 @@ class page_editor {
      * might not be relevant any more, therefore we should delete them.
      *
      * @param int $gradeid The grade ID.
-     * @param int|null $markid ID of mark record
+     * @param int|null $markid ID of mark record.
      * @return bool
      */
     public static function delete_draft_content($gradeid, ?int $markid = null) {
@@ -462,6 +466,7 @@ class page_editor {
      * @param bool $isrotated whether the page is rotated or not.
      * @param string $pathnamehash path name hash
      * @param int $degree rotation degree.
+     * @param int|null $markid ID of the mark record.
      * @throws \dml_exception
      */
     public static function set_page_rotation($gradeid, $pageno, $isrotated, $pathnamehash, $degree = 0, ?int $markid = null) {
@@ -488,7 +493,7 @@ class page_editor {
      * Get Page Rotation Value.
      * @param int $gradeid grade id.
      * @param int $pageno page number.
-     * @param ?int $markid markid.
+     * @param int|null $markid ID of the mark record.
      * @return mixed
      * @throws \dml_exception
      */

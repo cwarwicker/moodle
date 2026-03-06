@@ -39,7 +39,7 @@ class annotation {
     /** @var int gradeid for this annotation */
     public $gradeid = 0;
 
-    /** @var int markid for this annotation */
+    /** @var int|null Mark ID for this annotation */
     public ?int $markid = null;
 
     /** @var int page number for this annotation */

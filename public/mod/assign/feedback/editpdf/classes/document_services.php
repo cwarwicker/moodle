@@ -282,7 +282,7 @@ EOD;
      * @param int|\assign $assignment
      * @param int $userid
      * @param int $attemptnumber (-1 means latest attempt)
-     * @param ?int $markid
+     * @param int|null $markid Mark ID
      * @return combined_document
      */
     public static function get_combined_document_for_attempt($assignment, $userid, $attemptnumber, ?int $markid = null) {
@@ -360,7 +360,7 @@ EOD;
         } else {
             // Attempt to combined the files in the document.
             $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
-            $document->combine_files($assignment->get_context()->id, $grade->id, $assignment->is_marking());
+            $document->combine_files($assignment->get_context()->id, $grade->id);
             return $document;
         }
     }
@@ -890,7 +890,7 @@ EOD;
      * @param int|\assign $assignment
      * @param int $userid
      * @param int $attemptnumber (-1 means latest attempt)
-     * @param bool $ismarking
+     * @param bool $ismarking Are we in marking mode?
      * @return \stored_file
      */
     public static function get_feedback_document($assignment, $userid, $attemptnumber, bool $ismarking = false) {
@@ -929,6 +929,7 @@ EOD;
      * @param int|\assign $assignment
      * @param int $userid
      * @param int $attemptnumber (-1 means latest attempt)
+     * @param bool $ismarking Are we in marking mode?
      * @return bool
      */
     public static function delete_feedback_document($assignment, $userid, $attemptnumber, bool $ismarking = false) {
@@ -1181,7 +1182,8 @@ EOD;
      * @param \stdClass $grade Grade object
      * @param string $basearea File area we might change to marker version
      * @param bool $createmarkifmissing Do we need to create a mark if it doesn't exist during this check?
-     * @param int|null $markid Mark ID
+     * @param int|null $markid ID of mark record.
+     *
      * @return array [filearea, fileitemid]
      */
     public static function get_file_area_and_id(

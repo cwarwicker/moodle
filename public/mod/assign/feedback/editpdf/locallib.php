@@ -54,8 +54,8 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
      * @param int $userid
      * @param stdClass $grade
      * @param bool $readonly
-     * @param int $graderid
-     * @param int|null $markid ID of the mark record
+     * @param int $graderid Grader user ID.
+     * @param int|null $markid ID of the mark record.
      * @return assignfeedback_editpdf_widget
      */
     public function get_widget($userid, $grade, $readonly, int $graderid, ?int $markid = null) {
@@ -385,7 +385,7 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
      * @param stdClass $grade
      * @param bool $showviewlink (Always set to false).
      * @param bool $fromgradingtable Is this summary loaded from the grading table?
-     * @param int|null $markid ID of the mark record
+     * @param int|null $markid ID of the mark record.
      * @return string
      */
     public function view_summary(stdClass $grade, &$showviewlink, bool $fromgradingtable = false, ?int $markid = null) {
@@ -462,7 +462,7 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
      * Display the list of files in the feedback status table.
      *
      * @param stdClass $grade
-     * @param int|null $markid ID of the mark record
+     * @param int|null $markid ID of the mark record.
      * @return string
      */
     public function view(stdClass $grade, ?int $markid = null) {
@@ -563,7 +563,8 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
     }
 
     /**
-     * Get file areas for overall files (not marker ones)
+     * Get file areas for overall files (not marker ones).
+     *
      * @return array
      */
     public function get_overall_file_areas(): array {
@@ -581,7 +582,8 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
     }
 
     /**
-     * Get file areas for marker files
+     * Get file areas for marker files.
+     *
      * @return array
      */
     public function get_marker_file_areas(): array {
@@ -624,8 +626,9 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
     }
 
     /**
-     * Yes, this plugin has the comments column which is required per marker
-     * @return bool
+     * Yes, this plugin has the comments column which is required per marker.
+     *
+     * @return true
      */
     public function has_marker_columns(): bool {
         return true;
@@ -633,7 +636,9 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
 
     /**
      * Return the array of extra comment columns per marker.
-     * @param int $markernumber The marker number
+     *
+     * @param int $markernumber The marker number.
+     *
      * @return array [headertitle => columntext]
      */
     public function get_marker_columns(int $markernumber): array {

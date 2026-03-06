@@ -205,7 +205,7 @@ final class feedback_test extends \advanced_testcase {
 
     /**
      * Test the annotations and comments for marker files and that they are successfully retrieved.
-     * @return void
+     *
      * @covers ::set_annotations, ::set_comments, ::get_annotations, ::get_comments, ::has_annotations_or_comments
      */
     public function test_page_editor_markers(): void {

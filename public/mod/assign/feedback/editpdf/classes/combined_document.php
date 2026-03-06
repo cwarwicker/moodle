@@ -232,15 +232,16 @@ class combined_document {
      *
      * @param   int $contextid The contextid for the file to be stored under
      * @param   int $itemid The itemid for the file to be stored under
+     *
      * @return  $this
      */
-    public function combine_files($contextid, $itemid, bool $ismarking = false) {
+    public function combine_files($contextid, $itemid) {
         global $CFG;
 
         $currentstatus = $this->get_status();
         $readystatuslist = [self::STATUS_READY, self::STATUS_READY_PARTIAL];
         if ($currentstatus === self::STATUS_FAILED) {
-            $this->store_empty_document($contextid, $itemid, $ismarking);
+            $this->store_empty_document($contextid, $itemid);
 
             return $this;
         } else if (!in_array($currentstatus, $readystatuslist)) {
@@ -328,6 +329,8 @@ class combined_document {
      * @param   int $contextid The contextid for the file to be stored under
      * @param   int $itemid The itemid for the file to be stored under
      * @param   boolean $partial The combined pdf contains only some of the source files.
+     * @param   bool $ismarking Are we in marking mode?
+     *
      * @return  $this
      */
     protected function store_combined_file($tmpfile, $contextid, $itemid, $partial = false, bool $ismarking = false) {
@@ -351,9 +354,10 @@ class combined_document {
      *
      * @param   int $contextid The contextid for the file to be stored under
      * @param   int $itemid The itemid for the file to be stored under
+     *
      * @return  $this
      */
-    protected function store_empty_document($contextid, $itemid, bool $ismarking = false) {
+    protected function store_empty_document($contextid, $itemid) {
         // Store the file.
         $record = $this->get_stored_file_record($contextid, $itemid);
         $fs = get_file_storage();
@@ -427,6 +431,8 @@ class combined_document {
      * @param   int $contextid The contextid for the file to be stored under
      * @param   int $itemid The itemid for the file to be stored under
      * @param   boolean $partial The combined file contains only some of the source files.
+     * @param   bool $ismarking Are we in marking mode?
+     *
      * @return  stdClass
      */
     protected function get_stored_file_record($contextid, $itemid, $partial = false, $ismarking = false) {
