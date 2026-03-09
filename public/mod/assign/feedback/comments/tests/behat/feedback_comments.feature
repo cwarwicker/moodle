@@ -57,12 +57,12 @@ Feature: In an assignment, teachers can provide feedback comments on student sub
       | assign       | user          | marker      |
       | Assignment 1 | student1      | teacher1    |
       | Assignment 1 | student1      | teacher2    |
-    And I am on the "A1" "assign activity" page logged in as teacher1
+    When I am on the "A1" "assign activity" page logged in as teacher1
     And I navigate to "Submissions" in current page administration
     And I click on "Quick grading" "checkbox"
     And I set the field "Marker 1 comment" to "Feedback from marker one."
     And I click on "Save" "button" in the "sticky-footer" "region"
-    And I should see "The grade changes were saved"
+    Then I should see "The grade changes were saved"
     And I press "Continue"
     And I should see "Feedback from marker one."
     And I set the field "Marker 1 comment" to ""

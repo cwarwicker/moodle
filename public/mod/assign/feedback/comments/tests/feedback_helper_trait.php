@@ -16,6 +16,8 @@
 
 namespace assignfeedback_comments;
 
+use assign;
+
 /**
  * Helper trait for assignfeedback_comments tests.
  *
@@ -27,7 +29,7 @@ trait feedback_helper_trait {
     /**
      * Convenience function for creating feedback data.
      *
-     * @param  object    $assign         assign object
+     * @param  assign    $assign         assign object
      * @param  \stdClass $student        user object
      * @param  \stdClass $teacher        user object
      * @param  string    $submissiontext Submission text
@@ -36,13 +38,13 @@ trait feedback_helper_trait {
      * @return array     Feedback plugin object and the grade object.
      */
     protected function create_feedback(
-        $assign,
-        $student,
-        $teacher,
-        $submissiontext,
-        $feedbacktext,
+        assign $assign,
+        \stdClass $student,
+        \stdClass $teacher,
+        string $submissiontext,
+        string $feedbacktext,
         bool $markercomment = false,
-    ) {
+    ): array {
         global $CFG;
 
         $submission = new \stdClass();
