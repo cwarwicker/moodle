@@ -47,13 +47,13 @@ Feature: In an assignment, teachers can update grades, marks and feedback plugin
     And I navigate to "Submissions" in current page administration
     And I choose the "Upload grading worksheet" item in the "Actions" action menu
     And I upload "mod/assign/feedback/offline/tests/fixtures/assignfeedback_offline_test_worksheet_1.csv" file to "Upload a file" filemanager
-    And I click on "Upload grading worksheet" "button" in the "#fgroup_id_buttonar" "css_element"
+    When I click on "Upload grading worksheet" "button" in the "#fgroup_id_buttonar" "css_element"
     Then I should see "Set grade for Student 1 to 50"
     And I should see "Set grade for Student 2 to 75"
     And I click on "Confirm" "button" in the "#fgroup_id_buttonar" "css_element"
-    Then I should see "Updated 2 grades, 0 marks, and 0 feedback instances"
+    And I should see "Updated 2 grades, 0 marks, and 0 feedback instances"
     And I navigate to "Submissions" in current page administration
-    Then "Student 1" row "Grade" column of "generaltable" table should contain "50.00"
+    And "Student 1" row "Grade" column of "generaltable" table should contain "50.00"
     And "Student 2" row "Grade" column of "generaltable" table should contain "75.00"
 
   @javascript @_file_upload
@@ -62,13 +62,13 @@ Feature: In an assignment, teachers can update grades, marks and feedback plugin
     And I navigate to "Submissions" in current page administration
     And I choose the "Upload grading worksheet" item in the "Actions" action menu
     And I upload "mod/assign/feedback/offline/tests/fixtures/assignfeedback_offline_test_worksheet_2.csv" file to "Upload a file" filemanager
-    And I click on "Upload grading worksheet" "button" in the "#fgroup_id_buttonar" "css_element"
+    When I click on "Upload grading worksheet" "button" in the "#fgroup_id_buttonar" "css_element"
     Then I should see "Set mark for Student 1 to 10"
     And I should see "Set mark for Student 2 to 30"
     And I click on "Confirm" "button" in the "#fgroup_id_buttonar" "css_element"
-    Then I should see "Updated 0 grades, 2 marks, and 0 feedback instances"
+    And I should see "Updated 0 grades, 2 marks, and 0 feedback instances"
     And I navigate to "Submissions" in current page administration
-    Then "Student 1" row "Marker 1" column of "generaltable" table should contain "10.00"
+    And "Student 1" row "Marker 1" column of "generaltable" table should contain "10.00"
     And "Student 2" row "Marker 1" column of "generaltable" table should contain "30.00"
 
   @javascript @_file_upload
@@ -77,13 +77,13 @@ Feature: In an assignment, teachers can update grades, marks and feedback plugin
     And I navigate to "Submissions" in current page administration
     And I choose the "Upload grading worksheet" item in the "Actions" action menu
     And I upload "mod/assign/feedback/offline/tests/fixtures/assignfeedback_offline_test_worksheet_3.csv" file to "Upload a file" filemanager
-    And I click on "Upload grading worksheet" "button" in the "#fgroup_id_buttonar" "css_element"
+    When I click on "Upload grading worksheet" "button" in the "#fgroup_id_buttonar" "css_element"
     Then I should see "Set field \"Marker 1 comment\" for \"Student 1\" to \"S1-M1\""
-    Then I should see "Set field \"Marker 1 comment\" for \"Student 2\" to \"S2-M1\""
+    And I should see "Set field \"Marker 1 comment\" for \"Student 2\" to \"S2-M1\""
     And I click on "Confirm" "button" in the "#fgroup_id_buttonar" "css_element"
-    Then I should see "Updated 0 grades, 0 marks, and 2 feedback instances"
+    And I should see "Updated 0 grades, 0 marks, and 2 feedback instances"
     And I navigate to "Submissions" in current page administration
-    Then "Student 1" row "Marker 1 comment" column of "generaltable" table should contain "S1-M1"
+    And "Student 1" row "Marker 1 comment" column of "generaltable" table should contain "S1-M1"
     And "Student 2" row "Marker 1 comment" column of "generaltable" table should contain "S2-M1"
 
   @javascript @_file_upload
@@ -92,7 +92,7 @@ Feature: In an assignment, teachers can update grades, marks and feedback plugin
     And I navigate to "Submissions" in current page administration
     And I choose the "Upload grading worksheet" item in the "Actions" action menu
     And I upload "mod/assign/feedback/offline/tests/fixtures/assignfeedback_offline_test_worksheet_4.csv" file to "Upload a file" filemanager
-    And I click on "Upload grading worksheet" "button" in the "#fgroup_id_buttonar" "css_element"
+    When I click on "Upload grading worksheet" "button" in the "#fgroup_id_buttonar" "css_element"
     Then I should see "Set grade for Student 1 to 50"
     And I should see "Set grade for Student 2 to 75"
     And I should see "Set mark for Student 1 to 10"
@@ -102,9 +102,9 @@ Feature: In an assignment, teachers can update grades, marks and feedback plugin
     And I should see "Set field \"Marker 1 comment\" for \"Student 1\" to \"S1-M1\""
     And I should see "Set field \"Marker 1 comment\" for \"Student 2\" to \"S2-M1\""
     And I click on "Confirm" "button" in the "#fgroup_id_buttonar" "css_element"
-    Then I should see "Updated 2 grades, 2 marks, and 4 feedback instances"
+    And I should see "Updated 2 grades, 2 marks, and 4 feedback instances"
     And I navigate to "Submissions" in current page administration
-    Then "Student 1" row "Grade" column of "generaltable" table should contain "50.00"
+    And "Student 1" row "Grade" column of "generaltable" table should contain "50.00"
     And "Student 2" row "Grade" column of "generaltable" table should contain "75.00"
     And "Student 1" row "Marker 1" column of "generaltable" table should contain "10.00"
     And "Student 2" row "Marker 1" column of "generaltable" table should contain "30.00"

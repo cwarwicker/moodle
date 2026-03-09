@@ -60,7 +60,7 @@ class assignfeedback_offline_grade_importer {
     /**
      * @var array $markindexes Array of indexes of the marker mark columns to process.
      */
-    private $markindexes = [];
+    private array $markindexes = [];
 
     /** @var string $encoding Encoding to use when reading the csv file. Defaults to utf-8. */
     private $encoding;
