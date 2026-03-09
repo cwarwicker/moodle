@@ -4277,9 +4277,9 @@ class assign {
      * @param int $markerid The marker's user ID.
      * @param bool $createifmissing Create the mark record if it doesn't exist.
      *
-     * @return stdClass|false The assign_mark object or false if it doesn't exist.
+     * @return ?stdClass The assign_mark object or null if it doesn't exist.
      */
-    public function get_mark(int $gradeid, int $markerid, bool $createifmissing = false): stdClass|false {
+    public function get_mark(int $gradeid, int $markerid, bool $createifmissing = false): ?stdClass {
         global $DB;
         $record = $DB->get_record('assign_mark', ['gradeid' => $gradeid, 'marker' => $markerid]);
         // If there's no mark record for this marker yet, and we want to create it if missing, then insert it.
@@ -4296,7 +4296,7 @@ class assign {
             ]);
             $record = $DB->get_record('assign_mark', ['id' => $id]);
         }
-        return $record;
+        return ($record) ? $record : null;
     }
 
     /**
@@ -10658,9 +10658,9 @@ class assign {
      * @param int $studentid The student ID.
      * @param int $number The marker number, e.g. 1, 2, etc...
      *
-     * @return stdClass|bool
+     * @return stdClass|null
      */
-    public function get_marker_number(int $studentid, int $number): stdClass|bool {
+    public function get_marker_number(int $studentid, int $number): ?stdClass {
         global $DB;
         $markers = $DB->get_fieldset('assign_allocated_marker', 'marker', [
             'student' => $studentid, 'assignment' => $this->get_instance()->id,
@@ -10669,7 +10669,7 @@ class assign {
             // Then get the name of the one at the column position requested, e.g. marker1, marker2, etc...
             return \core_user::get_user($markers[$number]);
         }
-        return false;
+        return null;
     }
 }
 

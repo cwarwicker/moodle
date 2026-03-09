@@ -1176,7 +1176,10 @@ class assign_grading_table extends table_sql implements renderable {
                         // Display the workflow state for this mark.
                         if ($markers[$index]->marker > 0) {
                             $displaymark .= html_writer::div(
-                                get_string('markingworkflowstate' . ($mark->workflowstate ?? 'notmarked'), 'assign'),
+                                get_string(
+                                    'markingworkflowstate' . ($mark->workflowstate ?? ASSIGN_MARKING_WORKFLOW_STATE_NOTMARKED),
+                                    'assign'
+                                ),
                                 'badge bg-info d-block'
                             );
                         }
@@ -1871,13 +1874,13 @@ class assign_grading_table extends table_sql implements renderable {
      * @param stdClass $grade The grade object
      * @param string $colname The column name
      *
-     * @return stdClass|bool The assign_mark record if it exists, or false if not.
+     * @return stdClass|null The assign_mark record if it exists, or false if not.
      */
     public static function extract_mark_from_marker_column(
         assign $assignment,
         stdClass $grade,
         string $colname
-    ): stdClass|bool {
+    ): ?stdClass {
         // Work out the mark ID based on the marker number for this student.
         preg_match('/\d+$/', $colname, $matches);
         $markernumber = $matches[0];
@@ -1885,7 +1888,7 @@ class assign_grading_table extends table_sql implements renderable {
         if ($allocatedmarker) {
             return $assignment->get_mark($grade->id, $allocatedmarker->id);
         }
-        return false;
+        return null;
     }
 
     /**
@@ -1895,13 +1898,13 @@ class assign_grading_table extends table_sql implements renderable {
      * @param int $userid The user ID of the student.
      * @param string $colname The column name.
      *
-     * @return stdClass|bool The user record if it exists, or false if not.
+     * @return stdClass|null The user record if it exists, or false if not.
      */
     public static function extract_marker_from_marker_column(
         assign $assignment,
         int $userid,
         string $colname
-    ): stdClass|bool {
+    ): ?stdClass {
         // Work out the mark ID based on the marker number for this student.
         preg_match('/\d+$/', $colname, $matches);
         $markernumber = $matches[0];
