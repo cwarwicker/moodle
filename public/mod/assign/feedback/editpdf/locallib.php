@@ -54,11 +54,15 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
      * @param int $userid
      * @param stdClass $grade
      * @param bool $readonly
-     * @param int $graderid Grader user ID.
+     * @param int|null $graderid Grader user ID (Default: current user)
      * @param int|null $markid ID of the mark record.
      * @return assignfeedback_editpdf_widget
      */
-    public function get_widget($userid, $grade, $readonly, int $graderid, ?int $markid = null) {
+    public function get_widget($userid, $grade, $readonly, ?int $graderid = null, ?int $markid = null) {
+        global $USER;
+        if (is_null($graderid)) {
+            $graderid = $USER->id;
+        }
         $attempt = -1;
         if ($grade && isset($grade->attemptnumber)) {
             $attempt = $grade->attemptnumber;
@@ -402,9 +406,9 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
      * @return string
      */
     public function view_all(stdClass $grade): string {
-        global $PAGE, $USER;
+        global $PAGE, $USER, $OUTPUT;
 
-        $html = '';
+        $data = ['overall' => [], 'marks' => []];
 
         // Reset is_marking to false, because it re-uses the same assign object as it loops through all the plugins.
         $this->assignment->set_is_marking(false);
@@ -412,11 +416,11 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
         if (page_editor::has_any_active_annotations_or_comments($grade->id)) {
             // First the overall one.
             if (page_editor::has_annotations_or_comments($grade->id, false)) {
+                $overalldata = [];
                 $area = document_services::FINAL_PDF_FILEAREA;
                 $item = $grade->id;
 
-                $html .= html_writer::tag('strong', get_string('overallfeedback', 'assignfeedback_editpdf'));
-                $html .= $this->assignment->render_area_files(
+                $overalldata['files'] = $this->assignment->render_area_files(
                     'assignfeedback_editpdf',
                     $area,
                     $item,
@@ -425,37 +429,38 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
                 // Also show the link to the read-only interface.
                 $renderer = $PAGE->get_renderer('assignfeedback_editpdf');
                 $widget = $this->get_widget($grade->userid, $grade, true, $USER->id);
-                $html .= $renderer->render($widget);
-                $html .= html_writer::empty_tag('hr');
+                $overalldata['widget'] = $renderer->render($widget);
+                $data['overall'] = $overalldata;
             }
 
             // Then the marker feedback.
             $marks = $this->assignment->get_mark_records($grade->id, $grade->userid);
             foreach ($marks as $mark) {
                 if (page_editor::has_annotations_or_comments($grade->id, false, $mark->id)) {
+                    $markdata = [];
                     $area = document_services::FINAL_PDF_FILEAREA_MARKER;
                     $item = $mark->id;
                     $this->assignment->set_is_marking(true);
+
                     // Render the files.
-                    $html .= html_writer::tag('strong', get_string('markerfeedback', 'assignfeedback_editpdf'));
-                    $html .= $this->assignment->render_area_files(
+                    $markdata['files'] = $this->assignment->render_area_files(
                         'assignfeedback_editpdf',
                         $area,
                         $item,
                     );
+
                     // Also show the link to the read-only interface.
                     $renderer = $PAGE->get_renderer('assignfeedback_editpdf');
                     $widget = $this->get_widget($grade->userid, $grade, true, $USER->id, $mark->id);
-                    $html .= $renderer->render($widget);
-                    $html .= html_writer::empty_tag('hr');
+                    $markdata['widget'] = $renderer->render($widget);
+                    $data['marks'][] = $markdata;
                 }
             }
         }
 
         // Reset is_marking to false, because it re-uses the same assign object as it loops through all the plugins.
         $this->assignment->set_is_marking(false);
-
-        return $html;
+        return $OUTPUT->render_from_template('assignfeedback_editpdf/view_all', $data);
     }
 
     /**

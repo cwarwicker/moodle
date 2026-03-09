@@ -436,12 +436,13 @@ class combined_document {
      * @return  stdClass
      */
     protected function get_stored_file_record($contextid, $itemid, $partial = false, $ismarking = false) {
-        $filearea = document_services::COMBINED_PDF_FILEAREA;
+        $filearea = ($ismarking) ?
+            document_services::COMBINED_PDF_FILEAREA_MARKER :
+            document_services::COMBINED_PDF_FILEAREA;
         if ($partial) {
-            $filearea = document_services::PARTIAL_PDF_FILEAREA;
-        }
-        if ($ismarking) {
-            $filearea .= '_marker';
+            $filearea = ($ismarking) ?
+                document_services::PARTIAL_PDF_FILEAREA_MARKER :
+                document_services::PARTIAL_PDF_FILEAREA;
         }
         return (object) [
             'contextid' => $contextid,

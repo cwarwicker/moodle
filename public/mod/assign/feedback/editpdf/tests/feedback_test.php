@@ -304,9 +304,9 @@ final class feedback_test extends \advanced_testcase {
 
         // Then check comments specifically for any status.
         $comments = page_editor::get_comments($grade->id, 0, true);
-        $this->assertEquals(count($comments), 1);
+        $this->assertCount(1, $comments);
         $comments = page_editor::get_comments($grade->id, 0, true, $mark->id);
-        $this->assertEquals(count($comments), 2);
+        $this->assertCount(2, $comments);
 
         // Double check annotations specifically are empty due to being drafts.
         $annotations = page_editor::get_annotations($grade->id, 0, false);
@@ -316,9 +316,9 @@ final class feedback_test extends \advanced_testcase {
 
         // Then check annotations specifically for any status.
         $annotations = page_editor::get_annotations($grade->id, 0, true);
-        $this->assertEquals(count($annotations), 2);
+        $this->assertCount(2, $annotations);
         $annotations = page_editor::get_annotations($grade->id, 0, true, $mark->id);
-        $this->assertEquals(count($annotations), 1);
+        $this->assertCount(1, $annotations);
 
         // Release the drafts.
         page_editor::release_drafts($grade->id);

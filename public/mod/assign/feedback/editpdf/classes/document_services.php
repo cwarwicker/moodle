@@ -67,12 +67,8 @@ class document_services {
     const COMBINED_PDF_FILENAME = 'combined.pdf';
     /**  Temporary place to save JPG Image to PDF file */
     const TMP_JPG_TO_PDF_FILEAREA = 'tmp_jpg_to_pdf';
-    /**  Temporary place to save marker version of JPG Image to PDF file */
-    const TMP_JPG_TO_PDF_FILEAREA_MARKER = 'tmp_jpg_to_pdf_marker';
     /**  Temporary place to save (Automatically) Rotated JPG FILE */
     const TMP_ROTATED_JPG_FILEAREA = 'tmp_rotated_jpg';
-    /**  Temporary place to save marker version of (Automatically) Rotated JPG FILE */
-    const TMP_ROTATED_JPG_FILEAREA_MARKER = 'tmp_rotated_jpg_marker';
     /** Hash of blank pdf */
     const BLANK_PDF_HASH = '4c803c92c71f21b423d13de570c8a09e0a31c718';
 
@@ -1030,13 +1026,14 @@ EOD;
      * @throws \stored_file_creation_exception
      */
     public static function rotate_page(
-        assign $assignment,
-        int $userid,
-        int $attemptnumber,
-        int $index,
-        bool $rotateleft,
+        $assignment,
+        $userid,
+        $attemptnumber,
+        $index,
+        $rotateleft,
         ?int $markid = null
     ) {
+        $assignment = self::get_assignment_from_param($assignment);
         $grade = $assignment->get_user_grade($userid, true, $attemptnumber);
         // Check permission.
         if (!$assignment->can_view_submission($userid)) {
@@ -1195,12 +1192,17 @@ EOD;
     ): array {
         global $USER;
         if ($assignment->is_marking() || !is_null($markid)) {
-            if (strpos($basearea, '_marker') === false) {
-                $basearea .= '_marker';
-            }
             $mark = $assignment->get_mark($grade->id, $USER->id, $createmarkifmissing);
             $markid = ($mark) ? $mark->id : null;
-            return [$basearea, $markid];
+            // Change the filearea to the marker equivalent, where possible.
+            $newarea = match($basearea) {
+                self::FINAL_PDF_FILEAREA => self::FINAL_PDF_FILEAREA_MARKER,
+                self::COMBINED_PDF_FILEAREA => self::COMBINED_PDF_FILEAREA_MARKER,
+                self::PARTIAL_PDF_FILEAREA => self::PARTIAL_PDF_FILEAREA_MARKER,
+                self::IMPORT_HTML_FILEAREA => self::IMPORT_HTML_FILEAREA_MARKER,
+                default => $basearea,
+            };
+            return [$newarea, $markid];
         } else {
             return [$basearea, $grade->id];
         }

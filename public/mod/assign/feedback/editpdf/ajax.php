@@ -50,16 +50,16 @@ $cm = \get_coursemodule_from_instance('assign', $assignmentid, 0, false, MUST_EX
 $context = \context_module::instance($cm->id);
 
 $assignment = new \assign($context, null, null);
-$grade = $assignment->get_user_grade($userid, true, $attemptnumber);
 
+require_login($assignment->get_course(), false, $cm);
+
+$grade = $assignment->get_user_grade($userid, true, $attemptnumber);
 if ($ismarking) {
     $assignment->set_is_marking(true);
     if (is_null($markid)) {
         $markid = $assignment->get_mark($grade->id, $graderid, true)->id;
     }
 }
-
-require_login($assignment->get_course(), false, $cm);
 
 if (!$assignment->can_view_submission($userid)) {
     throw new \moodle_exception('nopermission');

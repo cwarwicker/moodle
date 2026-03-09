@@ -70,17 +70,18 @@ class assignfeedback_editpdf_widget implements renderable {
      * @param string $downloadfilename - Name of the generated pdf.
      * @param string[] $stampfiles - The file names of the stamps.
      * @param bool $readonly - Show the readonly interface (no tools).
-     * @param ?int $graderid - The graderid.
+     * @param int|null $graderid - The grader user ID.
+     * @param int|null $markid - The mark record ID.
      */
     public function __construct(
-        int $assignment,
-        int $userid,
-        int $attemptnumber,
-        ?moodle_url $downloadurl,
-        string $downloadfilename,
-        array $stampfiles,
-        bool $readonly,
-        bool $ismarking,
+        $assignment,
+        $userid,
+        $attemptnumber,
+        $downloadurl,
+        $downloadfilename,
+        $stampfiles,
+        $readonly,
+        $ismarking,
         ?int $graderid = null,
         ?int $markid = null,
     ) {

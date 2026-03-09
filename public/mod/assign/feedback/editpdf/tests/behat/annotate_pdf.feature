@@ -236,5 +236,5 @@ Feature: In an assignment, teacher can annotate PDF files during grading
     And I press "Save changes"
     And I should see "The changes to the grade and feedback were saved"
     And I follow "View all submissions"
-    Then "Student One" row "Marker 1 PDF" column of "generaltable" table should contain "View annotated PDF..."
+    And "Student One" row "Marker 1 PDF" column of "generaltable" table should contain "View annotated PDF..."
     And "Student One" row "Annotate PDF" column of "generaltable" table should not contain "View annotated PDF..."

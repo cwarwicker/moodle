@@ -298,10 +298,10 @@ class page_editor {
      */
     public static function has_any_active_annotations_or_comments(int $gradeid): bool {
         global $DB;
-        if ($DB->count_records('assignfeedback_editpdf_cmnt', ['gradeid' => $gradeid, 'draft' => 0])) {
+        if ($DB->record_exists('assignfeedback_editpdf_cmnt', ['gradeid' => $gradeid, 'draft' => 0])) {
             return true;
         }
-        if ($DB->count_records('assignfeedback_editpdf_annot', ['gradeid' => $gradeid, 'draft' => 0])) {
+        if ($DB->record_exists('assignfeedback_editpdf_annot', ['gradeid' => $gradeid, 'draft' => 0])) {
             return true;
         }
     }
