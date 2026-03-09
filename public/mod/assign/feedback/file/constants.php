@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 define('ASSIGNFEEDBACK_FILE_FILEAREA', 'feedback_files');
 define('ASSIGNFEEDBACK_FILE_FILEAREA_MARKER', 'feedback_marker');
 define('ASSIGNFEEDBACK_FILE_BATCH_FILEAREA', 'feedback_files_batch');

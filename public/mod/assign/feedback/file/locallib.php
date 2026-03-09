@@ -357,7 +357,6 @@ class assign_feedback_file extends assign_feedback_plugin {
         }
 
         $filefeedbackitems = $this->get_all_file_feedback($grade->id);
-        $o = '';
         $data = ['filefeedback' => []];
         foreach ($filefeedbackitems as $filefeedbackitem) {
             $feedback = [];
