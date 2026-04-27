@@ -1180,7 +1180,6 @@ EOD;
      * @param string $basearea File area we might change to marker version
      * @param bool $createmarkifmissing Do we need to create a mark if it doesn't exist during this check?
      * @param int|null $markid ID of mark record.
-     *
      * @return array [filearea, fileitemid]
      */
     public static function get_file_area_and_id(

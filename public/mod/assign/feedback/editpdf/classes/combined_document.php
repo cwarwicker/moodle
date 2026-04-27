@@ -232,7 +232,6 @@ class combined_document {
      *
      * @param   int $contextid The contextid for the file to be stored under
      * @param   int $itemid The itemid for the file to be stored under
-     *
      * @return  $this
      */
     public function combine_files($contextid, $itemid) {
@@ -330,7 +329,6 @@ class combined_document {
      * @param   int $itemid The itemid for the file to be stored under
      * @param   boolean $partial The combined pdf contains only some of the source files.
      * @param   bool $ismarking Are we in marking mode?
-     *
      * @return  $this
      */
     protected function store_combined_file($tmpfile, $contextid, $itemid, $partial = false, bool $ismarking = false) {
@@ -354,7 +352,6 @@ class combined_document {
      *
      * @param   int $contextid The contextid for the file to be stored under
      * @param   int $itemid The itemid for the file to be stored under
-     *
      * @return  $this
      */
     protected function store_empty_document($contextid, $itemid) {
@@ -432,8 +429,7 @@ class combined_document {
      * @param   int $itemid The itemid for the file to be stored under
      * @param   boolean $partial The combined file contains only some of the source files.
      * @param   bool $ismarking Are we in marking mode?
-     *
-     * @return  stdClass
+     * @return  \stdClass
      */
     protected function get_stored_file_record($contextid, $itemid, $partial = false, $ismarking = false) {
         $filearea = ($ismarking) ?

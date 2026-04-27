@@ -643,13 +643,12 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
      * Return the array of extra comment columns per marker.
      *
      * @param int $markernumber The marker number.
-     *
      * @return array [headertitle => columntext]
      */
     public function get_marker_columns(int $markernumber): array {
         $key = 'markerpdf' . $markernumber;
         return [
-            $key => get_string('marker1', 'assignfeedback_editpdf', $markernumber),
+            $key => get_string('markernumberpdf', 'assignfeedback_editpdf', $markernumber),
         ];
     }
 }

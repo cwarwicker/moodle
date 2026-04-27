@@ -73,11 +73,8 @@ class restore_assignfeedback_editpdf_subplugin extends restore_subplugin {
      * Restore the annotated marker files.
      *
      * @param mixed $data Restore data.
-     *
-     * @return void
      */
-    public function process_assignfeedback_editpdf_marker_files($data): void {
-        global $DB;
+    public function process_assignfeedback_editpdf_marker_files(mixed $data): void {
         $data = (object)$data;
         $this->add_related_files(
             'assignfeedback_editpdf',

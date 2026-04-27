@@ -293,7 +293,6 @@ class page_editor {
      * Check if there are any active annotations or comments for overall or any markers.
      *
      * @param int $gradeid Grade record id.
-     *
      * @return bool
      */
     public static function has_any_active_annotations_or_comments(int $gradeid): bool {
@@ -304,6 +303,7 @@ class page_editor {
         if ($DB->record_exists('assignfeedback_editpdf_annot', ['gradeid' => $gradeid, 'draft' => 0])) {
             return true;
         }
+        return false;
     }
 
     /**

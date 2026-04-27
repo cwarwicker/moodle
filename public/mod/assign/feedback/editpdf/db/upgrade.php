@@ -31,12 +31,6 @@ function xmldb_assignfeedback_editpdf_upgrade($oldversion) {
     global $DB;
     $dbman = $DB->get_manager();
 
-    // Automatically generated Moodle v4.2.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v4.3.0 release upgrade line.
-    // Put any upgrade step following this.
-
     // Automatically generated Moodle v4.4.0 release upgrade line.
     // Put any upgrade step following this.
 
@@ -49,7 +43,7 @@ function xmldb_assignfeedback_editpdf_upgrade($oldversion) {
     // Automatically generated Moodle v5.1.0 release upgrade line.
     // Put any upgrade step following this.
 
-    if ($oldversion < 2026042000.01) {
+    if ($oldversion < 2026042001) {
         $table = new xmldb_table('assignfeedback_editpdf_cmnt');
         $field = new xmldb_field('markid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'gradeid');
 
@@ -85,7 +79,7 @@ function xmldb_assignfeedback_editpdf_upgrade($oldversion) {
             $dbman->add_index($table, $index);
         }
 
-        upgrade_plugin_savepoint(true, 2026042000.01, 'assignfeedback', 'editpdf');
+        upgrade_plugin_savepoint(true, 2026042001, 'assignfeedback', 'editpdf');
     }
 
     return true;
