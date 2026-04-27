@@ -4277,7 +4277,6 @@ class assign {
      * @param int $gradeid The assignment grade ID.
      * @param int $markerid The marker's user ID.
      * @param bool $createifmissing Create the mark record if it doesn't exist.
-     *
      * @return ?stdClass The assign_mark object or null if it doesn't exist.
      */
     public function get_mark(int $gradeid, int $markerid, bool $createifmissing = false): ?stdClass {
@@ -10600,20 +10599,6 @@ class assign {
     }
 
     /**
-     * Check if a given mark record belongs to the current user.
-     *
-     * @param int $markid ID of the mark record.
-     *
-     * @return bool
-     */
-    public function is_our_mark(int $markid): bool {
-        global $DB, $USER;
-        return $DB->record_exists('assign_mark', [
-            'id' => $markid, 'marker' => $USER->id,
-        ]);
-    }
-
-    /**
      * Check if a user is an allocated marker on this assignment.
      *
      * Providing a student ID will check the user is allocated to that student too.
@@ -10640,19 +10625,6 @@ class assign {
     }
 
     /**
-     * Check if user is a marker for any student on the given assignment.
-     *
-     * @return bool
-     */
-    public function is_user_marker(): bool {
-        global $DB, $USER;
-        return $DB->record_exists(
-            'assign_allocated_marker',
-            ['assignment' => $this->get_instance()->id, 'marker' => $USER->id],
-        );
-    }
-
-    /**
      * Get the markers allocated to the specified student on this assignment.
      *
      * @param int $studentid ID of the student.
@@ -10671,7 +10643,6 @@ class assign {
      *
      * @param int $studentid The student ID.
      * @param int $number The marker number, e.g. 1, 2, etc...
-     *
      * @return stdClass|null
      */
     public function get_marker_number(int $studentid, int $number): ?stdClass {

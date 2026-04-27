@@ -1862,7 +1862,6 @@ class assign_grading_table extends table_sql implements renderable {
      * Check if a given column name is formatted like a marker column.
      *
      * @param string $colname The column name.
-     *
      * @return bool
      */
     public static function is_plugin_marker_column(string $colname): bool {
@@ -1875,7 +1874,6 @@ class assign_grading_table extends table_sql implements renderable {
      * @param assign $assignment The assignment object
      * @param stdClass $grade The grade object
      * @param string $colname The column name
-     *
      * @return stdClass|null The assign_mark record if it exists, or false if not.
      */
     public static function extract_mark_from_marker_column(
@@ -1899,7 +1897,6 @@ class assign_grading_table extends table_sql implements renderable {
      * @param assign $assignment The assignment object.
      * @param int $userid The user ID of the student.
      * @param string $colname The column name.
-     *
      * @return stdClass|null The user record if it exists, or false if not.
      */
     public static function extract_marker_from_marker_column(

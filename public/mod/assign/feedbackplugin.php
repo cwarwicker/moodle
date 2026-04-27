@@ -116,11 +116,11 @@ abstract class assign_feedback_plugin extends assign_plugin {
      * @param int $userid The user id in the table this quickgrading element relates to
      * @param mixed $grade grade or null - The grade data.
      *                     May be null if there are no grades for this user (yet)
-     * @param string $colname The column name in case we need it to parse marker columns.
+     * @param string $colname (Optional) The column name in case we need it to parse marker columns.
      * @return mixed - A html string containing the html form elements required for
      *                 quickgrading or false to indicate this plugin does not support quickgrading
      */
-    public function get_quickgrading_html($userid, $grade, string $colname) {
+    public function get_quickgrading_html($userid, $grade, string $colname = '') {
         return false;
     }
 
@@ -238,7 +238,6 @@ abstract class assign_feedback_plugin extends assign_plugin {
      * @param string $name Name of the field.
      * @param int $submissionorgradeid The id of the submission or grade.
      * @param int|null $markid The id of the mark record.
-     *
      * @return string The text for the editor field.
      */
     public function get_editor_text($name, $submissionorgradeid, ?int $markid = null) {
@@ -254,7 +253,6 @@ abstract class assign_feedback_plugin extends assign_plugin {
      * @param string $value Updated text.
      * @param int $submissionorgradeid The id of the submission or grade.
      * @param int|null $markid The id of the mark record.
-     *
      * @return bool true if the value was updated
      */
     public function set_editor_text($name, $value, $submissionorgradeid, ?int $markid = null) {
