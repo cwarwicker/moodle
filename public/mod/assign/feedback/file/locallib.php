@@ -52,7 +52,6 @@ class assign_feedback_file extends assign_feedback_plugin {
      *
      * @param int $gradeid The grade ID.
      * @param ?int $markid The mark ID or null if we want the overall feedback file.
-     *
      * @return \stdClass|false
      */
     public function get_file_feedback(int $gradeid, ?int $markid = null): \stdClass|false {
@@ -64,7 +63,6 @@ class assign_feedback_file extends assign_feedback_plugin {
      * Get all file feedback information from the database, including marking feedback.
      *
      * @param int $gradeid The Grade ID.
-     *
      * @return ?array Array of assignfeedback_file records, or null if none found.
      */
     public function get_all_file_feedback(int $gradeid): ?array {
@@ -267,7 +265,6 @@ class assign_feedback_file extends assign_feedback_plugin {
      *
      * @param stdClass $grade The grade record
      * @param ?int $markid The mark ID.
-     *
      * @return bool - true if the value was saved
      */
     public function update_file_count($grade, ?int $markid = null) {
@@ -814,13 +811,12 @@ class assign_feedback_file extends assign_feedback_plugin {
      * Return the array of extra file columns per marker.
      *
      * @param int $markernumber The marker number.
-     *
      * @return array [headertitle => columntext]
      */
     public function get_marker_columns(int $markernumber): array {
         $key = 'markerfile' . $markernumber;
         return [
-            $key => get_string('markerfile1', 'assignfeedback_file', $markernumber),
+            $key => get_string('markernumberfile', 'assignfeedback_file', $markernumber),
         ];
     }
 
@@ -830,7 +826,6 @@ class assign_feedback_file extends assign_feedback_plugin {
      * @param \stdClass $grade The grade object.
      * @param ?int $markid The mark ID.
      * @param ?int $graderid The user ID of the grader.
-     *
      * @return array
      */
     protected function get_fileitem_area_id(\stdClass $grade, ?int $markid = null, ?int $graderid = null): array {
