@@ -85,6 +85,7 @@ function assignfeedback_editpdf_pluginfile(
                 document_services::IMPORT_HTML_FILEAREA_MARKER,
                 document_services::PARTIAL_PDF_FILEAREA_MARKER,
                 document_services::FINAL_PDF_FILEAREA_MARKER,
+                document_services::PAGE_IMAGE_FILEAREA_MARKER,
             ])
         ) {
             $gradeid = $DB->get_field('assign_mark', 'gradeid', ['id' => $itemid]);

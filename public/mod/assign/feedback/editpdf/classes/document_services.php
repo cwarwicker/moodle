@@ -59,6 +59,8 @@ class document_services {
     const IMPORT_HTML_FILEAREA_MARKER = 'importhtml_marker';
     /** File area for page images */
     const PAGE_IMAGE_FILEAREA = 'pages';
+    /* File area for marker page images */
+    const PAGE_IMAGE_FILEAREA_MARKER = 'pages_marker';
     /** File area for readonly page images */
     const PAGE_IMAGE_READONLY_FILEAREA = 'readonlypages';
     /** File area for the stamps */
@@ -1199,6 +1201,7 @@ EOD;
                 self::COMBINED_PDF_FILEAREA => self::COMBINED_PDF_FILEAREA_MARKER,
                 self::PARTIAL_PDF_FILEAREA => self::PARTIAL_PDF_FILEAREA_MARKER,
                 self::IMPORT_HTML_FILEAREA => self::IMPORT_HTML_FILEAREA_MARKER,
+                self::PAGE_IMAGE_FILEAREA => self::PAGE_IMAGE_FILEAREA_MARKER,
                 default => $basearea,
             };
             return [$newarea, $markid];
