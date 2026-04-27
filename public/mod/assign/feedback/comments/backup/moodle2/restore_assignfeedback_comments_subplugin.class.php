@@ -66,8 +66,6 @@ class restore_assignfeedback_comments_subplugin extends restore_subplugin {
         $data->assignment = $this->get_new_parentid('assign');
         $oldgradeid = $data->grade;
         $oldmarkid = $data->mark;
-        // The mapping is set in the restore for the core assign activity
-        // when a grade node is processed.
         $data->grade = $this->get_mappingid('grade', $data->grade);
         if (is_null($oldmarkid)) {
             $data->mark = $oldmarkid;

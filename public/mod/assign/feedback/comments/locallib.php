@@ -74,7 +74,6 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * Get all the feedback comments for a grade, including all marker ones, in one array.
      *
      * @param int $gradeid Assign grade ID.
-     *
      * @return array Array of assignfeedback_comments records.
      */
     public function get_all_feedback_comments(int $gradeid): array {
@@ -90,10 +89,9 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @param int $userid The user id in the table this quickgrading element relates to
      * @param mixed $grade - The grade data - may be null if there are no grades for this user (yet)
      * @param string $colname - The column name so we can parse marker columns.
-     *
      * @return mixed - A html string containing the html form elements required for quickgrading
      */
-    public function get_quickgrading_html($userid, $grade, string $colname) {
+    public function get_quickgrading_html($userid, $grade, string $colname = '') {
         global $USER;
         $commenttext = '';
         $markid = null;
@@ -158,8 +156,7 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @param int $userid The user id in the table this quickgrading element relates to
      * @param stdClass $grade The grade
      * @param bool $checkmarker (Optional) (Default: false) Are we checking for the marker field modification?
-     *
-     * @return boolean - true if the quickgrading form element has been modified
+     * @return bool - true if the quickgrading form element has been modified
      */
     public function is_quickgrading_modified($userid, $grade, bool $checkmarker = false) {
         global $USER;
@@ -257,7 +254,6 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @param string $name
      * @param int $gradeid
      * @param int|null $markid The id of the mark record.
-     *
      * @return string
      */
     public function get_editor_text($name, $gradeid, ?int $markid = null) {
@@ -275,7 +271,6 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @param string $value
      * @param int $gradeid
      * @param int|null $markid The id of the mark record.
-     *
      * @return string
      */
     public function set_editor_text($name, $value, $gradeid, ?int $markid = null) {
@@ -334,7 +329,6 @@ class assign_feedback_comments extends assign_feedback_plugin {
      *
      * @param int $userid User ID of the student.
      * @param stdClass $grade Grade object.
-     *
      * @return bool
      */
     private function save_quickgrading_changes_marker(int $userid, stdClass $grade): bool {
@@ -365,7 +359,7 @@ class assign_feedback_comments extends assign_feedback_plugin {
             $feedbackcomment->grade = $grade->id;
             $feedbackcomment->mark = $mark->id;
             $feedbackcomment->assignment = $this->assignment->get_instance()->id;
-            return $DB->insert_record('assignfeedback_comments', $feedbackcomment);
+            return ($DB->insert_record('assignfeedback_comments', $feedbackcomment) > 0);
         }
     }
 
@@ -585,7 +579,6 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @param stdClass $grade The grade object.
      * @param bool $showviewlink Set to true to show a link to view the full feedback.
      * @param int|null $markid Mark record id.
-     *
      * @return string
      */
     public function view_text(stdClass $grade, bool &$showviewlink, ?int $markid = null): string {
@@ -616,7 +609,6 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @param bool $showviewlink Set to true to show a link to view the full feedback.
      * @param bool $fromgradingtable (Optional) Are we viewing the summary from the grading table?
      * @param int|null $markid (Optional) assign_mark record id.
-     *
      * @return string
      */
     public function view_summary(stdClass $grade, &$showviewlink, bool $fromgradingtable = false, ?int $markid = null) {
@@ -888,7 +880,6 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * Return the array of extra comment columns per marker.
      *
      * @param int $markernumber The marker number.
-     *
      * @return array [headertitle => columntext]
      */
     public function get_marker_columns(int $markernumber): array {
