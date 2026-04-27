@@ -59,7 +59,7 @@ class document_services {
     const IMPORT_HTML_FILEAREA_MARKER = 'importhtml_marker';
     /** File area for page images */
     const PAGE_IMAGE_FILEAREA = 'pages';
-    /* File area for marker page images */
+    /** File area for marker page images */
     const PAGE_IMAGE_FILEAREA_MARKER = 'pages_marker';
     /** File area for readonly page images */
     const PAGE_IMAGE_READONLY_FILEAREA = 'readonlypages';
