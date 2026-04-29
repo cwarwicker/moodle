@@ -1192,7 +1192,7 @@ EOD;
         ?int $markid = null,
     ): array {
         global $USER;
-        if ($assignment->is_marking() || !is_null($markid)) {
+        if (($assignment->is_marking() || !is_null($markid)) && !in_array($basearea, [self::PAGE_IMAGE_READONLY_FILEAREA])) {
             $mark = $assignment->get_mark($grade->id, $USER->id, $createmarkifmissing);
             $markid = ($mark) ? $mark->id : null;
             // Change the filearea to the marker equivalent, where possible.
