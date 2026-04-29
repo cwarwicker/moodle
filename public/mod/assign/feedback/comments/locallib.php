@@ -623,12 +623,15 @@ class assign_feedback_comments extends assign_feedback_plugin {
         $data = ['comments' => []];
         $comments = $this->get_all_feedback_comments($grade->id);
         foreach ($comments as $comment) {
-            $data['comments'][] = [
-                'context' => (is_null($comment->mark)) ?
-                    get_string('overallcomment', 'assignfeedback_comments') :
-                    get_string('markercomment', 'assignfeedback_comments'),
-                'html' => $this->view_text($grade, $showviewlink, $comment->mark),
-            ];
+            $value = $this->view_text($grade, $showviewlink, $comment->mark);
+            if ($value !== '') {
+                $data['comments'][] = [
+                    'context' => (is_null($comment->mark)) ?
+                        get_string('overallcomment', 'assignfeedback_comments') :
+                        get_string('markercomment', 'assignfeedback_comments'),
+                    'html' => $value,
+                ];
+            }
         }
         return $OUTPUT->render_from_template('assignfeedback_comments/summary', $data);
     }
@@ -792,7 +795,7 @@ class assign_feedback_comments extends assign_feedback_plugin {
      * @return bool
      */
     public function is_empty(stdClass $grade) {
-        return $this->view($grade) == '';
+        return count($this->get_all_feedback_comments($grade->id)) == 0;
     }
 
     /**
