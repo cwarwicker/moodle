@@ -426,8 +426,7 @@ class assign_feedback_file extends assign_feedback_plugin {
      * @param stdClass $grade
      */
     public function is_empty(stdClass $grade) {
-        [$filearea, $fileitemid] = $this->get_fileitem_area_id($grade);
-        return $this->count_files($fileitemid, $filearea) == 0;
+        return count($this->get_all_file_feedback($grade->id)) === 0;
     }
 
     /**
