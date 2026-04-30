@@ -293,12 +293,17 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
             // This is manually set in assign::apply_grade_to_user() for $grade so it needs to match here too.
             $sourcegrade->grader = $USER->id;
             $pagenumbercount = document_services::page_number_for_attempt($this->assignment, $sourceuserid, $sourcegrade->attemptnumber);
-            $sourcemarkid = $this->assignment->get_mark($sourcegrade->id, $sourcegrade->grader)->id;
-            $markid = $this->assignment->get_mark($grade->id, $grade->grader)->id;
+            $sourcemarkid = null;
+            $markid = null;
+            if ($this->assignment->is_marking()) {
+                $sourcemarkid = $this->assignment->get_mark($sourcegrade->id, $sourcegrade->grader)->id;
+                $markid = $this->assignment->get_mark($grade->id, $grade->grader)->id;
+            }
             for ($i = 0; $i < $pagenumbercount; $i++) {
                 // Select all annotations.
                 $draftannotations = page_editor::get_annotations($sourcegrade->id, $i, true, $sourcemarkid);
                 $nondraftannotations = page_editor::get_annotations($grade->id, $i, false, $markid);
+
                 // Check to see if the count is the same.
                 if (count($draftannotations) != count($nondraftannotations)) {
                     // The count is different so we have a modification.
