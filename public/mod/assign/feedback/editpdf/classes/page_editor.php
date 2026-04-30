@@ -369,31 +369,43 @@ class page_editor {
      * @return bool
      */
     public static function copy_drafts_from_to($assignment, $grade, $sourceuserid, ?int $markid = null) {
-        global $DB;
+        global $DB, $USER;
 
         // Delete any existing annotations and comments from current user.
         $DB->delete_records('assignfeedback_editpdf_annot', ['gradeid' => $grade->id, 'markid' => $markid]);
         $DB->delete_records('assignfeedback_editpdf_cmnt', ['gradeid' => $grade->id, 'markid' => $markid]);
+
         // Get gradeid, annotations and comments from sourceuserid.
         $sourceusergrade = $assignment->get_user_grade($sourceuserid, true, $grade->attemptnumber);
+        $sourcemarkid = null;
+        $sourceitemid = $sourceusergrade->id;
+
+        // If we are copying mark-related drafts, get the mark id of the source user to use.
+        if ($markid) {
+            $sourcemarkid = $assignment->get_mark($sourceusergrade->id, $USER->id)->id;
+            $sourceitemid = $sourcemarkid;
+        }
+
         $annotations = $DB->get_records(
             'assignfeedback_editpdf_annot',
-            ['gradeid' => $sourceusergrade->id, 'markid' => $markid, 'draft' => 1],
+            ['gradeid' => $sourceusergrade->id, 'markid' => $sourcemarkid, 'draft' => 1],
         );
         $comments = $DB->get_records(
             'assignfeedback_editpdf_cmnt',
-            ['gradeid' => $sourceusergrade->id, 'markid' => $markid, 'draft' => 1],
+            ['gradeid' => $sourceusergrade->id, 'markid' => $sourcemarkid, 'draft' => 1],
         );
+
         $contextid = $assignment->get_context()->id;
-        $sourceitemid = $sourceusergrade->id;
 
         // Add annotations and comments to current user to generate feedback file.
         foreach ($annotations as $annotation) {
             $annotation->gradeid = $grade->id;
+            $annotation->markid = $markid;
             $DB->insert_record('assignfeedback_editpdf_annot', $annotation);
         }
         foreach ($comments as $comment) {
             $comment->gradeid = $grade->id;
+            $comment->markid = $markid;
             $DB->insert_record('assignfeedback_editpdf_cmnt', $comment);
         }
 
@@ -401,13 +413,15 @@ class page_editor {
 
         // Copy the stamp files.
         [$filearea, $fileitemid] = document_services::get_file_area_and_id($assignment, $grade, document_services::STAMPS_FILEAREA);
-        self::replace_files_from_to($fs, $contextid, $sourceitemid, $fileitemid, $filearea, true);
+        self::replace_files_from_to($fs, $contextid, $sourceusergrade->id, $fileitemid, $filearea, true);
 
         // Copy the PAGE_IMAGE_FILEAREA files.
         [$filearea, $fileitemid] = document_services::get_file_area_and_id(
             $assignment,
             $grade,
-            document_services::PAGE_IMAGE_FILEAREA
+            document_services::PAGE_IMAGE_FILEAREA,
+            false,
+            $markid
         );
         self::replace_files_from_to($fs, $contextid, $sourceitemid, $fileitemid, $filearea);
 

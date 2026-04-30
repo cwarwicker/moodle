@@ -879,7 +879,9 @@ EOD;
 
         // Do the copying.
         foreach ($originalfiles as $originalfile) {
-            $fs->create_file_from_storedfile(['filearea' => $filearea], $originalfile);
+            // If the originalfiles were marker files, the itemid will be wrong for the readonly file we want to create.
+            // So reset it here based on the grade ID and the readonly filearea.
+            $fs->create_file_from_storedfile(['filearea' => $filearea, 'itemid' => $fileitemid], $originalfile);
         }
     }
 

@@ -286,19 +286,18 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
         // following users will have the same status. If it's only an individual annotation
         // then only one user will come through this method.
         // Source user id is only added to the form if there was a pdf.
-        $markid = null;
-        if ($this->assignment->is_marking()) {
-            // It should have been created when adding the comments/annotations via ajax. So should always exist.
-            $markid = $this->assignment->get_mark($grade->id, $grade->grader)->id;
-        }
         if (!empty($data->editpdf_source_userid)) {
             $sourceuserid = $data->editpdf_source_userid;
             // Retrieve the grade information for the source user.
             $sourcegrade = $this->assignment->get_user_grade($sourceuserid, true, $grade->attemptnumber);
+            // This is manually set in assign::apply_grade_to_user() for $grade so it needs to match here too.
+            $sourcegrade->grader = $USER->id;
             $pagenumbercount = document_services::page_number_for_attempt($this->assignment, $sourceuserid, $sourcegrade->attemptnumber);
+            $sourcemarkid = $this->assignment->get_mark($sourcegrade->id, $sourcegrade->grader)->id;
+            $markid = $this->assignment->get_mark($grade->id, $grade->grader)->id;
             for ($i = 0; $i < $pagenumbercount; $i++) {
                 // Select all annotations.
-                $draftannotations = page_editor::get_annotations($sourcegrade->id, $i, true, $markid);
+                $draftannotations = page_editor::get_annotations($sourcegrade->id, $i, true, $sourcemarkid);
                 $nondraftannotations = page_editor::get_annotations($grade->id, $i, false, $markid);
                 // Check to see if the count is the same.
                 if (count($draftannotations) != count($nondraftannotations)) {
@@ -325,7 +324,7 @@ class assign_feedback_editpdf extends assign_feedback_plugin {
                     }
                 }
                 // Select all comments.
-                $draftcomments = page_editor::get_comments($sourcegrade->id, $i, true, $markid);
+                $draftcomments = page_editor::get_comments($sourcegrade->id, $i, true, $sourcemarkid);
                 $nondraftcomments = page_editor::get_comments($grade->id, $i, false, $markid);
                 if (count($draftcomments) != count($nondraftcomments)) {
                     return true;
