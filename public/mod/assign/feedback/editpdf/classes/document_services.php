@@ -653,9 +653,10 @@ EOD;
      * @param int|\assign $assignment
      * @param int $userid
      * @param int $attemptnumber (-1 means latest attempt)
+     * @param int|null $markid ID of the related mark record if applicable
      * @return string
      */
-    protected static function get_downloadable_feedback_filename($assignment, $userid, $attemptnumber) {
+    protected static function get_downloadable_feedback_filename($assignment, $userid, $attemptnumber, ?int $markid = null) {
         global $DB;
 
         $assignment = self::get_assignment_from_param($assignment);
@@ -682,6 +683,11 @@ EOD;
             $prefix = clean_filename($prefix . '_' . $assignment->get_uniqueid_for_user($userid) . '_');
         }
         $prefix .= $grade->attemptnumber;
+
+        // If this is a marker file, add that ID to make the filename unique.
+        if ($markid) {
+            $prefix .= '_' . $markid;
+        }
 
         return $prefix . '.pdf';
     }
@@ -821,7 +827,7 @@ EOD;
 
         fulldelete($stamptmpdir);
 
-        $filename = self::get_downloadable_feedback_filename($assignment, $userid, $attemptnumber);
+        $filename = self::get_downloadable_feedback_filename($assignment, $userid, $attemptnumber, $markid);
         $filename = clean_param($filename, PARAM_FILE);
 
         $generatedpdf = $tmpdir . '/' . $filename;
