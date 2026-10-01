@@ -14,24 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace core_user\identifier;
-
 /**
- * User profile identifier interface.
+ * Language strings for useridentifier plugins.
  *
- * @package   useridentifier
+ * @package   todo_todo
  * @author    Conn Warwicker <conn.warwicker@catalyst-eu.net>
  * @copyright 2026 onwards Catalyst IT EU {@link https://catalyst-eu.net}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-interface base {
-    /**
-     * Given a user ID, return a unique identifier for that user.
-     * This must return the same value each time it is called for the same user ID and Key.
-     *
-     * @param int $userid This is the ID of the Moodle user.
-     * @param int $key This is a site-configured key which is used so that identifiers can be refreshed to new values.
-     * @return string
-     */
-    public function get_user_identifier(int $userid, int $key): string;
-}
+$string['manageidentifiers'] = 'Manage identifiers';
+$string['selection'] = 'Selection';

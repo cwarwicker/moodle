@@ -148,6 +148,41 @@ final class locallib_test extends \advanced_testcase {
     }
 
     /**
+     * Test blind marking functionality and name reveal with useridentifier service.
+     */
+    public function test_is_blind_marking_with_useridentifier_service(): void {
+        // Set the hash service as the active useridentifier service.
+        set_config('useridentifier_service', 'useridentifier_hash\\plugin');
+        set_config('useridentifier_key', 'test');
+
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $hash = \core_user\identifier\helper::get_user_identifier($student->id);
+
+        $this->setUser($teacher);
+        $assign = $this->create_instance($course, ['blindmarking' => 1]);
+        $this->assertEquals(true, $assign->is_blind_marking());
+
+        // Test cannot see student names, but see the user identifier instead.
+        $gradingtable = new \assign_grading_table($assign, 1, '', 0, true);
+        $output = $assign->get_renderer()->render($gradingtable);
+        $this->assertEquals(true, strpos($output, $hash));
+
+        // Test student names are visible after reveal.
+        $teacher->ignoresesskey = true;
+        $this->setUser($teacher);
+        $assign->reveal_identities();
+        $this->assertEquals(false, $assign->is_blind_marking());
+        $teacher->ignoresesskey = false;
+
+        $gradingtable = new \assign_grading_table($assign, 1, '', 0, true);
+        $output = $assign->get_renderer()->render($gradingtable);
+        $this->assertEquals(false, strpos($output, $hash));
+    }
+
+    /**
      * Data provider for test_get_assign_perpage
      *
      * @return array[] Provider data
@@ -4179,6 +4214,42 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         $gradingtable = new \assign_grading_table($assign, 1, '', 0, true);
         $output = $assign->get_renderer()->render($gradingtable);
         $this->assertEquals(true, strpos($output, get_string('hiddenuser', 'assign')));
+        $this->assertEquals(true, strpos($output, fullname($student)));
+    }
+
+    /**
+     * Test if the view blind details capability works with an identifier service.
+     */
+    public function test_can_view_blind_marking_details_with_useridentifier_service(): void {
+        // Set the hash service as the active useridentifier service.
+        set_config('useridentifier_service', 'useridentifier_hash\\plugin');
+        set_config('useridentifier_key', 'test');
+
+        $this->resetAfterTest();
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'teacher');
+        $manager = $this->getDataGenerator()->create_and_enrol($course, 'manager');
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $hash = \core_user\identifier\helper::get_user_identifier($student->id);
+
+        $assign = $this->create_instance($course, [
+            'blindmarking' => 1,
+        ]);
+
+        $this->assertTrue($assign->is_blind_marking());
+
+        // Test student names are hidden to teacher.
+        $this->setUser($teacher);
+        $gradingtable = new \assign_grading_table($assign, 1, '', 0, true);
+        $output = $assign->get_renderer()->render($gradingtable);
+        $this->assertEquals(true, strpos($output, $hash));
+        $this->assertEquals(false, strpos($output, fullname($student)));
+
+        // Test student names are visible to manager.
+        $this->setUser($manager);
+        $gradingtable = new \assign_grading_table($assign, 1, '', 0, true);
+        $output = $assign->get_renderer()->render($gradingtable);
+        $this->assertEquals(true, strpos($output, $hash));
         $this->assertEquals(true, strpos($output, fullname($student)));
     }
 

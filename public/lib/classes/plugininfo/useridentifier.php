@@ -24,5 +24,8 @@
 namespace core\plugininfo;
 
 class useridentifier extends \core\plugininfo\base {
-
+    #[\Override]
+    public static function get_manage_url() {
+        return new \moodle_url('/user/identifier/settings.php');
+    }
 }

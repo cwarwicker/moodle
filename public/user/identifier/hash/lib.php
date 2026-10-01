@@ -16,9 +16,18 @@
 
 /**
  *
+ * Library functions.
  *
- * @package
+ * @package   useridentifier_hash
  * @author    Conn Warwicker <conn.warwicker@catalyst-eu.net>
  * @copyright 2026 onwards Catalyst IT EU {@link https://catalyst-eu.net}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+/**
+ * Get the class to use for the service.
+ * @return string
+ */
+function useridentifier_hash_get_useridentifier_service_class(): string {
+    return useridentifier_hash\plugin::class;
+}

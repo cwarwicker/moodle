@@ -14,25 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace useridentifier_hash;
-
-defined('MOODLE_INTERNAL') || die();
+namespace core_user\identifier;
 
 /**
- * Hash user identifier plugin.
+ * User profile identifier interface.
  *
- * This produces what appears to be a random value per user, based on their ID and the configured key.
- *
- * @package   useridentifier_hash
+ * @package   useridentifier
  * @author    Conn Warwicker <conn.warwicker@catalyst-eu.net>
  * @copyright 2026 onwards Catalyst IT EU {@link https://catalyst-eu.net}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class plugin implements \core_user\identifier\base {
-    #[\Override]
-    public function get_user_identifier(int $userid, string $key): string {
-        return substr(hash('sha256', $userid), 0, 10) .
-            '-' .
-            substr(hash('sha256', ($key . $userid)), 0, 10);
-    }
+interface base {
+    /**
+     * Given a user ID, return a unique identifier for that user.
+     * This must return the same value each time it is called for the same user ID and Key.
+     *
+     * @param int $userid This is the ID of the Moodle user.
+     * @param string $key This is a site-configured key which is used so that identifiers can be refreshed to new values.
+     * @return string
+     */
+    public function get_user_identifier(int $userid, string $key): string;
 }
