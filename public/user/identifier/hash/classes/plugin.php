@@ -43,13 +43,13 @@ class plugin implements \core_user\identifier\base {
     private function scramble(string $value): string {
         [$left, $right] = explode('-', $value, 2);
 
-        $leftcharts = str_split($left);
+        $leftchars = str_split($left);
         $rightchars = str_split($right);
 
-        for ($i = 0; $i < count($leftcharts); $i += 2) {
-            [$leftcharts[$i], $rightchars[$i]] = [$rightchars[$i], $leftcharts[$i]];
+        for ($i = 0; $i < count($leftchars); $i += 2) {
+            [$leftchars[$i], $rightchars[$i]] = [$rightchars[$i], $leftchars[$i]];
         }
 
-        return implode('', $leftcharts) . '-' . implode('', $rightchars);
+        return implode('', $leftchars) . '-' . implode('', $rightchars);
     }
 }
