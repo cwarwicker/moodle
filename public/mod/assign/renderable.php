@@ -139,6 +139,8 @@ class assign_user_summary implements renderable {
     public $extrauserfields;
     /** @var bool $suspendeduser */
     public $suspendeduser;
+    /** @var assign $assign */
+    public $assign;
 
     /**
      * Constructor
@@ -150,19 +152,23 @@ class assign_user_summary implements renderable {
      * @param array $extrauserfields
      * @param bool $suspendeduser
      */
-    public function __construct(stdClass $user,
-                                $courseid,
-                                $viewfullnames,
-                                $blindmarking,
-                                $uniqueidforuser,
-                                $extrauserfields,
-                                $suspendeduser = false) {
+    public function __construct(
+        stdClass $user,
+        $courseid,
+        $viewfullnames,
+        $blindmarking,
+        $uniqueidforuser,
+        $extrauserfields,
+        $assign,
+        $suspendeduser = false
+    ) {
         $this->user = $user;
         $this->courseid = $courseid;
         $this->viewfullnames = $viewfullnames;
         $this->blindmarking = $blindmarking;
         $this->uniqueidforuser = $uniqueidforuser;
         $this->extrauserfields = $extrauserfields;
+        $this->assign = $assign;
         $this->suspendeduser = $suspendeduser;
     }
 }

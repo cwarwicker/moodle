@@ -88,6 +88,7 @@ class mod_assign_extension_form extends moodleform {
                     $assign->is_blind_marking(),
                     $assign->get_uniqueid_for_user($user->id),
                     $extrauserfields,
+                    $assign,
                     !$assign->is_active_user($userid)
                 ),
             );

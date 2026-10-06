@@ -91,7 +91,7 @@ class assignfeedback_offline_import_grades_form extends moodleform implements re
             $modified = $record->modified;
             $userdesc = fullname($user);
             if ($assignment->is_blind_marking()) {
-                $userdesc = get_string('hiddenuser', 'assign') . $assignment->get_uniqueid_for_user($user->id);
+                $userdesc = $assignment->get_blind_marking_user_identifier($user->id);
             }
 
             $usergrade = $assignment->get_user_grade($user->id, false);

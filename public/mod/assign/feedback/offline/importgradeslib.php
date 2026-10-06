@@ -199,6 +199,13 @@ class assignfeedback_offline_grade_importer {
             // If we are running a behat test, this will be the username of the user.
             if (defined('BEHAT_SITE_RUNNING') && BEHAT_SITE_RUNNING) {
                 $userid = $DB->get_field('user', 'id', ['username' => $idstr]);
+            } else if (
+                $this->assignment->is_blind_marking() &&
+                \core_user\identifier\helper::get_active_service() &&
+                preg_match('/-([0-9]+)$/', $idstr, $matches)
+            ) {
+                // Blind marking is enabled with a valid useridentifier service, so the unique id should be at the end.
+                $userid = $this->assignment->get_user_id_for_uniqueid($matches[1]);
             } else {
                 // Strip the integer from the end of the participant string.
                 $id = substr($idstr, strlen(get_string('hiddenuser', 'assign')));

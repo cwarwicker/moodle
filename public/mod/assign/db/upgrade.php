@@ -294,5 +294,19 @@ function xmldb_assign_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2026082700, 'assign');
     }
 
+    if ($oldversion < 2026100501) {
+        // Define field useridentifier to be added to assign_submission.
+        $table = new xmldb_table('assign_submission');
+        $field = new xmldb_field('useridentifier', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'latest');
+
+        // Conditionally launch add field useridentifier.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Assign savepoint reached.
+        upgrade_mod_savepoint(true, 2026100501, 'assign');
+    }
+
     return true;
 }

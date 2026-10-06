@@ -133,15 +133,19 @@ class backup_assign_activity_structure_step extends backup_activity_structure_st
 
         $submissions = new backup_nested_element('submissions');
 
-        $submission = new backup_nested_element('submission', array('id'),
-                                                array('userid',
-                                                      'timecreated',
-                                                      'timemodified',
-                                                      'timestarted',
-                                                      'status',
-                                                      'groupid',
-                                                      'attemptnumber',
-                                                      'latest'));
+        $submission = new backup_nested_element(
+            'submission',
+            ['id'],
+            ['userid',
+             'timecreated',
+             'timemodified',
+             'timestarted',
+             'status',
+             'groupid',
+             'attemptnumber',
+             'latest',
+             'useridentifier']
+        );
 
         $grades = new backup_nested_element('grades');
 
