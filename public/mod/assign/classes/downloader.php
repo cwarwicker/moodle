@@ -186,12 +186,14 @@ class downloader {
         }
         // Individual submissions are by user.
         if ($manager->is_blind_marking()) {
-            $fullname = get_string('participant', 'mod_assign');
+            $fullname = $manager->get_blind_marking_user_identifier($student->id);
+            $prefix = str_replace(' ', '_', $fullname);
+            $prefix = clean_filename($prefix);
         } else {
             $fullname = fullname($student, has_capability('moodle/site:viewfullnames', $manager->get_context()));
+            $prefix = str_replace('_', ' ', $fullname);
+            $prefix = clean_filename($prefix . '_' . $manager->get_uniqueid_for_user($student->id));
         }
-        $prefix = str_replace('_', ' ', $fullname);
-        $prefix = clean_filename($prefix . '_' . $manager->get_uniqueid_for_user($student->id));
         return $prefix;
     }
 

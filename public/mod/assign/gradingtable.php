@@ -667,7 +667,11 @@ class assign_grading_table extends table_sql implements renderable {
         if (empty($row->recordid)) {
             $row->recordid = $this->assignment->get_uniqueid_for_user($row->userid);
         }
-        return get_string('hiddenuser', 'assign') . $row->recordid;
+        if ($this->assignment->is_blind_marking()) {
+            return $this->assignment->get_blind_marking_user_identifier($row->userid);
+        } else {
+            return get_string('hiddenuser', 'assign') . $this->assignment->get_uniqueid_for_user($row->userid);
+        }
     }
 
 

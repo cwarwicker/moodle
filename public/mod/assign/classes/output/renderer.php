@@ -166,7 +166,7 @@ class renderer extends \plugin_renderer_base {
         $o .= $this->output->container_start('usersummary');
         $o .= $this->output->box_start('boxaligncenter usersummarysection'.$supendedclass);
         if ($summary->blindmarking) {
-            $o .= get_string('hiddenuser', 'assign') . $summary->uniqueidforuser.$suspendedicon;
+            $o .= $summary->assign->get_blind_marking_user_identifier($summary->user->id) . $suspendedicon;
         } else {
             $o .= $this->output->user_picture($summary->user);
             $o .= $this->output->spacer(array('width'=>30));

@@ -201,6 +201,9 @@ class restore_assign_activity_structure_step extends restore_activity_structure_
         } else {
             $data->groupid = 0;
         }
+        if (!property_exists($data, 'useridentifier')) {
+            $data->useridentifier = null;
+        }
 
         // We will correct this in set_latest_submission_field() once all submissions are restored.
         $data->latest = 0;

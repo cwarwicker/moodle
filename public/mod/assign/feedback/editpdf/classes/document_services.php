@@ -674,9 +674,9 @@ EOD;
         $user = $DB->get_record('user', array('id'=>$userid), '*', MUST_EXIST);
 
         if ($assignment->is_blind_marking()) {
-            $prefix = $groupname . get_string('participant', 'assign');
+            $prefix = $groupname . $assignment->get_blind_marking_user_identifier($userid);
             $prefix = str_replace('_', ' ', $prefix);
-            $prefix = clean_filename($prefix . '_' . $assignment->get_uniqueid_for_user($userid) . '_');
+            $prefix = clean_filename($prefix . '_');
         } else {
             $prefix = $groupname . fullname($user);
             $prefix = str_replace('_', ' ', $prefix);

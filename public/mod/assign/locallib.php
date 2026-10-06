@@ -5333,16 +5333,11 @@ class assign {
     public function fullname($user) {
         if ($this->is_blind_marking()) {
             $hasviewblind = has_capability('mod/assign:viewblinddetails', $this->get_context());
-            if (empty($user->recordid)) {
-                $uniqueid = $this->get_uniqueid_for_user($user->id);
-            } else {
-                $uniqueid = $user->recordid;
-            }
             if ($hasviewblind) {
-                return get_string('participant', 'assign') . ' ' . $uniqueid . ' (' .
-                        fullname($user, has_capability('moodle/site:viewfullnames', $this->get_context())) . ')';
+                return $this->get_blind_marking_user_identifier($user->id) . ' (' .
+                    fullname($user, has_capability('moodle/site:viewfullnames', $this->get_context())) . ')';
             } else {
-                return get_string('participant', 'assign') . ' ' . $uniqueid;
+                return $this->get_blind_marking_user_identifier($user->id);
             }
         } else {
             return fullname($user, has_capability('moodle/site:viewfullnames', $this->get_context()));
@@ -6857,11 +6852,33 @@ class assign {
         if ($updatetime) {
             $submission->timemodified = \core\di::get(\core\clock::class)->time();
         }
+
+        // If blind marking, do we need to store a user identifier?
+        if ($this->is_blind_marking()) {
+            $submission->useridentifier = $this->get_blind_marking_user_identifier($submission->userid);
+        }
+
         $result= $DB->update_record('assign_submission', $submission);
         if ($result) {
             $this->gradebook_item_update($submission);
         }
         return $result;
+    }
+
+    /**
+     * Get the user identifier to be used in blind marking for this user.
+     * @param int $userid
+     * @return string|null
+     */
+    public function get_blind_marking_user_identifier(int $userid): ?string {
+        // If we've already saved a user identifier for this submission, get that, so it always stays the same.
+        $submission = $this->get_user_submission($userid, false);
+        if ($submission && !is_null($submission->useridentifier)) {
+            return $submission->useridentifier;
+        }
+        // Otherwise, get one from the user identifier service.
+        $ident = \core_user\identifier\helper::get_user_identifier($userid);
+        return ($ident ? $ident . '-' : get_string('hiddenuser', 'assign')) . $this->get_uniqueid_for_user($userid);
     }
 
     /**

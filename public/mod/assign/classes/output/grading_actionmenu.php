@@ -109,7 +109,7 @@ class grading_actionmenu implements templatable, renderable {
 
         $isblind = $this->assign->is_blind_marking() && !$this->hasviewblind;
         if ($isblind) {
-            $usersearch = $userid ? get_string('hiddenuser', 'assign') . $this->assign->get_uniqueid_for_user($userid) : $usersearch;
+            $usersearch = $userid ? $this->assign->get_blind_marking_user_identifier($userid) : $usersearch;
         }
 
         $resetlink = new moodle_url('/mod/assign/view.php', ['id' => $this->cmid, 'action' => 'grading']);
