@@ -56,7 +56,7 @@ $ADMIN->add('modules', new admin_category('communicationsettings', new lang_stri
 $ADMIN->add('modules', new admin_category('sms', new lang_string('sms', 'core_sms')));
 $ADMIN->add('modules', new admin_category('contentbanksettings', new lang_string('contentbank')));
 $ADMIN->add('modules', new admin_category('localplugins', new lang_string('localplugins')));
-
+$ADMIN->add('modules', new admin_category('useridentifiersettings', new lang_string('type_useridentifier_plural', 'plugin')));
 
 if ($hassiteconfig) {
     /* @var admin_root $ADMIN */
@@ -843,6 +843,18 @@ if ($hassiteconfig) {
         /** @var \core\plugininfo\contentbank $plugin */
         $plugin->load_settings($ADMIN, 'contentbanksettings', $hassiteconfig);
     }
+}
+
+// User identifiers.
+if ($hassiteconfig) {
+    $ADMIN->add(
+        'useridentifiersettings',
+        new admin_externalpage(
+            'manageuseridentifiers',
+            new lang_string('type_useridentifier_plural', 'plugin'),
+            $CFG->wwwroot . '/user/identifier/settings.php'
+        )
+    );
 }
 
 /// Add all local plugins - must be always last!
