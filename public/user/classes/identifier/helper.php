@@ -59,7 +59,7 @@ class helper {
     }
 
     /**
-     * Get the useridentifier key. If it's not been set, start with 1.
+     * Get the useridentifier key.
      * @return string
      */
     public static function get_key(): string {

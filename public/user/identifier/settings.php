@@ -33,16 +33,16 @@ $form = new \core_user\identifier\settings_form();
 if ($data = $form->get_data()) {
     set_config('useridentifier_service', $data->useridentifier_service);
     set_config('useridentifier_key', $data->useridentifier_key);
-    // TOTOD: Trigger refresh if required.
     redirect($PAGE->url, get_string('changessaved'));
 }
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('type_useridentifier_plural', 'plugin'));
 
+$service = \core_user\identifier\helper::get_active_service();
 $form->set_data((object)[
-    'useridentifier_service' => (is_object(\core_user\identifier\helper::get_active_service())) ?
-        get_class(\core_user\identifier\helper::get_active_service()) :
+    'useridentifier_service' => (is_object($service)) ?
+        get_class($service) :
         '',
     'useridentifier_key' => \core_user\identifier\helper::get_key() ?? '',
 ]);
