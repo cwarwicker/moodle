@@ -202,7 +202,7 @@ class assignfeedback_offline_grade_importer {
             } else if (
                 $this->assignment->is_blind_marking() &&
                 \core_user\identifier\helper::get_active_service() &&
-                preg_match('/-([0-9]+)$/', $idstr, $matches)
+                preg_match('/_([0-9]+)$/', $idstr, $matches)
             ) {
                 // Blind marking is enabled with a valid useridentifier service, so the unique id should be at the end.
                 $userid = $this->assignment->get_user_id_for_uniqueid($matches[1]);
