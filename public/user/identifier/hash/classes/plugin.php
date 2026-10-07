@@ -28,7 +28,7 @@ namespace useridentifier_hash;
  */
 class plugin implements \core_user\identifier\base {
     #[\Override]
-    public function get_user_identifier(int $userid, string $key): string {
+    public function get_user_identifier(int $userid, string $key, ?array $data = []): string {
         $value = substr(hash('sha256', $userid), 0, 10) .
             '-' .
             substr(hash('sha256', ($key . $userid)), 0, 10);

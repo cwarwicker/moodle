@@ -69,13 +69,14 @@ class helper {
     /**
      * Get the user identifier for the given user.
      * @param int $userid
+     * @param array|null $data
      * @return string|null
      */
-    public static function get_user_identifier(int $userid): ?string {
+    public static function get_user_identifier(int $userid, ?array $data = []): ?string {
         // If there is an active service, use that to get the identifier.
         $service = self::get_active_service();
         if ($service) {
-            return $service->get_user_identifier($userid, self::get_key());
+            return $service->get_user_identifier($userid, self::get_key(), $data);
         } else {
             return null;
         }
