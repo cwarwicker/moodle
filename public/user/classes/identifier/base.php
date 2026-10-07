@@ -31,7 +31,8 @@ interface base {
      *
      * @param int $userid This is the ID of the Moodle user.
      * @param string $key This is a site-configured key which is used so that identifiers can be refreshed to new values.
+     * @param array|null $data Array of any extra data that might be needed, such as the activity instance.
      * @return string
      */
-    public function get_user_identifier(int $userid, string $key): string;
+    public function get_user_identifier(int $userid, string $key, ?array $data = []): string;
 }
