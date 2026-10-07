@@ -186,7 +186,7 @@ class downloader {
         }
         // Individual submissions are by user.
         if ($manager->is_blind_marking()) {
-            $fullname = $manager->get_blind_marking_user_identifier($student->id);
+            $fullname = $manager->get_blind_marking_user_identifier($student->id, true);
             $prefix = str_replace(' ', '_', $fullname);
             $prefix = clean_filename($prefix);
         } else {

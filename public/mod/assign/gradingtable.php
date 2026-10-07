@@ -668,7 +668,10 @@ class assign_grading_table extends table_sql implements renderable {
             $row->recordid = $this->assignment->get_uniqueid_for_user($row->userid);
         }
         if ($this->assignment->is_blind_marking()) {
-            return $this->assignment->get_blind_marking_user_identifier($row->userid);
+            // Do we need to append the participant number with an underscore to the identifier?
+            // Currently this is only needed if downloading, but might be other cases in future.
+            $includeparticipantnumber = ($this->is_downloading());
+            return $this->assignment->get_blind_marking_user_identifier($row->userid, $includeparticipantnumber);
         } else {
             return get_string('hiddenuser', 'assign') . $this->assignment->get_uniqueid_for_user($row->userid);
         }

@@ -6867,18 +6867,26 @@ class assign {
 
     /**
      * Get the user identifier to be used in blind marking for this user.
-     * @param int $userid
+     * @param int $userid User ID
+     * @param bool $includeparticipantnumber Should the unique participant number for the assignment be appended?
      * @return string|null
      */
-    public function get_blind_marking_user_identifier(int $userid): ?string {
+    public function get_blind_marking_user_identifier(int $userid, bool $includeparticipantnumber = false): ?string {
         // If we've already saved a user identifier for this submission, get that, so it always stays the same.
         $submission = $this->get_user_submission($userid, false);
         if ($submission && !is_null($submission->useridentifier)) {
             return $submission->useridentifier;
         }
         // Otherwise, get one from the user identifier service.
-        $ident = \core_user\identifier\helper::get_user_identifier($userid);
-        return ($ident ? $ident . '-' : get_string('hiddenuser', 'assign')) . $this->get_uniqueid_for_user($userid);
+        $ident = \core_user\identifier\helper::get_user_identifier($userid, [
+            'activity' => $this,
+        ]);
+
+        if ($ident) {
+            return $ident . ($includeparticipantnumber ? '_' . $this->get_uniqueid_for_user($userid) : '');
+        } else {
+            return get_string('hiddenuser', 'assign') . $this->get_uniqueid_for_user($userid);
+        }
     }
 
     /**
