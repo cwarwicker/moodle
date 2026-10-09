@@ -379,4 +379,13 @@ class quiz_overview_table extends attempts_report_table {
                 'questionusageid ' . $qubaids->usage_id_in(), $qubaids->usage_id_in_params());
         return quiz_report_index_by_keys($regradedqs, ['questionusageid', 'slot']);
     }
+
+    /**
+     * Get the data for the useridentifier column for a given attempt table row.
+     * @param stdClass $attempt
+     * @return string
+     */
+    public function col_useridentifier(stdClass $attempt): string {
+        return $attempt->useridentifier;
+    }
 }

@@ -193,27 +193,41 @@ abstract class attempts_report extends report_base {
      * @param table_sql $table the table being constructed.
      * @param array $columns the list of columns. Added to.
      * @param array $headers the columns headings. Added to.
+     * @param stdClass $quiz the quiz settings.
      */
-    protected function add_user_columns($table, &$columns, &$headers) {
+    protected function add_user_columns($table, &$columns, &$headers, $quiz) {
         global $CFG;
-        if (!$table->is_downloading() && $CFG->grade_report_showuserimage) {
-            $columns[] = 'picture';
-            $headers[] = '';
-        }
-        if (!$table->is_downloading()) {
-            $columns[] = 'fullname';
-            $headers[] = get_string('name');
-        } else {
-            $columns[] = 'lastname';
-            $headers[] = get_string('lastname');
-            $columns[] = 'firstname';
-            $headers[] = get_string('firstname');
-        }
 
-        $extrafields = \core_user\fields::get_identity_fields($this->context);
-        foreach ($extrafields as $field) {
-            $columns[] = $field;
-            $headers[] = \core_user\fields::get_display_name($field);
+        $hasviewanon = has_capability('mod/quiz:viewanonymousdetails', \core\context\module::instance($quiz->cmid));
+
+        if ($hasviewanon || !$quiz->anonymous) {
+            if (!$table->is_downloading() && $CFG->grade_report_showuserimage) {
+                $columns[] = 'picture';
+                $headers[] = '';
+            }
+            if (!$table->is_downloading()) {
+                $columns[] = 'fullname';
+                $headers[] = get_string('name');
+            } else {
+                $columns[] = 'lastname';
+                $headers[] = get_string('lastname');
+                $columns[] = 'firstname';
+                $headers[] = get_string('firstname');
+            }
+
+            if ($quiz->anonymous) {
+                $columns[] = 'useridentifier';
+                $headers[] = get_string('useridentifier', 'quiz');
+            }
+
+            $extrafields = \core_user\fields::get_identity_fields($this->context);
+            foreach ($extrafields as $field) {
+                $columns[] = $field;
+                $headers[] = \core_user\fields::get_display_name($field);
+            }
+        } else {
+            $columns[] = 'useridentifier';
+            $headers[] = get_string('useridentifier', 'quiz');
         }
     }
 

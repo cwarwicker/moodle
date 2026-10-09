@@ -220,5 +220,15 @@ $capabilities = [
         ],
         'clonepermissionsfrom' => 'mod/quiz:manage',
     ],
+
+    // View user details even if anonymous attempts are enabled.
+    'mod/quiz:viewanonymousdetails' => array(
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
 ];
 

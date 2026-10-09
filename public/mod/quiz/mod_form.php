@@ -173,6 +173,13 @@ class mod_quiz_mod_form extends moodleform_mod {
             $mform->hideIf('grademethod', 'attempts', 'eq', 1);
         }
 
+        // Anonymous attempts.
+        $mform->addElement('selectyesno', 'anonymous', get_string('anonymousattempts', 'quiz'));
+        $mform->addHelpButton('anonymous', 'anonymousattempts', 'quiz');
+        if (quiz_has_attempts($this->current->id)) {
+            $mform->freeze('anonymous');
+        }
+
         // -------------------------------------------------------------------------------
         $mform->addElement('header', 'layouthdr', get_string('layout', 'quiz'));
 

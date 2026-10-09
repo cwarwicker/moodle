@@ -136,6 +136,7 @@ function quiz_create_attempt(quiz_settings $quizobj, $attemptnumber, $lastattemp
     $attempt->sumgrades = null;
     $attempt->gradednotificationsenttime = null;
     $attempt->timecheckstate = null;
+    $attempt->useridentifier = mod_quiz_get_anonymous_user_identifier($quiz->id, $userid);
 
     // If this is a preview, mark it as such.
     if ($ispreview) {
@@ -2168,4 +2169,57 @@ function quiz_create_attempt_handling_errors($attemptid, $cmid = null) {
     } else {
         return $attempobj;
     }
+}
+
+/**
+ * Get the user identifier to use for this user and quiz, when anonymous attempts.
+ * @param int $quizid ID of the quiz
+ * @param int $userid ID of the user
+ * @param bool $includeparticipantnumber Should the unique participant number for the quiz be appended?
+ * @return string|null
+ */
+function mod_quiz_get_anonymous_user_identifier(int $quizid, int $userid, bool $includeparticipantnumber = false): ?string {
+    $quizsettings = quiz_settings::create($quizid);
+    $quiz = $quizsettings->get_quiz();
+
+    // If we've already saved a user identifier for this attempt, get that, so it always stays the same.
+    $attempts = quiz_get_user_attempts($quizid, $userid, 'all', true);
+    if ($attempts) {
+        $attempt = end($attempts);
+        return $attempt->useridentifier;
+    }
+
+    // Otherwise, get one from the user identifier service.
+    $ident = \core_user\identifier\helper::get_user_identifier($userid, [
+        'activity' => $quiz,
+    ]);
+
+    if ($ident) {
+        return $ident . ($includeparticipantnumber ? '_' . mod_quiz_get_uniqueid_for_user($quizid, $userid) : '');
+    } else {
+        return get_string('hiddenuser', 'quiz') . mod_quiz_get_uniqueid_for_user($quizid, $userid);
+    }
+}
+
+/**
+ * Get a unique participant number for this user and quiz, for anonymous attempts.
+ * @param int $quizid
+ * @param int $userid
+ * @return int
+ */
+
+function mod_quiz_get_uniqueid_for_user(int $quizid, int $userid): int {
+    global $DB;
+    // The way this is done in mod_assign is that each user is added to a table called assign_user_mapping and the
+    // numbers are derived from there. We don't want to start creating more tables than necessary here, so we're
+    // going to look up the number of attempts made to the quiz, and then order the participant numbers by their
+    // attempt. E.g. first is Participant 1, second is Participant 2, etc...
+
+    // TODO - Cache these numbers?
+    $attempts = $DB->get_records_select('quiz_attempts', 'quiz = ?', [$quizid], 'id', 'DISTINCT userid');
+    $number = array_search($userid, array_keys($attempts));
+
+    // If this user has a previous attempt, use its index as their number. Otherwise, we will have to use the count
+    // since this only gets called when creating the attempt anyway, so we're about to add one.
+    return ($number !== false ? $number : count($attempts)) + 1;
 }

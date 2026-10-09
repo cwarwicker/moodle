@@ -132,5 +132,28 @@ function xmldb_quiz_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2026083100, 'quiz');
     }
 
+    if ($oldversion < 2026100903) {
+        // Define field anonymous to be added to quiz.
+        $table = new xmldb_table('quiz');
+        $field = new xmldb_field('anonymous', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'duedate');
+
+        // Conditionally launch add field anonymous.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field useridentifier to be added to quiz_attempts.
+        $table = new xmldb_table('quiz_attempts');
+        $field = new xmldb_field('useridentifier', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'gradednotificationsenttime');
+
+        // Conditionally launch add field useridentifier.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Quiz savepoint reached.
+        upgrade_mod_savepoint(true, 2026100903, 'quiz');
+    }
+
     return true;
 }
