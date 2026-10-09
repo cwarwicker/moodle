@@ -543,6 +543,7 @@ abstract class attempts_report_table extends \table_sql {
                 quiza.sumgrades,
                 quiza.timefinish,
                 quiza.timestart,
+                quiza.useridentifier,
                 CASE WHEN quiza.timefinish = 0 THEN null
                      WHEN quiza.timefinish > quiza.timestart THEN quiza.timefinish - quiza.timestart
                      ELSE 0 END AS duration';

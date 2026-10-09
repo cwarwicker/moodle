@@ -629,4 +629,19 @@ class quiz_settings {
             context: $this->context
         );
     }
+
+    /**
+     * Release grades for anonymous attempts.
+     */
+    public function release_grades(): void {
+        global $DB;
+
+        // Mark the quiz as released.
+        $quiz = $this->quiz;
+        $quiz->releasedtogradebook = 1;
+        $DB->update_record('quiz', $quiz);
+
+        // Push grades to gradebook.
+        quiz_update_grades($quiz);
+    }
 }

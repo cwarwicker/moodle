@@ -226,6 +226,20 @@ class quiz_overview_table extends attempts_report_table {
             ]);
             $PAGE->requires->js_call_amd('quiz_overview/regrade_modal', 'init');
         }
+
+        $quiz = $this->quizobj->get_quiz();
+        if ($quiz->anonymous && !$quiz->releasedtogradebook) {
+            $url = new moodle_url('/mod/quiz/releasegrades.php', [
+                'id' => $quiz->cmid,
+            ]);
+            echo html_writer::link(
+                $url,
+                get_string('revealidentities', 'mod_quiz'),
+                [
+                    'class' => 'btn btn-secondary me-1',
+                ]
+            );
+        }
     }
 
     public function col_sumgrades($attempt) {
@@ -378,5 +392,19 @@ class quiz_overview_table extends attempts_report_table {
         $regradedqs = $DB->get_records_select('quiz_overview_regrades',
                 'questionusageid ' . $qubaids->usage_id_in(), $qubaids->usage_id_in_params());
         return quiz_report_index_by_keys($regradedqs, ['questionusageid', 'slot']);
+    }
+
+    /**
+     * Get the data for the useridentifier column for a given attempt table row.
+     * @param stdClass $attempt
+     * @return string
+     */
+    public function col_useridentifier(stdClass $attempt): string {
+        return $attempt->useridentifier .
+            html_writer::empty_tag('br') . html_writer::link(
+                new moodle_url('/mod/quiz/review.php', ['attempt' => $attempt->attempt]),
+                get_string('reviewattempt', 'quiz'),
+                ['class' => 'reviewlink']
+            );
     }
 }

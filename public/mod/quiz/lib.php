@@ -659,6 +659,11 @@ function quiz_update_grades($quiz, $userid = 0, $nullifnone = true) {
     global $CFG, $DB;
     require_once($CFG->libdir . '/gradelib.php');
 
+    // If anonymous attempts are enabled, and the grades are not released, stop.
+    if ($quiz->anonymous && !$quiz->releasedtogradebook) {
+        return false;
+    }
+
     if ($quiz->grade == 0) {
         quiz_grade_item_update($quiz);
 
@@ -849,6 +854,7 @@ function quiz_get_recent_mod_activity(&$activities, &$index, $timestart,
 
     $cm = $modinfo->cms[$cmid];
     $quiz = $DB->get_record('quiz', ['id' => $cm->instance]);
+    $quiz->cmid = $cm->id;
 
     if ($userid) {
         $userselect = "AND u.id = :userid";
@@ -891,6 +897,7 @@ function quiz_get_recent_mod_activity(&$activities, &$index, $timestart,
     $viewfullnames   = has_capability('moodle/site:viewfullnames', $context);
     $grader          = has_capability('mod/quiz:viewreports', $context);
     $groupmode       = groups_get_activity_groupmode($cm, $course);
+    $hasviewanon     = has_capability('mod/quiz:viewanonymousdetails', $context);
 
     $usersgroups = null;
     $aname = format_string($cm->name, true);
@@ -933,8 +940,7 @@ function quiz_get_recent_mod_activity(&$activities, &$index, $timestart,
         }
 
         $tmpactivity->user = user_picture::unalias($attempt, null, 'useridagain');
-        $tmpactivity->user->fullname  = fullname($tmpactivity->user, $viewfullnames);
-
+        $tmpactivity->user->fullname = mod_quiz_get_student_name($tmpactivity->user, $quiz);
         $activities[$index++] = $tmpactivity;
     }
 }
@@ -942,11 +948,19 @@ function quiz_get_recent_mod_activity(&$activities, &$index, $timestart,
 function quiz_print_recent_mod_activity($activity, $courseid, $detail, $modnames) {
     global $CFG, $OUTPUT;
 
-    echo '<table border="0" cellpadding="3" cellspacing="0" class="forum-recent">';
+    $quiz = quiz_settings::create_for_cmid($activity->cmid)->get_quiz();
+    $hasviewanon = has_capability('mod/quiz:viewanonymousdetails', \core\context\module::instance($quiz->cmid));
 
-    echo '<tr><td class="userpicture" valign="top">';
-    echo $OUTPUT->user_picture($activity->user, ['courseid' => $courseid]);
-    echo '</td><td>';
+    echo '<table border="0" cellpadding="3" cellspacing="0" class="forum-recent">';
+    echo '<tr>';
+
+    if (!$quiz->anonymous || $hasviewanon) {
+        echo '<td class="userpicture" valign="top">';
+        echo $OUTPUT->user_picture($activity->user, ['courseid' => $courseid]);
+        echo '</td>';
+    }
+
+    echo '<td>';
 
     if ($detail) {
         $modname = $modnames[$activity->type];
@@ -967,9 +981,13 @@ function quiz_print_recent_mod_activity($activity, $courseid, $detail, $modnames
     echo '</div>';
 
     echo '<div class="user">';
-    echo '<a href="' . $CFG->wwwroot . '/user/view.php?id=' . $activity->user->id .
-            '&amp;course=' . $courseid . '">' . $activity->user->fullname .
+    if (!$quiz->anonymous || $hasviewanon) {
+        echo '<a href="' . $CFG->wwwroot . '/user/view.php?id=' . $activity->user->id .
+            '&amp;course=' . $courseid . '">' . s($activity->user->fullname) .
             '</a> - ' . userdate($activity->timestamp);
+    } else {
+        echo s($activity->user->fullname);
+    }
     echo '</div>';
 
     echo '</td></tr></table>';

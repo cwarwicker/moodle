@@ -172,7 +172,13 @@ abstract class navigation_panel_base {
      */
     public function user_picture() {
         global $DB, $PAGE;
-        if ($this->attemptobj->get_quiz()->showuserpicture == QUIZ_SHOWIMAGE_NONE) {
+        $quiz = $this->attemptobj->get_quiz();
+        if ($quiz->showuserpicture == QUIZ_SHOWIMAGE_NONE) {
+            return null;
+        }
+        // If the quiz is anonymous and we can't view anonymous names, we don't need to display this at all.
+        $hasviewanon = has_capability('mod/quiz:viewanonymousdetails', \core\context\module::instance($quiz->cmid));
+        if ($quiz->anonymous && !$hasviewanon) {
             return null;
         }
         $user = $DB->get_record('user', ['id' => $this->attemptobj->get_userid()]);
@@ -181,7 +187,7 @@ abstract class navigation_panel_base {
         if ($PAGE->pagelayout === 'secure') {
             $userpicture->link = false;
         }
-        if ($this->attemptobj->get_quiz()->showuserpicture == QUIZ_SHOWIMAGE_LARGE) {
+        if ($quiz->showuserpicture == QUIZ_SHOWIMAGE_LARGE) {
             $userpicture->size = true;
         }
         return $userpicture;

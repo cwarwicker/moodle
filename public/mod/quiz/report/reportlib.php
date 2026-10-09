@@ -272,20 +272,37 @@ ORDER BY
 }
 
 function quiz_report_highlighting_grading_method($quiz, $qmsubselect, $qmfilter) {
+    global $PAGE;
+    $output = '';
+    // Are anonymous attempts enabled?
+    if ($quiz->anonymous) {
+        $renderer = $PAGE->get_renderer('mod_quiz', null, RENDERER_TARGET_GENERAL);
+        // Have grades already been released?
+        if ($quiz->releasedtogradebook) {
+            $output .= $renderer->notification(get_string('anonymousattemptsenabledwarning', 'quiz'), 'notifymessage');
+        } else {
+            $output .= $renderer->notification(get_string('anonymousattemptsnogradewarning', 'quiz'), 'notifymessage');
+        }
+    }
+
     if ($quiz->attempts == 1) {
-        return '<p>' . get_string('onlyoneattemptallowed', 'quiz_overview') . '</p>';
+        $output .= '<p>' . get_string('onlyoneattemptallowed', 'quiz_overview') . '</p>';
 
     } else if (!$qmsubselect) {
-        return '<p>' . get_string('allattemptscontributetograde', 'quiz_overview') . '</p>';
+        $output .= '<p>' . get_string('allattemptscontributetograde', 'quiz_overview') . '</p>';
 
     } else if ($qmfilter) {
-        return '<p>' . get_string('showinggraded', 'quiz_overview') . '</p>';
+        $output .= '<p>' . get_string('showinggraded', 'quiz_overview') . '</p>';
 
     } else {
-        return '<p>' . get_string('showinggradedandungraded', 'quiz_overview',
-                '<span class="gradedattempt">' . quiz_get_grading_option_name($quiz->grademethod) .
-                '</span>') . '</p>';
+        $output .= '<p>' .
+            get_string(
+                'showinggradedandungraded',
+                'quiz_overview',
+                '<span class="gradedattempt">' . quiz_get_grading_option_name($quiz->grademethod) . '</span>'
+            ) . '</p>';
     }
+    return $output;
 }
 
 /**

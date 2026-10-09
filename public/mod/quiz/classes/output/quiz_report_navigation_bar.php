@@ -22,6 +22,7 @@ use core\output\renderer_base;
 use core_course\output\actionbar\group_selector;
 use core_course\output\actionbar\initials_selector;
 use mod_quiz\local\reports\attempts_report_options;
+use mod_quiz\quiz_settings;
 use moodle_url;
 use renderable;
 
@@ -100,6 +101,12 @@ class quiz_report_navigation_bar implements named_templatable, renderable {
     public function export_for_template(\renderer_base $output): array {
         global $OUTPUT, $USER, $PAGE;
 
+        $quiz = quiz_settings::create_for_cmid($this->cm->id)->get_quiz();
+
+        // We can filter the users if it's not anonymous, or we can see anon details.
+        $canfilterusers = !$quiz->anonymous ||
+            has_capability('mod/quiz:viewanonymousdetails', \core\context\module::instance($quiz->cmid));
+
         if (is_null($this->options)) {
             $cm = $this->cm;
         } else {
@@ -111,7 +118,7 @@ class quiz_report_navigation_bar implements named_templatable, renderable {
         $data = $generalnavselector->export_for_template($output);
 
         // Get the data used to output initial bars.
-        if (!is_null($this->options)) {
+        if (!is_null($this->options) && $canfilterusers) {
             // Prepare url param.
             $url = $this->options->get_url();
             $urlparam = $url->params();
@@ -159,7 +166,7 @@ class quiz_report_navigation_bar implements named_templatable, renderable {
         }
 
         // Get the data used to user search selector.
-        if (!is_null($this->options)) {
+        if (!is_null($this->options) && $canfilterusers) {
             $courseid = $cm->course;
             // Reset link.
             $resetparams = $this->options->get_url()->params();

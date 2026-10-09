@@ -80,11 +80,18 @@ class get_reopen_attempt_confirmation extends external_api {
             $expectedoutcome = get_string('reopenedattemptwillbeinprogress', 'quiz');
         }
 
-        // Return the required message.
         $user = $DB->get_record('user', ['id' => $attemptobj->get_userid()], '*', MUST_EXIST);
-        return html_writer::tag('p', get_string('reopenattemptareyousuremessage', 'quiz',
-                ['attemptnumber' => $attemptobj->get_attempt_number(), 'attemptuser' => s(fullname($user))])) .
-                html_writer::tag('p', $expectedoutcome);
+        $quiz = $attemptobj->get_quiz();
+        $fullname = mod_quiz_get_student_name($user, $quiz);
+
+        // Return the required message.
+        return html_writer::tag(
+            'p',
+            get_string('reopenattemptareyousuremessage', 'quiz', [
+                    'attemptnumber' => $attemptobj->get_attempt_number(),
+                    'attemptuser' => s($fullname),
+                ])
+        ) . html_writer::tag('p', $expectedoutcome);
     }
 
     /**

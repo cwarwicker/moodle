@@ -220,5 +220,24 @@ $capabilities = [
         ],
         'clonepermissionsfrom' => 'mod/quiz:manage',
     ],
-];
 
+    // View user details even if anonymous attempts are enabled.
+    'mod/quiz:viewanonymousdetails' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+
+    // Release anonymous attempts to gradebook.
+    'mod/quiz:releaseanonymousgrades' => [
+        'riskbitmask' => RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'editingteacher' => CAP_ALLOW,
+        ],
+    ],
+];

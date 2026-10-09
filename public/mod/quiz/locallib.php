@@ -136,6 +136,7 @@ function quiz_create_attempt(quiz_settings $quizobj, $attemptnumber, $lastattemp
     $attempt->sumgrades = null;
     $attempt->gradednotificationsenttime = null;
     $attempt->timecheckstate = null;
+    $attempt->useridentifier = mod_quiz_get_anonymous_user_identifier($quiz->id, $userid);
 
     // If this is a preview, mark it as such.
     if ($ispreview) {
@@ -1332,6 +1333,8 @@ function quiz_send_confirmation($recipient, $a, $studentisonline) {
 function quiz_send_notification($recipient, $submitter, $a) {
     global $PAGE;
 
+    $quiz = quiz_settings::create($a->quizid)->get_quiz();
+
     // Recipient info for template.
     $a->useridnumber = $recipient->idnumber;
     $a->username     = fullname($recipient);
@@ -1344,7 +1347,7 @@ function quiz_send_notification($recipient, $submitter, $a) {
     $eventdata->name              = 'submission';
     $eventdata->notification      = 1;
 
-    $eventdata->userfrom          = $submitter;
+    $eventdata->userfrom          = ($quiz->anonymous) ? $recipient : $submitter;
     $eventdata->userto            = $recipient;
     $eventdata->subject           = get_string('emailnotifysubject', 'quiz', $a);
     $eventdata->fullmessage       = get_string('emailnotifybody', 'quiz', $a);
@@ -1361,7 +1364,7 @@ function quiz_send_notification($recipient, $submitter, $a) {
         'cmid' => $a->quizcmid,
         'instance' => $a->quizid,
         'attemptid' => $a->attemptid,
-        'notificationiconurl' => $userpicture->get_url($PAGE)->out(false),
+        'notificationiconurl' => (!$quiz->anonymous) ? $userpicture->get_url($PAGE)->out(false) : '',
     ];
 
     // ... and send it.
@@ -1421,6 +1424,8 @@ function quiz_send_notification_messages($course, $quiz, $attempt, $context, $cm
         return true; // Nothing to do.
     }
 
+    $fullname = mod_quiz_get_student_name($submitter, $quiz);
+
     $a = new stdClass();
     // Course info.
     $a->courseid        = $course->id;
@@ -1442,7 +1447,7 @@ function quiz_send_notification_messages($course, $quiz, $attempt, $context, $cm
     $a->attemptid       = $attempt->id;
     // Student who sat the quiz info.
     $a->studentidnumber = $submitter->idnumber;
-    $a->studentname     = fullname($submitter);
+    $a->studentname     = $fullname;
     $a->studentusername = $submitter->username;
 
     $allok = true;
@@ -2168,4 +2173,76 @@ function quiz_create_attempt_handling_errors($attemptid, $cmid = null) {
     } else {
         return $attempobj;
     }
+}
+
+/**
+ * Get the user identifier to use for this user and quiz, when anonymous attempts.
+ * @param int $quizid ID of the quiz
+ * @param int $userid ID of the user
+ * @param bool $includeparticipantnumber Should the unique participant number for the quiz be appended?
+ * @return string|null
+ */
+function mod_quiz_get_anonymous_user_identifier(int $quizid, int $userid, bool $includeparticipantnumber = false): ?string {
+    $quizsettings = quiz_settings::create($quizid);
+    $quiz = $quizsettings->get_quiz();
+
+    // If we've already saved a user identifier for this attempt, get that, so it always stays the same.
+    $attempts = quiz_get_user_attempts($quizid, $userid, 'all', true);
+    if ($attempts) {
+        $attempt = end($attempts);
+        return $attempt->useridentifier;
+    }
+
+    // Otherwise, get one from the user identifier service.
+    $ident = \core_user\identifier\helper::get_user_identifier($userid, [
+        'activity' => $quiz,
+    ]);
+
+    if ($ident) {
+        return $ident . ($includeparticipantnumber ? '_' . mod_quiz_get_uniqueid_for_user($quizid, $userid) : '');
+    } else {
+        return get_string('hiddenuser', 'quiz') . mod_quiz_get_uniqueid_for_user($quizid, $userid);
+    }
+}
+
+/**
+ * Get a unique participant number for this user and quiz, for anonymous attempts.
+ * This is only called when an attempt is actually added, then the value is read from the attempt row, so there is
+ * no need for caching here.
+ *
+ * @param int $quizid
+ * @param int $userid
+ * @return int
+ */
+function mod_quiz_get_uniqueid_for_user(int $quizid, int $userid): int {
+    global $DB;
+    // The way this is done in mod_assign is that each user is added to a table called assign_user_mapping and the
+    // numbers are derived from there. We don't want to start creating more tables than necessary here, so we're
+    // going to look up the number of attempts made to the quiz, and then order the participant numbers by their
+    // attempt. E.g. first is Participant 1, second is Participant 2, etc...
+    $attempts = $DB->get_records_select('quiz_attempts', 'quiz = ?', [$quizid], 'id', 'DISTINCT userid');
+    $number = array_search($userid, array_keys($attempts));
+
+    // If this user has a previous attempt, use its index as their number. Otherwise, we will have to use the count
+    // since this only gets called when creating the attempt anyway, so we're about to add one.
+    return ($number !== false ? $number : count($attempts)) + 1;
+}
+
+/**
+ * Get either the student name, or the user identifier, if the quiz is anonymous and we can't see the names.
+ * @param stdClass $student
+ * @param stdClass $quiz
+ * @return string
+ */
+function mod_quiz_get_student_name(stdClass $student, stdClass $quiz): string {
+    $hasviewanon = has_capability('mod/quiz:viewanonymousdetails', \core\context\module::instance($quiz->cmid));
+    $studentname = fullname($student);
+    if ($quiz->anonymous && !$hasviewanon) {
+        // If the quiz is anonymous and we can't see anonymous names, use the identifier instead.
+        $studentname = mod_quiz_get_anonymous_user_identifier($quiz->id, $student->id);
+    } else if ($quiz->anonymous) {
+        // If the quiz is anonymous, append the identifier after the name.
+        $studentname .= ' (' . mod_quiz_get_anonymous_user_identifier($quiz->id, $student->id) . ')';
+    }
+    return $studentname;
 }

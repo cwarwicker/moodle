@@ -47,12 +47,15 @@ if (!$attemptobj->is_finished()) {
 // Check login and permissions.
 require_login($attemptobj->get_course(), false, $attemptobj->get_cm());
 $attemptobj->require_capability('mod/quiz:grade');
+$quiz = $attemptobj->get_quiz();
+$hasviewanon = has_capability('mod/quiz:viewanonymousdetails', \core\context\module::instance($quiz->cmid));
+$fullname = mod_quiz_get_student_name($student, $quiz);
 
 // Print the page header.
 $PAGE->set_pagelayout('popup');
 $PAGE->set_title(get_string('manualgradequestion', 'quiz', [
         'question' => format_string($attemptobj->get_question_name($slot)),
-        'quiz' => format_string($attemptobj->get_quiz_name()), 'user' => fullname($student)]));
+        'quiz' => format_string($attemptobj->get_quiz_name()), 'user' => $fullname]));
 $PAGE->set_heading($attemptobj->get_course()->fullname);
 $output = $PAGE->get_renderer('mod_quiz');
 echo $output->header();
@@ -62,11 +65,24 @@ $summary = new attempt_summary_information();
 // Set the caption.
 $summary->set_caption(get_string('summaryofattempt', 'quiz'));
 // Student name.
-$userpicture = new user_picture($student);
-$userpicture->courseid = $attemptobj->get_courseid();
-$summary->add_item('user', $userpicture, new action_link(
-        new moodle_url('/user/view.php', [ 'id' => $student->id, 'course' => $attemptobj->get_courseid()]),
-        fullname($student, true)));
+if ($quiz->anonymous && !$hasviewanon) {
+    $summary->add_item(
+        'user',
+        get_string('user', 'core'),
+        $fullname
+    );
+} else {
+    $userpicture = new user_picture($student);
+    $userpicture->courseid = $attemptobj->get_courseid();
+    $summary->add_item(
+        'user',
+        $userpicture,
+        new action_link(
+            new moodle_url('/user/view.php', ['id' => $student->id, 'course' => $attemptobj->get_courseid()]),
+            $fullname
+        )
+    );
+}
 
 // Quiz name.
 $summary->add_item('quizname', get_string('modulename', 'quiz'), format_string($attemptobj->get_quiz_name()));

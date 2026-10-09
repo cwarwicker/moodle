@@ -722,7 +722,11 @@ class quiz_grading_report extends report_base {
         global $DB;
         $a = new stdClass();
         $a->attempt = $attempt->attempt;
-        $a->fullname = fullname($attempt);
+
+        $quiz = \mod_quiz\quiz_settings::create($attempt->quiz)->get_quiz();
+        $user = $attempt;
+        $user->id = $user->userid;
+        $a->fullname = mod_quiz_get_student_name($user, $quiz);
 
         $customfields = [];
         foreach ($this->extrauserfields as $field) {

@@ -133,7 +133,7 @@ class quiz_responses_report extends attempts_report {
                 $headers[] = $table->checkbox_col_header($columnname);
             }
 
-            $this->add_user_columns($table, $columns, $headers);
+            $this->add_user_columns($table, $columns, $headers, $quiz);
             $this->add_state_column($columns, $headers);
 
             if ($table->is_downloading()) {

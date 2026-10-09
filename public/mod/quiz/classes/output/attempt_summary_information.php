@@ -199,18 +199,33 @@ class attempt_summary_information implements renderable, named_templatable {
         global $DB, $USER;
         $summary = new static();
 
+        $quiz = $attemptobj->get_quiz();
+        $hasviewanon = has_capability('mod/quiz:viewanonymousdetails', \core\context\module::instance($quiz->cmid));
+        $student = $DB->get_record('user', ['id' => $attemptobj->get_userid()]);
+        $fullname = mod_quiz_get_student_name($student, $quiz);
+
         // Prepare summary information about the whole attempt.
-        if (!$attemptobj->get_quiz()->showuserpicture && $attemptobj->get_userid() != $USER->id) {
-            // If showuserpicture is true, the picture is shown elsewhere, so don't repeat it.
-            $student = $DB->get_record('user', ['id' => $attemptobj->get_userid()]);
-            $userpicture = new user_picture($student);
-            $userpicture->courseid = $attemptobj->get_courseid();
-            $summary->add_item('user', $userpicture,
-                new action_link(
-                    new moodle_url('/user/view.php', ['id' => $student->id, 'course' => $attemptobj->get_courseid()]),
-                    fullname($student, true),
-                )
-            );
+        if (!$quiz->showuserpicture && $attemptobj->get_userid() != $USER->id) {
+            // If the quiz is anonymous and we can't see hidden names, then show the identifier instead of the name.
+            if ($quiz->anonymous && !$hasviewanon) {
+                $summary->add_item(
+                    'user',
+                    get_string('user', 'core'),
+                    $fullname
+                );
+            } else {
+                // If showuserpicture is true, the picture is shown elsewhere, so don't repeat it.
+                $userpicture = new user_picture($student);
+                $userpicture->courseid = $attemptobj->get_courseid();
+                $summary->add_item(
+                    'user',
+                    $userpicture,
+                    new action_link(
+                        new moodle_url('/user/view.php', ['id' => $student->id, 'course' => $attemptobj->get_courseid()]),
+                        $fullname,
+                    )
+                );
+            }
         }
 
         if ($pageforlinkingtootherattempts !== null && $attemptobj->has_capability('mod/quiz:viewreports')) {

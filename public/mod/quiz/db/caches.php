@@ -33,4 +33,9 @@ $definitions = [
         'simplekeys' => true,
         'datasource' => \mod_quiz\cache\quiz_overrides_cache::class,
     ],
+    // Unique IDs cache keyed by quizid_userid returning all applicable unique IDs.
+    'uniqueids' => [
+        'mode' => core_cache\store::MODE_APPLICATION,
+        'simplekeys' => true,
+    ],
 ];

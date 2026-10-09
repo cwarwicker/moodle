@@ -124,7 +124,7 @@ class quiz_overview_report extends attempts_report {
                 $headers[] = $table->checkbox_col_header($columnname);
             }
 
-            $this->add_user_columns($table, $columns, $headers);
+            $this->add_user_columns($table, $columns, $headers, $quiz);
             $this->add_state_column($columns, $headers);
             $this->add_time_columns($columns, $headers);
 
@@ -529,9 +529,11 @@ class quiz_overview_report extends attempts_report {
             'done'  => 0,
         ];
         foreach ($attempts as $attempt) {
+            $user = $attempt;
+            $user->id = $user->userid;
             $a['done']++;
             $a['attemptnum'] = $attempt->attempt;
-            $a['name'] = fullname($attempt);
+            $a['name'] = mod_quiz_get_student_name($user, $quiz);
             $a['attemptid'] = $attempt->id;
             $progressbar->update($a['done'], $a['count'],
                     get_string('regradingattemptxofywithdetails', 'quiz_overview', $a));
